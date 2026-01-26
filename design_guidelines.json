@@ -1,0 +1,190 @@
+{
+  "identity": {
+    "name": "PlumbPro Field Companion",
+    "persona": "The Performance Pro (Archetype 2)",
+    "aesthetic": "Rugged Industrial",
+    "core_values": ["Reliability", "Speed", "Clarity", "Safety"],
+    "emotional_tone": "Tactical, Efficient, Trustworthy"
+  },
+  "typography": {
+    "font_family": {
+      "headings": "Barlow Condensed, sans-serif",
+      "body": "Manrope, sans-serif",
+      "mono": "JetBrains Mono, monospace"
+    },
+    "weights": {
+      "headings": "700 (Bold) or 800 (ExtraBold)",
+      "body": "400 (Regular) and 500 (Medium)"
+    },
+    "scale": {
+      "h1": "text-4xl md:text-5xl tracking-tight uppercase",
+      "h2": "text-3xl md:text-4xl tracking-tight uppercase",
+      "h3": "text-2xl md:text-3xl font-bold",
+      "body_lg": "text-lg leading-relaxed",
+      "body_base": "text-base leading-normal",
+      "caption": "text-sm font-medium tracking-wide uppercase text-muted-foreground"
+    },
+    "imports": [
+      "@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap');"
+    ]
+  },
+  "colors": {
+    "palette": {
+      "primary": {
+        "DEFAULT": "#003366",
+        "foreground": "#FFFFFF",
+        "description": "Deep Royal Blue - Trust, Professionalism"
+      },
+      "secondary": {
+        "DEFAULT": "#FF5F00",
+        "foreground": "#FFFFFF",
+        "description": "Safety Orange - Alerts, CTAs, High Visibility"
+      },
+      "accent": {
+        "DEFAULT": "#FFD700",
+        "foreground": "#000000",
+        "description": "Warning Yellow - Highlights, Important Data"
+      },
+      "background": {
+        "light": "#F8F9FA",
+        "dark": "#0F172A"
+      },
+      "surface": {
+        "light": "#FFFFFF",
+        "dark": "#1E293B"
+      },
+      "border": {
+        "light": "#E2E8F0",
+        "dark": "#334155"
+      },
+      "muted": {
+        "DEFAULT": "#64748B",
+        "foreground": "#F1F5F9"
+      }
+    },
+    "usage_rules": [
+      "Use Safety Orange (#FF5F00) ONLY for primary actions (Save, Submit, Bid) and critical alerts.",
+      "Use Deep Royal Blue (#003366) for headers, navigation, and primary branding.",
+      "Backgrounds should be 'Concrete' (off-white/light grey) in light mode to reduce glare, but high contrast.",
+      "Dark mode should use 'Gunmetal' (#0F172A) - not pure black.",
+      "Borders are CRITICAL. Use 1px solid borders (#E2E8F0) to define areas. No soft shadows."
+    ]
+  },
+  "layout": {
+    "spacing_system": {
+      "base": "0.25rem (4px)",
+      "container_padding": "p-4 md:p-6 lg:p-8",
+      "section_gap": "gap-6 md:gap-8",
+      "touch_target": "min-h-[48px] (Critical for gloved hands)"
+    },
+    "grid_system": {
+      "dashboard": "grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4",
+      "forms": "grid-cols-1 md:grid-cols-2 gap-6",
+      "mobile_nav": "Fixed bottom navigation with 4-5 key items"
+    },
+    "containers": {
+      "card_style": "rounded-sm border border-border bg-card text-card-foreground shadow-none",
+      "modal_style": "rounded-lg border-2 border-primary shadow-2xl"
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-secondary text-white hover:bg-secondary/90 rounded-md font-bold uppercase tracking-wide shadow-sm h-12",
+      "secondary": "bg-primary text-white hover:bg-primary/90 rounded-md font-medium h-12",
+      "outline": "border-2 border-primary text-primary hover:bg-primary/10 rounded-md font-bold h-12",
+      "ghost": "hover:bg-muted text-foreground font-medium"
+    },
+    "inputs": {
+      "default": "h-12 rounded-md border-2 border-input bg-background px-3 py-2 text-lg ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+      "label": "text-sm font-bold uppercase tracking-wide text-muted-foreground mb-1.5 block"
+    },
+    "cards": {
+      "dashboard_widget": "p-4 border border-border bg-white dark:bg-slate-800 rounded-sm flex flex-col justify-between h-full"
+    },
+    "navigation": {
+      "mobile_bottom_bar": "fixed bottom-0 left-0 right-0 h-16 bg-primary text-white flex justify-around items-center z-50 border-t border-primary-foreground/20",
+      "sidebar": "hidden md:flex flex-col w-64 bg-slate-900 text-white h-screen fixed left-0 top-0 border-r border-slate-800"
+    }
+  },
+  "visual_enhancers": {
+    "textures": [
+      "Subtle noise overlay on dark backgrounds to simulate 'cast iron' or 'concrete'.",
+      "Diagonal stripe patterns (warning tape style) for danger zones or empty states."
+    ],
+    "icons": {
+      "library": "lucide-react",
+      "style": "Stroke width 2px or 2.5px (Bold). No thin lines.",
+      "usage": "Use icons heavily for quick scanning (e.g., Wrench for Tools, Helmet for Safety)."
+    },
+    "motion": {
+      "hover": "transform: translateY(-1px); transition: all 0.2s ease-out;",
+      "active": "transform: scale(0.98);",
+      "page_transition": "opacity-0 to opacity-100 duration-300 ease-in-out"
+    }
+  },
+  "accessibility": {
+    "contrast": "WCAG AAA for all text. High contrast is non-negotiable for outdoor use.",
+    "touch_targets": "Minimum 44x44px for all interactive elements.",
+    "font_scaling": "Support dynamic type scaling.",
+    "aria_labels": "Mandatory for all icon-only buttons."
+  },
+  "image_urls": {
+    "hero_backgrounds": [
+      {
+        "url": "https://images.unsplash.com/photo-1604118600242-e7a6d23ec3a9?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "description": "Plumber working in industrial setting (Hero)",
+        "category": "hero"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1721745249921-87a903632bb5?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "description": "Metal work detail (Texture/Background)",
+        "category": "background"
+      }
+    ],
+    "blueprints_tools": [
+      {
+        "url": "https://images.unsplash.com/photo-1591528287361-7211d86ddc27?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "description": "Blueprints and tools on table",
+        "category": "blueprints"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1754780960162-839cda44d736?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "description": "Technical drawings close up",
+        "category": "blueprints"
+      }
+    ],
+    "safety": [
+      {
+        "url": "https://images.unsplash.com/photo-1766736259614-61ac882294c5?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "description": "Hard hats on wall",
+        "category": "safety"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1768158988512-ad31657fe5b8?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "description": "Yellow hard hat on pallet",
+        "category": "safety"
+      }
+    ],
+    "placeholders": {
+      "user_avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
+      "map_placeholder": "https://maps.googleapis.com/maps/api/staticmap?center=40.714728,-73.998672&zoom=12&size=400x400&key=YOUR_API_KEY"
+    }
+  },
+  "instructions_to_main_agent": [
+    "1. INSTALL FONTS: Add the Google Fonts import to index.css immediately.",
+    "2. CONFIGURE TAILWIND: Update tailwind.config.js with the 'Rugged Industrial' colors and font families.",
+    "3. COMPONENT OVERRIDES: When using Shadcn components, override the default 'radius-md' with 'radius-sm' or 'radius-none' for a sharper, industrial look.",
+    "4. MOBILE FIRST: Design the navigation and forms for mobile screens first. Use full-width inputs and large buttons.",
+    "5. DATA DENSITY: For the 'Plumbing Formulas' and 'Job Material Lists', use dense tables with alternating row colors (zebra striping) for readability.",
+    "6. SAFETY TALKS: The AI Safety Talk page should look like a 'Daily Briefing' card - high importance, clear typography.",
+    "7. BLUEPRINTS: The Blueprint page needs a high-contrast PDF viewer wrapper.",
+    "8. TESTING: Add data-testid to every button, input, and link."
+  ],
+  "universal_guidelines": [
+    "Avoid gradients on text. Keep it solid and high-contrast.",
+    "Do not use 'Inter' for headings. Use 'Barlow Condensed'.",
+    "Use 'Sonner' for all toast notifications.",
+    "Ensure all forms have client-side validation with clear error messages in Red/Orange.",
+    "Use 'Lucide-React' for icons. Bold stroke width."
+  ]
+}
