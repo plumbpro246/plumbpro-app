@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Clock, Trash2, CalendarDays } from "lucide-react";
+import { Plus, Clock, Trash2, CalendarDays, Download, FileText } from "lucide-react";
+import { exportTimesheetPDF } from "@/services/pdfExportService";
 
 export default function TimesheetPage() {
   const { token } = useAuth();
