@@ -91,7 +91,7 @@ class PlumbProAPITester:
         
         # Generate unique test user
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        test_email = f"test_user_{timestamp}@plumbpro.test"
+        test_email = f"test_user_{timestamp}@example.com"
         test_password = "TestPass123!"
         test_name = f"Test User {timestamp}"
         test_company = "Test Plumbing Co"
