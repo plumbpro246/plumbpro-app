@@ -24,34 +24,38 @@ Build an app with different tier monthly costs for plumbers to use in the field.
 
 ## What's Been Implemented (March 2025)
 
-### Authentication System
+### Phase 1 - MVP (Complete)
 - [x] User registration with email/password
 - [x] JWT-based login with token storage
-- [x] Protected routes with auth context
-- [x] User profile management
-
-### Subscription System
 - [x] Three tiers: Basic ($9.99), Pro ($19.99), Enterprise ($29.99)
 - [x] Stripe Checkout integration
-- [x] Payment status polling
-- [x] User subscription state management
+- [x] All 15 feature pages (Dashboard, Notes, Formulas, Safety Talks, etc.)
+- [x] AI-generated daily safety talks
+- [x] PDF blueprint upload/download/view
 
-### Feature Pages (All 15 Pages)
-- [x] Dashboard with stats and quick links
-- [x] Notes - CRUD operations with tags
-- [x] Plumbing Formulas - 8 formulas with calculator
-- [x] Safety Talks - AI-generated daily briefings
-- [x] Timesheet - Time entry with hours calculation
-- [x] Materials - Job material lists with cost tracking
-- [x] Job Bidding - Complete bid calculator with status tracking
-- [x] Calendar - Event scheduling with types
-- [x] OSHA Requirements - 8 safety categories
-- [x] Safety Data Sheets - 5 common chemical references
-- [x] Calculator - Full calculator with memory
-- [x] Total Station - Reference guide with tabs
-- [x] Blueprints - PDF upload/download/view
-- [x] Subscription - Pricing page with tiers
-- [x] Subscription Success - Payment confirmation
+### Phase 2 - Enhanced Features (Complete)
+- [x] **Offline Mode Support** - Data caching with localforage, sync queue for offline changes
+- [x] **PDF Export** - Timesheet export with date range, Job bid estimates as professional PDFs
+- [x] **Browser Notifications** - Calendar reminder notifications, Safety talk daily reminders
+- [x] **Job Photos Feature** - Photo upload to notes, Photo management component
+- [x] **Settings Page** - Notification preferences, Offline sync controls, Account info
+
+### New Backend Endpoints Added
+- POST /api/photos - Upload photos with linking
+- GET /api/photos - List photos with filtering
+- GET /api/photos/{id} - Get photo with data
+- DELETE /api/photos/{id} - Delete photo
+- GET/PUT /api/notifications/settings - Notification preferences
+- GET /api/notifications/upcoming - Upcoming events for notifications
+- GET /api/export/timesheets - Timesheet data for PDF
+- GET /api/export/bids/{id} - Bid data for PDF
+- GET /api/sync/data - All user data for offline cache
+- POST /api/sync/pending - Sync offline changes
+
+### New Frontend Services
+- offlineService.js - LocalForage caching, sync queue management
+- notificationService.js - Browser notifications, scheduler
+- pdfExportService.js - jsPDF generation for timesheets and bids
 
 ### Design System
 - [x] Rugged Industrial theme
@@ -65,15 +69,18 @@ Build an app with different tier monthly costs for plumbers to use in the field.
 
 ### P0 - Critical (Done)
 - [x] Core authentication
-- [x] All 15 feature pages
+- [x] All 15+ feature pages
 - [x] Stripe payment integration
 - [x] AI safety talk generation
+- [x] Offline mode support
+- [x] PDF export functionality
+- [x] Job photos feature
 
 ### P1 - High Priority (Next)
-- [ ] Offline mode support
-- [ ] Push notifications for calendar events
-- [ ] Export timesheets to PDF/CSV
-- [ ] Share job bids via email
+- [ ] Service worker for true offline PWA
+- [ ] Photo thumbnails in notes list
+- [ ] Material list photo attachments
+- [ ] Share job bids via email directly
 
 ### P2 - Medium Priority
 - [ ] Team management features
@@ -83,13 +90,13 @@ Build an app with different tier monthly costs for plumbers to use in the field.
 
 ### P3 - Nice to Have
 - [ ] Voice notes recording
-- [ ] Photo attachment to notes
 - [ ] GPS location tagging for jobs
 - [ ] Weather integration for outdoor work
+- [ ] Time tracking with GPS geofence
 
 ## Next Tasks List
-1. Add offline data caching with service workers
-2. Implement bid PDF export functionality
-3. Add weekly/monthly timesheet summaries
-4. Create push notification system for reminders
-5. Add data export features for all modules
+1. Convert to PWA with service worker
+2. Add photo thumbnails to notes list view
+3. Implement email sharing for bids
+4. Add material list photo attachments
+5. Create weekly summary reports
