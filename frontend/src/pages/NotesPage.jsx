@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, FileText, Trash2, Edit2, Search, Tag } from "lucide-react";
+import { Plus, FileText, Trash2, Edit2, Search, Tag, Image } from "lucide-react";
+import PhotoManager from "@/components/PhotoManager";
 
 export default function NotesPage() {
   const { token } = useAuth();
@@ -20,7 +21,8 @@ export default function NotesPage() {
   const [formData, setFormData] = useState({
     title: "",
     content: "",
-    tags: ""
+    tags: "",
+    photos: []
   });
 
   const headers = { Authorization: `Bearer ${token}` };
@@ -46,7 +48,8 @@ export default function NotesPage() {
       const data = {
         title: formData.title,
         content: formData.content,
-        tags: formData.tags.split(",").map(t => t.trim()).filter(Boolean)
+        tags: formData.tags.split(",").map(t => t.trim()).filter(Boolean),
+        photos: formData.photos
       };
 
       if (editingNote) {
@@ -59,7 +62,7 @@ export default function NotesPage() {
       
       setDialogOpen(false);
       setEditingNote(null);
-      setFormData({ title: "", content: "", tags: "" });
+      setFormData({ title: "", content: "", tags: "", photos: [] });
       fetchNotes();
     } catch (error) {
       toast.error("Failed to save note");
@@ -82,14 +85,15 @@ export default function NotesPage() {
     setFormData({
       title: note.title,
       content: note.content,
-      tags: note.tags.join(", ")
+      tags: note.tags.join(", "),
+      photos: note.photos || []
     });
     setDialogOpen(true);
   };
 
   const openNew = () => {
     setEditingNote(null);
-    setFormData({ title: "", content: "", tags: "" });
+    setFormData({ title: "", content: "", tags: "", photos: [] });
     setDialogOpen(true);
   };
 
@@ -117,7 +121,7 @@ export default function NotesPage() {
               <Plus className="w-4 h-4 mr-2" /> New Note
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-lg">
+          <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="font-heading text-xl uppercase">
                 {editingNote ? "Edit Note" : "New Note"}
@@ -156,6 +160,16 @@ export default function NotesPage() {
                   data-testid="note-tags-input"
                 />
               </div>
+              
+              {/* Photo Manager */}
+              <PhotoManager
+                linkedType="note"
+                linkedId={editingNote?.id || ""}
+                photos={formData.photos}
+                onPhotosChange={(photos) => setFormData({ ...formData, photos })}
+                maxPhotos={5}
+              />
+              
               <Button 
                 type="submit" 
                 className="w-full h-12 bg-[#FF5F00] hover:bg-[#FF5F00]/90 font-bold uppercase"
@@ -225,6 +239,15 @@ export default function NotesPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground line-clamp-3 mb-3">{note.content}</p>
+                
+                {/* Photo indicator */}
+                {note.photos && note.photos.length > 0 && (
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2">
+                    <Image className="w-3 h-3" />
+                    <span>{note.photos.length} photo{note.photos.length > 1 ? 's' : ''}</span>
+                  </div>
+                )}
+                
                 {note.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1">
                     {note.tags.map((tag, i) => (
