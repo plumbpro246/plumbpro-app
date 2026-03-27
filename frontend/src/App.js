@@ -130,7 +130,7 @@ const ProtectedRoute = ({ children }) => {
 import { 
   Home, FileText, Calculator, Shield, Clock, Package, 
   DollarSign, Calendar, AlertTriangle, FileSpreadsheet, 
-  Cpu, Map, LogOut, Menu, X, User, Crown
+  Cpu, Map, LogOut, Menu, X, User, Crown, Settings
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -149,6 +149,7 @@ const navItems = [
   { path: "/calculator", label: "Calculator", icon: Cpu },
   { path: "/total-station", label: "Total Station", icon: Map },
   { path: "/blueprints", label: "Blueprints", icon: FileText },
+  { path: "/settings", label: "Settings", icon: Settings },
 ];
 
 const MainLayout = ({ children }) => {
