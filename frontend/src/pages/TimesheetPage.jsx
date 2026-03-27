@@ -167,7 +167,7 @@ export default function TimesheetPage() {
                 <Plus className="w-4 h-4 mr-2" /> Log Time
               </Button>
             </DialogTrigger>
-          <DialogContent className="sm:max-w-lg">
+            <DialogContent className="sm:max-w-lg">
             <DialogHeader>
               <DialogTitle className="font-heading text-xl uppercase">Log Time Entry</DialogTitle>
             </DialogHeader>
