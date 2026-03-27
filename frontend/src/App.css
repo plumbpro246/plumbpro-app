@@ -1,34 +1,67 @@
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
-}
+/* PlumbPro Field Companion Styles */
 
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
-}
-
-.App-header {
-    background-color: #0f0f10;
+.App {
     min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
 }
 
+/* Remove default styles */
+.App-logo,
+.App-header,
 .App-link {
-    color: #61dafb;
+    /* Reset any existing styles */
 }
 
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
+/* Animation utilities */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Touch-friendly adjustments for mobile */
+@media (max-width: 768px) {
+    button, 
+    a, 
+    input, 
+    select, 
+    textarea {
+        min-height: 44px;
     }
-    to {
-        transform: rotate(360deg);
+    
+    .touch-scroll {
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* Print styles for blueprints */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    .print-full {
+        width: 100% !important;
+        height: auto !important;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    :root {
+        --border: 0 0% 20%;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
     }
 }
