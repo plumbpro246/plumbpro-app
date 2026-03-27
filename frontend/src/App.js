@@ -304,6 +304,7 @@ function App() {
           <Route path="/blueprints" element={<ProtectedRoute><MainLayout><BlueprintsPage /></MainLayout></ProtectedRoute>} />
           <Route path="/subscription" element={<ProtectedRoute><MainLayout><SubscriptionPage /></MainLayout></ProtectedRoute>} />
           <Route path="/subscription/success" element={<ProtectedRoute><MainLayout><SubscriptionSuccessPage /></MainLayout></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute><MainLayout><SettingsPage /></MainLayout></ProtectedRoute>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
