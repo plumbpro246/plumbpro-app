@@ -92,6 +92,19 @@ export default function BiddingPage() {
     }
   };
 
+  const handleExportBidPDF = async (bidId) => {
+    try {
+      const response = await axios.get(`${API}/export/bids/${bidId}`, { headers });
+      exportBidPDF(response.data);
+      toast.success("Bid PDF exported");
+    } catch (error) {
+      toast.error("Failed to export bid");
+    }
+  };
+      toast.error("Failed to delete");
+    }
+  };
+
   const laborCost = formData.labor_hours * formData.hourly_rate;
   const subtotal = laborCost + formData.material_cost;
   const markup = subtotal * (formData.markup_percent / 100);
