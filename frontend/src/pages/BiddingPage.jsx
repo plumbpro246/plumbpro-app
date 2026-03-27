@@ -101,9 +101,6 @@ export default function BiddingPage() {
       toast.error("Failed to export bid");
     }
   };
-      toast.error("Failed to delete");
-    }
-  };
 
   const laborCost = formData.labor_hours * formData.hourly_rate;
   const subtotal = laborCost + formData.material_cost;
