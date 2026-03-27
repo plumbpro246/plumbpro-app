@@ -110,15 +110,63 @@ export default function TimesheetPage() {
           <h1 className="font-heading text-3xl font-bold uppercase tracking-tight">Timesheet</h1>
           <p className="text-muted-foreground text-sm">Track your work hours by job</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button 
-              className="bg-[#FF5F00] hover:bg-[#FF5F00]/90 text-white font-bold uppercase"
-              data-testid="new-timesheet-btn"
-            >
-              <Plus className="w-4 h-4 mr-2" /> Log Time
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          {/* Export Dialog */}
+          <Dialog open={exportDialogOpen} onOpenChange={setExportDialogOpen}>
+            <DialogTrigger asChild>
+              <Button 
+                variant="outline"
+                className="font-bold uppercase"
+                data-testid="export-timesheet-btn"
+              >
+                <Download className="w-4 h-4 mr-2" /> Export PDF
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle className="font-heading text-xl uppercase">Export Timesheet</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-sm font-bold uppercase tracking-wide">Start Date</Label>
+                  <Input
+                    type="date"
+                    value={exportRange.start_date}
+                    onChange={(e) => setExportRange({ ...exportRange, start_date: e.target.value })}
+                    className="h-12"
+                    data-testid="export-start-date"
+                  />
+                </div>
+                <div>
+                  <Label className="text-sm font-bold uppercase tracking-wide">End Date</Label>
+                  <Input
+                    type="date"
+                    value={exportRange.end_date}
+                    onChange={(e) => setExportRange({ ...exportRange, end_date: e.target.value })}
+                    className="h-12"
+                    data-testid="export-end-date"
+                  />
+                </div>
+                <Button 
+                  onClick={handleExportPDF}
+                  className="w-full h-12 bg-[#FF5F00] hover:bg-[#FF5F00]/90 font-bold uppercase"
+                  data-testid="confirm-export-btn"
+                >
+                  <FileText className="w-4 h-4 mr-2" /> Generate PDF
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+          
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button 
+                className="bg-[#FF5F00] hover:bg-[#FF5F00]/90 text-white font-bold uppercase"
+                data-testid="new-timesheet-btn"
+              >
+                <Plus className="w-4 h-4 mr-2" /> Log Time
+              </Button>
+            </DialogTrigger>
           <DialogContent className="sm:max-w-lg">
             <DialogHeader>
               <DialogTitle className="font-heading text-xl uppercase">Log Time Entry</DialogTitle>
