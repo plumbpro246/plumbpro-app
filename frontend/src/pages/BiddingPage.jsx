@@ -406,7 +406,14 @@ export default function BiddingPage() {
               </div>
             </div>
 
-            <div className="flex gap-2 pt-4 border-t">
+            <div className="flex flex-wrap gap-2 pt-4 border-t">
+              <Button 
+                variant="outline"
+                onClick={() => handleExportBidPDF(selectedBid.id)}
+                data-testid="export-bid"
+              >
+                <Download className="w-4 h-4 mr-2" /> Export PDF
+              </Button>
               <Button 
                 variant="outline" 
                 onClick={() => handleStatusChange(selectedBid.id, "sent")}
