@@ -17,6 +17,11 @@ export default function TimesheetPage() {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [exportRange, setExportRange] = useState({
+    start_date: new Date(new Date().setDate(1)).toISOString().split("T")[0],
+    end_date: new Date().toISOString().split("T")[0]
+  });
   const [formData, setFormData] = useState({
     job_name: "",
     date: new Date().toISOString().split("T")[0],
@@ -42,6 +47,20 @@ export default function TimesheetPage() {
   useEffect(() => {
     fetchEntries();
   }, []);
+
+  const handleExportPDF = async () => {
+    try {
+      const response = await axios.get(
+        `${API}/export/timesheets?start_date=${exportRange.start_date}&end_date=${exportRange.end_date}`,
+        { headers }
+      );
+      exportTimesheetPDF(response.data);
+      toast.success("PDF exported successfully");
+      setExportDialogOpen(false);
+    } catch (error) {
+      toast.error("Failed to export PDF");
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
