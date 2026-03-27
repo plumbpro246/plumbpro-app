@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, DollarSign, Trash2, Send, Check, X } from "lucide-react";
+import { Plus, DollarSign, Trash2, Send, Check, X, Download } from "lucide-react";
+import { exportBidPDF } from "@/services/pdfExportService";
 
 export default function BiddingPage() {
   const { token } = useAuth();
