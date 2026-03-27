@@ -138,6 +138,7 @@ class MaterialListCreate(BaseModel):
     job_name: str
     job_id: Optional[str] = None
     items: List[MaterialItem] = []
+    photos: List[str] = []  # List of photo IDs
 
 class MaterialListResponse(BaseModel):
     id: str
@@ -145,6 +146,7 @@ class MaterialListResponse(BaseModel):
     job_name: str
     job_id: Optional[str] = None
     items: List[Dict]
+    photos: List[str] = []
     total_cost: float
     created_at: str
     updated_at: str
