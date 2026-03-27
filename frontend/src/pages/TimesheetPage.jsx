@@ -248,6 +248,7 @@ export default function TimesheetPage() {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {/* Stats Cards */}
