@@ -84,11 +84,13 @@ class NoteCreate(BaseModel):
     content: str
     job_id: Optional[str] = None
     tags: List[str] = []
+    photos: List[str] = []  # List of photo IDs
 
 class NoteUpdate(BaseModel):
     title: Optional[str] = None
     content: Optional[str] = None
     tags: Optional[List[str]] = None
+    photos: Optional[List[str]] = None
 
 class NoteResponse(BaseModel):
     id: str
@@ -97,6 +99,7 @@ class NoteResponse(BaseModel):
     content: str
     job_id: Optional[str] = None
     tags: List[str] = []
+    photos: List[str] = []
     created_at: str
     updated_at: str
 
