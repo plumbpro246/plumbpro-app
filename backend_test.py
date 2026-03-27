@@ -340,6 +340,93 @@ class PlumbProAPITester:
         # Note: File upload test would require actual PDF file
         # For now, just test the GET endpoints
 
+    def test_photos_api(self):
+        """Test photo upload and management (NEW FEATURE)"""
+        print("\n🔍 Testing Photos API (NEW FEATURE)...")
+        
+        # Get all photos
+        self.run_test("Get All Photos", "GET", "photos", 200)
+        
+        # Get photos filtered by type
+        self.run_test("Get Photos by Type", "GET", "photos?linked_type=note", 200)
+        
+        # Note: File upload test would require actual image file
+        # For now, just test the GET endpoints
+
+    def test_notification_settings(self):
+        """Test notification settings (NEW FEATURE)"""
+        print("\n🔍 Testing Notification Settings (NEW FEATURE)...")
+        
+        # Get notification settings
+        self.run_test("Get Notification Settings", "GET", "notifications/settings", 200)
+        
+        # Update notification settings
+        settings_data = {
+            "calendar_reminders": True,
+            "reminder_minutes_before": 30,
+            "daily_safety_talk": True,
+            "safety_talk_time": "07:00",
+            "browser_notifications": True
+        }
+        self.run_test("Update Notification Settings", "PUT", "notifications/settings", 200, settings_data)
+        
+        # Get upcoming notifications
+        self.run_test("Get Upcoming Notifications", "GET", "notifications/upcoming", 200)
+
+    def test_export_endpoints(self):
+        """Test PDF export endpoints (NEW FEATURE)"""
+        print("\n🔍 Testing Export Endpoints (NEW FEATURE)...")
+        
+        # Create a timesheet first for export testing
+        timesheet_data = {
+            "job_name": "Export Test Job",
+            "date": "2025-01-15",
+            "start_time": "08:00",
+            "end_time": "17:00",
+            "break_minutes": 60,
+            "notes": "Test entry for export"
+        }
+        
+        timesheet_result = self.run_test("Create Timesheet for Export", "POST", "timesheets", 200, timesheet_data)
+        
+        # Test timesheet export
+        self.run_test("Export Timesheets", "GET", "export/timesheets", 200)
+        self.run_test("Export Timesheets with Date Range", "GET", "export/timesheets?start_date=2025-01-01&end_date=2025-01-31", 200)
+        
+        # Create a bid for export testing
+        bid_data = {
+            "job_name": "Export Test Bid",
+            "client_name": "Test Client",
+            "client_contact": "test@example.com",
+            "description": "Test bid for export",
+            "labor_hours": 10,
+            "hourly_rate": 75.00,
+            "material_cost": 500.00,
+            "markup_percent": 15.0
+        }
+        
+        bid_result = self.run_test("Create Bid for Export", "POST", "bids", 200, bid_data)
+        bid_id = bid_result.get("id") if bid_result else None
+        
+        # Test bid export
+        if bid_id:
+            self.run_test("Export Bid", "GET", f"export/bids/{bid_id}", 200)
+
+    def test_offline_sync(self):
+        """Test offline sync endpoints (NEW FEATURE)"""
+        print("\n🔍 Testing Offline Sync (NEW FEATURE)...")
+        
+        # Get sync data
+        self.run_test("Get Sync Data", "GET", "sync/data", 200)
+        
+        # Test sync pending data (empty for now)
+        sync_data = {
+            "pending_notes": [],
+            "pending_timesheets": [],
+            "pending_events": []
+        }
+        self.run_test("Sync Pending Data", "POST", "sync/pending", 200, sync_data)
+
     def run_all_tests(self):
         """Run all API tests"""
         print("🚀 Starting PlumbPro API Tests...")
