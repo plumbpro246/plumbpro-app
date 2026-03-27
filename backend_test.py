@@ -457,6 +457,12 @@ class PlumbProAPITester:
             self.test_total_station_info()
             self.test_blueprints()
             
+            # Test NEW FEATURES
+            self.test_photos_api()
+            self.test_notification_settings()
+            self.test_export_endpoints()
+            self.test_offline_sync()
+            
             return True
             
         except Exception as e:
