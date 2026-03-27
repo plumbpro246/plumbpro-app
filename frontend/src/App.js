@@ -22,6 +22,7 @@ import TotalStationPage from "@/pages/TotalStationPage";
 import BlueprintsPage from "@/pages/BlueprintsPage";
 import SubscriptionPage from "@/pages/SubscriptionPage";
 import SubscriptionSuccessPage from "@/pages/SubscriptionSuccessPage";
+import SettingsPage from "@/pages/SettingsPage";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 export const API = `${BACKEND_URL}/api`;
