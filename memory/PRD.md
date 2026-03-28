@@ -21,6 +21,7 @@ Build an app with different tier monthly costs for plumbers to use in the field.
 - **Database**: MongoDB
 - **AI**: OpenAI GPT-5.2 via Emergent LLM key
 - **Payments**: Stripe Checkout
+- **Mobile**: Capacitor for Android (Play Store ready)
 
 ## What's Been Implemented (March 2025)
 
@@ -34,69 +35,76 @@ Build an app with different tier monthly costs for plumbers to use in the field.
 - [x] PDF blueprint upload/download/view
 
 ### Phase 2 - Enhanced Features (Complete)
-- [x] **Offline Mode Support** - Data caching with localforage, sync queue for offline changes
-- [x] **PDF Export** - Timesheet export with date range, Job bid estimates as professional PDFs
-- [x] **Browser Notifications** - Calendar reminder notifications, Safety talk daily reminders
-- [x] **Job Photos Feature** - Photo upload to notes, Photo management component
-- [x] **Settings Page** - Notification preferences, Offline sync controls, Account info
+- [x] Offline Mode Support - Data caching with localforage
+- [x] PDF Export - Timesheet and Job bid exports
+- [x] Browser Notifications - Calendar reminders
+- [x] Job Photos Feature - Photo upload to notes
+- [x] Settings Page - Notification and sync controls
 
-### New Backend Endpoints Added
-- POST /api/photos - Upload photos with linking
-- GET /api/photos - List photos with filtering
-- GET /api/photos/{id} - Get photo with data
-- DELETE /api/photos/{id} - Delete photo
-- GET/PUT /api/notifications/settings - Notification preferences
-- GET /api/notifications/upcoming - Upcoming events for notifications
-- GET /api/export/timesheets - Timesheet data for PDF
-- GET /api/export/bids/{id} - Bid data for PDF
-- GET /api/sync/data - All user data for offline cache
-- POST /api/sync/pending - Sync offline changes
+### Phase 3 - Mobile & Advanced (Complete)
+- [x] **PWA Service Worker** - Offline caching, background sync
+- [x] **GPS Geofencing** - Auto clock-in/out at job sites
+- [x] **Email Sharing** - Share bids directly to clients
+- [x] **Capacitor Setup** - Android native wrapper configured
+- [x] **Play Store Ready** - App ID, manifest, icons configured
 
-### New Frontend Services
-- offlineService.js - LocalForage caching, sync queue management
-- notificationService.js - Browser notifications, scheduler
-- pdfExportService.js - jsPDF generation for timesheets and bids
+### Android Build Configuration
+- App ID: `com.plumbpro.fieldcompanion`
+- App Name: PlumbPro
+- Web Dir: build
+- Plugins: Geolocation, LocalNotifications, Share
 
-### Design System
-- [x] Rugged Industrial theme
-- [x] Barlow Condensed + Manrope fonts
-- [x] Deep Royal Blue (#003366) primary
-- [x] Safety Orange (#FF5F00) accent
-- [x] Mobile-first responsive design
-- [x] Touch-friendly 48px targets
+### New Services Added (Phase 3)
+- geofenceService.js - GPS tracking, auto time logging
+- shareService.js - Native share and email integration
+- sw.js - Service worker for PWA
+- manifest.json - PWA manifest with shortcuts
+
+## Play Store Deployment Steps
+1. Run `yarn build` in frontend
+2. Run `npx cap sync android`
+3. Open in Android Studio: `npx cap open android`
+4. Generate signed AAB (Build > Generate Signed Bundle)
+5. Create Google Play Developer account ($25 one-time)
+6. Upload AAB to Play Console
+7. Complete store listing (screenshots, description)
+8. Submit for review
 
 ## Prioritized Backlog
 
 ### P0 - Critical (Done)
-- [x] Core authentication
-- [x] All 15+ feature pages
-- [x] Stripe payment integration
-- [x] AI safety talk generation
-- [x] Offline mode support
-- [x] PDF export functionality
-- [x] Job photos feature
+- [x] All MVP features
+- [x] Offline mode
+- [x] PDF exports
+- [x] GPS time tracking
+- [x] Android build setup
 
 ### P1 - High Priority (Next)
-- [ ] Service worker for true offline PWA
+- [ ] Generate Play Store screenshots
+- [ ] App Store (iOS) build with Capacitor
+- [ ] Background location tracking (always-on GPS)
 - [ ] Photo thumbnails in notes list
-- [ ] Material list photo attachments
-- [ ] Share job bids via email directly
 
 ### P2 - Medium Priority
 - [ ] Team management features
 - [ ] Custom branding for Enterprise
 - [ ] Advanced reporting dashboard
-- [ ] Integration with accounting software
+- [ ] QuickBooks integration
 
 ### P3 - Nice to Have
 - [ ] Voice notes recording
-- [ ] GPS location tagging for jobs
-- [ ] Weather integration for outdoor work
-- [ ] Time tracking with GPS geofence
+- [ ] Weather integration
+- [ ] Supplier price lookups
+- [ ] Customer portal
+
+## Revenue Model
+- Basic: $9.99/mo - Solo plumbers
+- Pro: $19.99/mo - Professional plumbers (most popular)
+- Enterprise: $29.99/mo - Plumbing businesses
 
 ## Next Tasks List
-1. Convert to PWA with service worker
-2. Add photo thumbnails to notes list view
-3. Implement email sharing for bids
-4. Add material list photo attachments
-5. Create weekly summary reports
+1. Build production APK for Play Store
+2. Create store listing assets (screenshots, video)
+3. Submit to Google Play Store
+4. Set up iOS build with Capacitor
+5. Add in-app purchase for subscriptions
