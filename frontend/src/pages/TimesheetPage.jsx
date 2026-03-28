@@ -50,7 +50,81 @@ export default function TimesheetPage() {
 
   useEffect(() => {
     fetchEntries();
+    
+    // Initialize geofence service
+    const initGPS = async () => {
+      try {
+        await geofenceService.init({
+          onJobEnter: (job) => {
+            setActiveJob(job);
+            toast.success(`Started tracking: ${job.name}`);
+          },
+          onJobExit: async (completedJob) => {
+            setActiveJob(null);
+            // Auto-create timesheet entry
+            const entry = {
+              job_name: completedJob.name,
+              date: new Date(completedJob.startTime).toISOString().split("T")[0],
+              start_time: new Date(completedJob.startTime).toTimeString().slice(0, 5),
+              end_time: new Date(completedJob.endTime).toTimeString().slice(0, 5),
+              break_minutes: 0,
+              notes: "Auto-tracked via GPS"
+            };
+            try {
+              await axios.post(`${API}/timesheets`, entry, { headers });
+              toast.success(`Time logged: ${completedJob.hoursWorked.toFixed(2)} hours`);
+              fetchEntries();
+            } catch (e) {
+              toast.error("Failed to auto-log time");
+            }
+          }
+        });
+        setActiveJob(geofenceService.getActiveJob());
+      } catch (e) {
+        console.log("GPS init error:", e);
+      }
+    };
+    initGPS();
   }, []);
+
+  const handleGPSClockIn = async () => {
+    if (!gpsJobName.trim()) {
+      toast.error("Enter a job name");
+      return;
+    }
+    try {
+      const job = await geofenceService.clockInAtCurrentLocation(gpsJobName);
+      setActiveJob(job);
+      setGpsDialogOpen(false);
+      setGpsJobName("");
+      toast.success(`Clocked in at ${job.name}`);
+    } catch (error) {
+      toast.error(error.message || "Failed to clock in. Check GPS permissions.");
+    }
+  };
+
+  const handleGPSClockOut = async () => {
+    try {
+      const completedJob = await geofenceService.clockOut();
+      if (completedJob) {
+        // Create timesheet entry
+        const entry = {
+          job_name: completedJob.name,
+          date: new Date(completedJob.startTime).toISOString().split("T")[0],
+          start_time: new Date(completedJob.startTime).toTimeString().slice(0, 5),
+          end_time: new Date(completedJob.endTime).toTimeString().slice(0, 5),
+          break_minutes: 0,
+          notes: "GPS tracked"
+        };
+        await axios.post(`${API}/timesheets`, entry, { headers });
+        toast.success(`Clocked out: ${completedJob.hoursWorked.toFixed(2)} hours logged`);
+        fetchEntries();
+      }
+      setActiveJob(null);
+    } catch (error) {
+      toast.error("Failed to clock out");
+    }
+  };
 
   const handleExportPDF = async () => {
     try {
