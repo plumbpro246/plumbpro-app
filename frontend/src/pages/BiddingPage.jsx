@@ -424,6 +424,13 @@ export default function BiddingPage() {
                 <Download className="w-4 h-4 mr-2" /> Export PDF
               </Button>
               <Button 
+                variant="outline"
+                onClick={() => handleShareBid(selectedBid)}
+                data-testid="share-bid"
+              >
+                <Share2 className="w-4 h-4 mr-2" /> Email to Client
+              </Button>
+              <Button 
                 variant="outline" 
                 onClick={() => handleStatusChange(selectedBid.id, "sent")}
                 disabled={selectedBid.status !== "draft"}
