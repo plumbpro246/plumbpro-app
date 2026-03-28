@@ -1,0 +1,30 @@
+{
+  "appId": "com.plumbpro.fieldcompanion",
+  "appName": "PlumbPro",
+  "webDir": "build",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "Geolocation": {
+      "promptForPermission": true
+    },
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_icon",
+      "iconColor": "#FF5F00",
+      "sound": "default"
+    },
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "backgroundColor": "#003366",
+      "showSpinner": true,
+      "spinnerColor": "#FF5F00"
+    }
+  },
+  "android": {
+    "allowMixedContent": true,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  }
+}
