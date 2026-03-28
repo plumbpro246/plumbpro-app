@@ -60,6 +60,8 @@ class UserResponse(BaseModel):
     company: Optional[str] = None
     subscription_tier: str = "free"
     subscription_status: str = "inactive"
+    trial_ends_at: Optional[str] = None
+    trial_started: bool = False
     created_at: str
 
 class TokenResponse(BaseModel):
@@ -69,14 +71,19 @@ class TokenResponse(BaseModel):
 
 # Subscription Models
 SUBSCRIPTION_TIERS = {
-    "basic": {"name": "Basic", "price": 9.99, "features": ["notes", "calculator", "formulas"]},
-    "pro": {"name": "Pro", "price": 19.99, "features": ["notes", "calculator", "formulas", "timesheet", "materials", "calendar", "safety_talks"]},
-    "enterprise": {"name": "Enterprise", "price": 29.99, "features": ["all"]}
+    "basic": {"name": "Basic", "price": 9.99, "features": ["notes", "calculator", "formulas"], "trial_days": 7},
+    "pro": {"name": "Pro", "price": 19.99, "features": ["notes", "calculator", "formulas", "timesheet", "materials", "calendar", "safety_talks"], "trial_days": 7},
+    "enterprise": {"name": "Enterprise", "price": 29.99, "features": ["all"], "trial_days": 7}
 }
+
+FREE_TRIAL_DAYS = 7
 
 class SubscriptionRequest(BaseModel):
     tier: str
     origin_url: str
+
+class StartTrialRequest(BaseModel):
+    tier: str
 
 # Notes Models
 class NoteCreate(BaseModel):
