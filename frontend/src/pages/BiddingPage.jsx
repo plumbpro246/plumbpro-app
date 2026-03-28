@@ -103,6 +103,17 @@ export default function BiddingPage() {
     }
   };
 
+  const handleShareBid = async (bid) => {
+    try {
+      const result = await shareBid(bid);
+      if (result.success) {
+        toast.success(result.method === 'mailto' ? "Email client opened" : "Shared successfully");
+      }
+    } catch (error) {
+      toast.error("Failed to share bid");
+    }
+  };
+
   const laborCost = formData.labor_hours * formData.hourly_rate;
   const subtotal = laborCost + formData.material_cost;
   const markup = subtotal * (formData.markup_percent / 100);
