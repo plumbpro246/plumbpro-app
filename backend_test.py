@@ -8,7 +8,7 @@ from datetime import datetime
 import base64
 
 class PlumbProAPITester:
-    def __init__(self, base_url="https://plumb-pro-app.preview.emergentagent.com"):
+    def __init__(self, base_url="https://plumb-ops-suite.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.token = None
