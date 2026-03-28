@@ -20,7 +20,8 @@
       "backgroundColor": "#003366",
       "showSpinner": true,
       "spinnerColor": "#FF5F00"
-    }
+    },
+    "GooglePlayBilling": {}
   },
   "android": {
     "allowMixedContent": true,

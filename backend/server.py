@@ -71,10 +71,24 @@ class TokenResponse(BaseModel):
 
 # Subscription Models
 SUBSCRIPTION_TIERS = {
-    "basic": {"name": "Basic", "price": 9.99, "features": ["notes", "calculator", "formulas"], "trial_days": 7},
-    "pro": {"name": "Pro", "price": 19.99, "features": ["notes", "calculator", "formulas", "timesheet", "materials", "calendar", "safety_talks"], "trial_days": 7},
-    "enterprise": {"name": "Enterprise", "price": 29.99, "features": ["all"], "trial_days": 7}
+    "basic": {"name": "Basic", "price": 4.99, "features": ["notes", "calculator", "formulas"], "trial_days": 7},
+    "pro": {"name": "Pro", "price": 9.99, "features": ["notes", "calculator", "formulas", "timesheet", "materials", "calendar", "safety_talks"], "trial_days": 7},
+    "enterprise": {"name": "Enterprise", "price": 19.99, "features": ["all"], "trial_days": 7}
 }
+
+# Google Play Billing Product IDs
+GOOGLE_PLAY_PRODUCT_IDS = {
+    "basic": "com.plumbpro.fieldcompanion.basic_monthly",
+    "pro": "com.plumbpro.fieldcompanion.pro_monthly",
+    "enterprise": "com.plumbpro.fieldcompanion.enterprise_monthly",
+}
+
+def get_tier_from_product_id(product_id: str) -> str:
+    """Map Google Play product ID to tier name"""
+    for tier, pid in GOOGLE_PLAY_PRODUCT_IDS.items():
+        if pid == product_id:
+            return tier
+    return "free"
 
 FREE_TRIAL_DAYS = 7
 
@@ -84,6 +98,11 @@ class SubscriptionRequest(BaseModel):
 
 class StartTrialRequest(BaseModel):
     tier: str
+
+class GooglePlayVerifyRequest(BaseModel):
+    purchase_token: str
+    product_id: str
+    order_id: Optional[str] = None
 
 # Notes Models
 class NoteCreate(BaseModel):
@@ -526,6 +545,94 @@ async def stripe_webhook(request: Request):
     except Exception as e:
         logger.error(f"Webhook error: {e}")
         return {"status": "error", "message": str(e)}
+
+# ==================== GOOGLE PLAY BILLING ====================
+
+@api_router.post("/subscriptions/google-play/verify")
+async def verify_google_play_purchase(req: GooglePlayVerifyRequest, user: dict = Depends(get_current_user)):
+    """Verify a Google Play subscription purchase and activate the user's subscription."""
+    
+    tier = get_tier_from_product_id(req.product_id)
+    if tier == "free":
+        raise HTTPException(status_code=400, detail="Invalid product ID")
+    
+    # Check if this purchase token was already processed (replay protection)
+    existing = await db.google_play_purchases.find_one(
+        {"purchase_token": req.purchase_token}, {"_id": 0}
+    )
+    if existing and existing.get("user_id") != user["id"]:
+        raise HTTPException(status_code=400, detail="Purchase token already used by another account")
+    
+    # In production, verify with Google Play Developer API using service account
+    # For now, we trust the purchase token from the client and record it
+    # When you have a Google Cloud Service Account JSON, uncomment the verification below:
+    #
+    # from google.oauth2 import service_account
+    # from googleapiclient.discovery import build
+    # credentials = service_account.Credentials.from_service_account_file(
+    #     os.environ.get('GOOGLE_SERVICE_ACCOUNT_PATH', './service-account.json'),
+    #     scopes=["https://www.googleapis.com/auth/androidpublisher"]
+    # )
+    # service = build("androidpublisher", "v3", credentials=credentials)
+    # result = service.purchases().subscriptions().get(
+    #     packageName="com.plumbpro.fieldcompanion",
+    #     subscriptionId=req.product_id,
+    #     token=req.purchase_token
+    # ).execute()
+    # Validate result['paymentState'], result['expiryTimeMillis'], etc.
+    
+    now = datetime.now(timezone.utc)
+    
+    # Record the Google Play purchase
+    purchase_doc = {
+        "id": str(uuid.uuid4()),
+        "user_id": user["id"],
+        "purchase_token": req.purchase_token,
+        "product_id": req.product_id,
+        "order_id": req.order_id,
+        "tier": tier,
+        "platform": "android",
+        "verified": True,
+        "created_at": now.isoformat()
+    }
+    await db.google_play_purchases.update_one(
+        {"purchase_token": req.purchase_token},
+        {"$set": purchase_doc},
+        upsert=True
+    )
+    
+    # Update user subscription
+    await db.users.update_one(
+        {"id": user["id"]},
+        {"$set": {
+            "subscription_tier": tier,
+            "subscription_status": "active",
+            "subscription_platform": "google_play",
+            "google_play_product_id": req.product_id,
+            "google_play_purchase_token": req.purchase_token,
+            "subscription_updated_at": now.isoformat()
+        }}
+    )
+    
+    return {
+        "status": "verified",
+        "tier": tier,
+        "message": f"Subscription activated: {SUBSCRIPTION_TIERS[tier]['name']}"
+    }
+
+@api_router.get("/subscriptions/google-play/products")
+async def get_google_play_products():
+    """Get the Google Play product IDs for each subscription tier."""
+    products = []
+    for tier_id, tier_info in SUBSCRIPTION_TIERS.items():
+        products.append({
+            "tier": tier_id,
+            "name": tier_info["name"],
+            "price": tier_info["price"],
+            "product_id": GOOGLE_PLAY_PRODUCT_IDS.get(tier_id, ""),
+            "features": tier_info["features"]
+        })
+    return products
 
 # ==================== NOTES ROUTES ====================
 

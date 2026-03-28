@@ -5,13 +5,15 @@ import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, Crown, Zap, Building, Gift, Clock, AlertCircle } from "lucide-react";
+import { Check, Crown, Zap, Building, Gift, Clock, AlertCircle, Smartphone } from "lucide-react";
+import { isCapacitorAndroid, startGooglePlayPurchase, acknowledgeGooglePlayPurchase } from "@/services/googlePlayBillingService";
 
 const tiers = [
   {
     id: "basic",
     name: "Basic",
-    price: 9.99,
+    price: 4.99,
+    googlePlayId: "com.plumbpro.fieldcompanion.basic_monthly",
     icon: Zap,
     description: "Essential tools for solo plumbers",
     features: [
@@ -32,7 +34,8 @@ const tiers = [
   {
     id: "pro",
     name: "Pro",
-    price: 19.99,
+    price: 9.99,
+    googlePlayId: "com.plumbpro.fieldcompanion.pro_monthly",
     icon: Crown,
     popular: true,
     description: "Full toolkit for professional plumbers",
@@ -53,7 +56,8 @@ const tiers = [
   {
     id: "enterprise",
     name: "Enterprise",
-    price: 29.99,
+    price: 19.99,
+    googlePlayId: "com.plumbpro.fieldcompanion.enterprise_monthly",
     icon: Building,
     description: "Complete solution for plumbing businesses",
     features: [
@@ -107,6 +111,41 @@ export default function SubscriptionPage() {
   const handleSubscribe = async (tier) => {
     setLoading(tier.id);
     try {
+      // On Android, use Google Play Billing
+      if (isCapacitorAndroid() && tier.googlePlayId) {
+        try {
+          const purchase = await startGooglePlayPurchase(tier.googlePlayId);
+          
+          // Verify purchase with backend
+          await axios.post(
+            `${API}/subscriptions/google-play/verify`,
+            {
+              purchase_token: purchase.purchaseToken,
+              product_id: purchase.productId,
+              order_id: purchase.orderId,
+            },
+            { headers }
+          );
+          
+          // Acknowledge the purchase
+          await acknowledgeGooglePlayPurchase(purchase.purchaseToken);
+          
+          toast.success(`Subscribed to ${tier.name} via Google Play!`);
+          await refreshUser();
+          setLoading(null);
+          return;
+        } catch (err) {
+          if (err.message?.includes("canceled")) {
+            toast.info("Purchase cancelled");
+            setLoading(null);
+            return;
+          }
+          toast.error("Google Play purchase failed. Trying web checkout...");
+          // Fall through to Stripe
+        }
+      }
+      
+      // Web / fallback: use Stripe Checkout
       const originUrl = window.location.origin;
       const response = await axios.post(
         `${API}/subscriptions/checkout`,
@@ -331,7 +370,7 @@ export default function SubscriptionPage() {
           <div>
             <h4 className="font-bold">What payment methods do you accept?</h4>
             <p className="text-sm text-muted-foreground">
-              We accept all major credit cards through our secure Stripe payment processor.
+              On the web, we accept all major credit cards through Stripe. On Android, subscriptions are handled through Google Play Billing with your linked Google payment method.
             </p>
           </div>
           <div>
