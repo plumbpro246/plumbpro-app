@@ -23,6 +23,7 @@ import BlueprintsPage from "@/pages/BlueprintsPage";
 import SubscriptionPage from "@/pages/SubscriptionPage";
 import SubscriptionSuccessPage from "@/pages/SubscriptionSuccessPage";
 import SettingsPage from "@/pages/SettingsPage";
+import PlumbingCodePage from "@/pages/PlumbingCodePage";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 export const API = `${BACKEND_URL}/api`;
@@ -130,7 +131,7 @@ const ProtectedRoute = ({ children }) => {
 import { 
   Home, FileText, Calculator, Shield, Clock, Package, 
   DollarSign, Calendar, AlertTriangle, FileSpreadsheet, 
-  Cpu, Map, LogOut, Menu, X, User, Crown, Settings
+  Cpu, Map, LogOut, Menu, X, User, Crown, Settings, BookOpen
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -149,6 +150,7 @@ const navItems = [
   { path: "/calculator", label: "Calculator", icon: Cpu },
   { path: "/total-station", label: "Total Station", icon: Map },
   { path: "/blueprints", label: "Blueprints", icon: FileText },
+  { path: "/plumbing-code", label: "Plumbing Code", icon: BookOpen },
   { path: "/settings", label: "Settings", icon: Settings },
 ];
 
@@ -302,6 +304,7 @@ function App() {
           <Route path="/calculator" element={<ProtectedRoute><MainLayout><CalculatorPage /></MainLayout></ProtectedRoute>} />
           <Route path="/total-station" element={<ProtectedRoute><MainLayout><TotalStationPage /></MainLayout></ProtectedRoute>} />
           <Route path="/blueprints" element={<ProtectedRoute><MainLayout><BlueprintsPage /></MainLayout></ProtectedRoute>} />
+          <Route path="/plumbing-code" element={<ProtectedRoute><MainLayout><PlumbingCodePage /></MainLayout></ProtectedRoute>} />
           <Route path="/subscription" element={<ProtectedRoute><MainLayout><SubscriptionPage /></MainLayout></ProtectedRoute>} />
           <Route path="/subscription/success" element={<ProtectedRoute><MainLayout><SubscriptionSuccessPage /></MainLayout></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><MainLayout><SettingsPage /></MainLayout></ProtectedRoute>} />

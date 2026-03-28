@@ -1560,6 +1560,178 @@ async def sync_pending_data(
     
     return {"status": "synced", "synced_items": synced}
 
+# ==================== 2015 UPC PLUMBING CODE ====================
+
+UPC_2015_CHAPTERS = [
+    {
+        "id": "ch1",
+        "chapter": 1,
+        "title": "Administration",
+        "description": "Scope, purpose, applicability, and enforcement of the Uniform Plumbing Code.",
+        "sections": [
+            {"code": "101.0", "title": "Title", "content": "These regulations shall be known as the 'Uniform Plumbing Code' (UPC), may be cited as such, and will be referred to herein as 'this code.'"},
+            {"code": "102.0", "title": "Purpose", "content": "The purpose of this code is to provide minimum standards to safeguard life, health, property, and public welfare by regulating and controlling the design, construction, installation, quality of materials, location, operation, and maintenance of plumbing systems."},
+            {"code": "103.0", "title": "Applicability", "content": "This code applies to the erection, installation, alteration, repair, relocation, replacement, addition to, use, or maintenance of plumbing systems within this jurisdiction."},
+            {"code": "104.0", "title": "Permits", "content": "No person shall install, alter, or cause to be installed any plumbing system in violation of this code. A plumbing permit is required before commencing work except for minor repairs (e.g., replacing faucet washers, valves, faucets of same size on same branch)."},
+        ]
+    },
+    {
+        "id": "ch3",
+        "chapter": 3,
+        "title": "General Regulations",
+        "description": "General plumbing installation rules including workmanship, materials, and protection of piping.",
+        "sections": [
+            {"code": "301.1", "title": "Minimum Standards", "content": "All plumbing shall be installed in a workmanlike manner. Installations shall conform to the requirements of this code."},
+            {"code": "301.2", "title": "Listed & Labeled", "content": "All plumbing fixtures, appurtenances, and equipment shall be listed and labeled by a listing agency."},
+            {"code": "302.0", "title": "Protection of Pipes", "content": "All piping shall be adequately protected against physical damage. Concealed piping in walls or partitions shall be protected by steel nail plates (minimum 0.0575 inch / 1.46mm thick) where notching or boring is within 1.5 inches of the finished surface."},
+            {"code": "313.0", "title": "Trenching & Backfill", "content": "The bottom of trenches shall provide a firm, continuous bearing for each section of pipe. Backfill shall be free of debris and large rocks. Fine granular material (min. 6 inches above pipe) before heavy backfill."},
+            {"code": "314.0", "title": "Testing", "content": "DWV testing: Water test (10-foot head of water for 15 minutes) or air test (5 psi held for 15 minutes). Water supply: 1.5x working pressure (min. 80 psi) for 15 minutes with no drop."},
+        ]
+    },
+    {
+        "id": "ch4",
+        "chapter": 4,
+        "title": "Plumbing Fixtures & Fixture Fittings",
+        "description": "Requirements for the installation and minimum number of plumbing fixtures.",
+        "sections": [
+            {"code": "402.0", "title": "Minimum Fixtures Required", "content": "Buildings shall have minimum fixtures based on type and occupancy: Water closets, lavatories, drinking fountains per Table 422.1 (based on building type and occupant load)."},
+            {"code": "405.0", "title": "Water Closets", "content": "Water closets shall conform to ASME A112.19.2/CSA B45.1. Maximum 1.6 gallons per flush (gpf) for gravity. High-efficiency: 1.28 gpf or less. Floor-mounted closets shall be secured with corrosion-resistant bolts."},
+            {"code": "408.0", "title": "Lavatories", "content": "Lavatories shall have a maximum flow rate of 2.2 gpm at 60 psi. Each lavatory shall be provided with an approved strainer. Lavatory tailpiece min. 1-1/4 inch diameter."},
+            {"code": "411.0", "title": "Bathtubs & Showers", "content": "Showerheads: Maximum 2.5 gpm at 80 psi. Shower compartments: Minimum 900 sq. inches of floor area (30x30). Shower pan liner: Lead sheet (min. 4 lbs/sq ft), copper sheet (min. 24 oz/sq ft), or approved membrane."},
+            {"code": "416.0", "title": "Floor Drains", "content": "Floor drains shall have a minimum 2-inch drain outlet and shall be provided with an accessible, removable strainer. Traps serving floor drains shall be accessible for maintenance."},
+            {"code": "418.0", "title": "Dishwashing Machines", "content": "Commercial dishwashing machines shall drain through an air gap or air break. Residential machines may connect through a high loop or air gap to a garbage disposer or wye branch tailpiece."},
+        ]
+    },
+    {
+        "id": "ch5",
+        "chapter": 5,
+        "title": "Water Heaters",
+        "description": "Installation, safety, and code requirements for water heaters.",
+        "sections": [
+            {"code": "501.0", "title": "General", "content": "Water heaters shall be installed per manufacturer instructions and this code. All water heaters must have an accessible T&P (temperature and pressure) relief valve."},
+            {"code": "505.0", "title": "T&P Relief Valves", "content": "Every storage water heater shall have an approved T&P relief valve. Relief valve shall be set to open at max 210 degrees F / max 150 psi. Discharge pipe: same size as valve outlet (min. 3/4 inch), terminate 6-24 inches above floor/receptor, no threads on end."},
+            {"code": "507.0", "title": "Seismic Strapping", "content": "In seismic zones, water heaters shall be strapped to resist horizontal displacement. Two straps required: upper 1/3 and lower 1/3 of the unit. 22-gauge (min) metal strapping or approved material."},
+            {"code": "510.0", "title": "Expansion Tanks", "content": "Where a check valve, backflow preventer, or pressure-reducing valve is installed, a thermal expansion tank shall be provided. Size per manufacturer specifications based on system volume and pressure."},
+        ]
+    },
+    {
+        "id": "ch6",
+        "chapter": 6,
+        "title": "Water Supply & Distribution",
+        "description": "Requirements for water supply systems including pipe sizing, materials, and backflow prevention.",
+        "sections": [
+            {"code": "601.0", "title": "General", "content": "Water supply systems shall be designed and installed to provide adequate volume and pressure to all fixtures. Minimum pressure at any fixture: 8 psi (flowing). Minimum static pressure: 15 psi recommended."},
+            {"code": "603.0", "title": "Cross-Connection Control", "content": "No direct connection between a potable and non-potable water system. Backflow preventers required per degree of hazard. Air gaps: Minimum 2x effective opening diameter (min. 1 inch)."},
+            {"code": "604.0", "title": "Materials", "content": "Approved materials: Copper (Types K, L, M), CPVC, PEX, Stainless Steel, Galvanized Steel. Lead-free solder and flux required (max 0.2% lead in solder, max 0.25% in wetted surfaces per Safe Drinking Water Act)."},
+            {"code": "610.0", "title": "Pipe Sizing", "content": "Water supply pipe sizing based on: total fixture units, developed length of piping, available pressure, height of building. See Tables 610.3 and 610.4. Minimum supply sizes: Lavatory 3/8 inch, Water closet (tank) 3/8 inch, Bathtub 1/2 inch, Shower 1/2 inch, Kitchen sink 1/2 inch, Hose bibb 1/2 inch."},
+            {"code": "612.0", "title": "Fixture Supply Pipe Sizing", "content": "Minimum individual fixture supply: 3/8-inch for lavatories and sinks. 1/2-inch for bathtubs, showers, and hose bibbs. Water service minimum: 3/4-inch diameter."},
+        ]
+    },
+    {
+        "id": "ch7",
+        "chapter": 7,
+        "title": "Sanitary Drainage",
+        "description": "Design and installation of drainage systems including pipe sizing, slopes, and cleanouts.",
+        "sections": [
+            {"code": "701.0", "title": "Materials", "content": "Approved drainage pipe materials: ABS, Cast Iron, Copper (DWV), PVC, Galvanized Steel. All DWV fittings shall be drainage-pattern (recessed shoulders, smooth interior waterways)."},
+            {"code": "703.0", "title": "Pipe Sizing by DFU", "content": "Drainage fixture unit (DFU) values: Lavatory = 1 DFU, Shower = 2 DFU, Bathtub = 2 DFU, Water closet (1.6 gpf) = 3 DFU, Kitchen sink = 2 DFU, Floor drain = 2 DFU, Washing machine = 3 DFU. Branch drain sizing: 1-1/2 inch = 3 DFU max, 2 inch = 6 DFU max, 3 inch = 20 DFU max, 4 inch = 160 DFU max."},
+            {"code": "704.0", "title": "Slope of Drainage Pipe", "content": "Minimum slopes: Pipe 2-1/2 inches or smaller = 1/4 inch per foot. Pipe 3 inches or larger = 1/8 inch per foot. Maximum slope: Shall not exceed 1/2 inch per foot (to prevent solids from separating from liquids)."},
+            {"code": "707.0", "title": "Cleanouts", "content": "Cleanouts required: At each change of direction >135 degrees, at base of each waste/soil stack, at each building sewer at property line, every 100 feet in horizontal lines (4-inch or larger). Cleanout size: same size as pipe (max 4 inches required). Must be accessible."},
+            {"code": "710.0", "title": "Building Sewers", "content": "Minimum building sewer size: 4 inches for buildings with water closets. Minimum slope: 1/8 inch per foot (4-inch and larger). Material options: ABS, PVC, Cast Iron, Extra Strength Vitrified Clay. Min. depth: 12 inches below ground."},
+            {"code": "717.0", "title": "Offsets", "content": "Horizontal to vertical offsets in the building drain require proper fittings (long sweep or combination wye). No tee or short sweep on horizontal drainage. 45-degree offsets are permitted in vertical stacks."},
+        ]
+    },
+    {
+        "id": "ch9",
+        "chapter": 9,
+        "title": "Vents",
+        "description": "Vent system design, sizing, and installation requirements.",
+        "sections": [
+            {"code": "901.0", "title": "General", "content": "Every plumbing fixture trap shall be protected by a vent. Vent systems protect trap seals, admit air for proper drainage flow, and prevent siphonage/back-pressure."},
+            {"code": "903.0", "title": "Vent Pipe Sizing", "content": "Minimum vent size: 1-1/4 inches (or half the drain size, whichever is greater). Vent for water closet: Min. 2-inch. Vent stack sizing based on total DFU and developed length. See Table 903.2."},
+            {"code": "904.0", "title": "Individual Vents", "content": "Each fixture may have its own individual vent. Vent must connect to drain within 2x the fixture drain diameter (measured along the drain from the trap weir to the vent connection)."},
+            {"code": "905.0", "title": "Common Vents", "content": "A common vent is permitted to serve 2 fixtures at the same level, provided they connect at the same point and the vent size is adequate for both."},
+            {"code": "906.0", "title": "Wet Vents", "content": "Wet venting is permitted for fixture groups. A wet vent receives drainage from one fixture while serving as a vent for another. Wet vent pipe size: Min. 2 inches. Can serve bathroom groups (WC, lav, tub/shower)."},
+            {"code": "908.0", "title": "Vent Termination", "content": "Vents shall terminate minimum 6 inches above roof. If within 10 feet of an openable window, door, or air intake: minimum 3 feet above. In areas with frost/snow: extend 2 inches minimum through roof (local amendments may require more)."},
+        ]
+    },
+    {
+        "id": "ch10",
+        "chapter": 10,
+        "title": "Traps & Interceptors",
+        "description": "Requirements for traps, interceptors, and separators in plumbing systems.",
+        "sections": [
+            {"code": "1001.0", "title": "Fixture Traps", "content": "Each plumbing fixture shall be separately trapped (exceptions: 3-compartment sink may use one trap). Trap must be self-cleaning with smooth, uniform interior waterway. Min. trap seal: 2 inches, max: 4 inches."},
+            {"code": "1002.0", "title": "Trap Sizing", "content": "Trap size must match or exceed the fixture outlet diameter. Minimum sizes: Lavatory = 1-1/4 inch, Shower = 2 inch, Bathtub = 1-1/2 inch, Water closet = integral (3 inch), Kitchen sink = 1-1/2 inch, Floor drain = 2 inch."},
+            {"code": "1007.0", "title": "Grease Interceptors", "content": "Required for restaurants and commercial kitchens. Flow-controlled type or gravity type (grease trap). Sizing based on fixture capacity and flow rate. Must be accessible for cleaning. Minimum capacity per local requirements."},
+            {"code": "1009.0", "title": "Interceptors for Specific Uses", "content": "Sand interceptors: required for car washes, commercial laundries. Oil/flammable liquid separators: required for garages, gas stations. Hair interceptors: required for beauty salons. Lint interceptors: required for laundry facilities."},
+        ]
+    },
+    {
+        "id": "ch11",
+        "chapter": 11,
+        "title": "Storm Drainage",
+        "description": "Design and installation of storm water drainage systems.",
+        "sections": [
+            {"code": "1101.0", "title": "General", "content": "Storm drainage shall be separate from sanitary drainage. Storm water shall not be discharged into the sanitary sewer system (unless combined sewer system is approved by the Authority Having Jurisdiction)."},
+            {"code": "1103.0", "title": "Sizing Storm Drains", "content": "Size based on rainfall rate (inches per hour) and drainage area (sq ft). Reference: 1-inch rainfall per hour rates used for horizontal storm drain sizing. For 4-inch pipe at 1/8 inch slope = 4,600 sq ft max drainage area."},
+            {"code": "1106.0", "title": "Roof Drains", "content": "Flat roofs shall have roof drains. Minimum 2 roof drains required (or 1 drain + 1 overflow/scupper). Strainer extends min. 4 inches above roof surface. Drain pipe sized per Table 1103.1."},
+        ]
+    },
+    {
+        "id": "ch12",
+        "chapter": 12,
+        "title": "Fuel Gas Piping",
+        "description": "Requirements for natural gas and LP gas piping in buildings.",
+        "sections": [
+            {"code": "1208.0", "title": "Pipe Sizing", "content": "Gas piping sized based on: total BTU demand, length of piping run, specific gravity of gas, allowable pressure drop. Refer to sizing tables (Tables 1216.2-A through E). Common residential sizes: 3/4 inch for furnace, 1/2 inch for range/dryer."},
+            {"code": "1210.0", "title": "Materials", "content": "Approved materials for gas piping: Black steel pipe, CSST (corrugated stainless steel tubing), Copper (certain jurisdictions for propane only), PE pipe (underground exterior only). Galvanized steel NOT permitted for gas piping."},
+            {"code": "1212.0", "title": "Testing", "content": "Pressure testing required: Test at 1.5x working pressure or 3 psi (whichever is greater) for minimum 10 minutes using air or inert gas. Never test gas piping with oxygen or flame."},
+            {"code": "1214.0", "title": "Appliance Connection", "content": "Flexible connectors max 3 feet (ranges) or 6 feet (dryers). Gas shutoff valve required within 6 feet of each appliance, in same room. Sediment trap (drip leg) required at each appliance connection."},
+        ]
+    },
+    {
+        "id": "tables",
+        "chapter": 0,
+        "title": "Key Reference Tables",
+        "description": "Commonly referenced tables from the 2015 UPC for quick field lookup.",
+        "sections": [
+            {"code": "T-422.1", "title": "Minimum Plumbing Facilities", "content": "Assembly (A-1): 1 WC per 125 males, 1 WC per 65 females. Business (B): 1 WC per 25 persons (1-50), then 1 per 50. Educational (E): 1 WC per 50 males, 1 per 50 females. Factory (F): 1 WC per 100 persons. Mercantile (M): 1 WC per 500 persons."},
+            {"code": "T-610.3", "title": "Water Supply Fixture Units (WSFU)", "content": "Lavatory = 1 WSFU, Kitchen sink = 1.5 WSFU, Bathtub = 2 WSFU, Shower = 2 WSFU, Water closet (tank) = 2.5 WSFU, Water closet (flush valve) = 5 WSFU, Hose bibb = 2.5 WSFU, Washing machine = 2 WSFU, Dishwasher = 1.5 WSFU."},
+            {"code": "T-703.2", "title": "DFU & Drain Pipe Sizing", "content": "1-1/4 inch = 1 DFU max (vertical/horizontal). 1-1/2 inch = 3 DFU (horiz) / 4 DFU (vert). 2 inch = 6 DFU (horiz) / 10 DFU (vert). 3 inch = 20 DFU (horiz) / 48 DFU (vert). 4 inch = 160 DFU (horiz) / 256 DFU (vert). 6 inch = 620 DFU (horiz) / 720 DFU (vert)."},
+            {"code": "T-903.2", "title": "Vent Pipe Sizing", "content": "1-1/2 inch drain: 1-1/4 inch vent (8 DFU, 50 ft). 2 inch drain: 1-1/2 inch vent (12 DFU, 75 ft). 3 inch drain: 2 inch vent (20 DFU, 50 ft). 4 inch drain: 2 inch vent (160 DFU, 35 ft) or 3 inch vent (160 DFU, 100 ft)."},
+            {"code": "T-704.1", "title": "Drainage Pipe Slope", "content": "2-1/2 inches or less: 1/4 inch per foot minimum. 3 inches or larger: 1/8 inch per foot minimum. All pipe: 1/2 inch per foot maximum. Building sewers 4 inch+: 1/8 inch per foot minimum."},
+        ]
+    },
+]
+
+@api_router.get("/plumbing-code")
+async def get_plumbing_code(search: str = None):
+    """Get 2015 UPC Plumbing Code chapters and sections"""
+    if search:
+        search_lower = search.lower()
+        filtered = []
+        for chapter in UPC_2015_CHAPTERS:
+            matching_sections = [
+                s for s in chapter["sections"]
+                if search_lower in s["title"].lower() or search_lower in s["content"].lower() or search_lower in s["code"].lower()
+            ]
+            if matching_sections or search_lower in chapter["title"].lower() or search_lower in chapter["description"].lower():
+                filtered.append({
+                    **chapter,
+                    "sections": matching_sections if matching_sections else chapter["sections"]
+                })
+        return filtered
+    return UPC_2015_CHAPTERS
+
+@api_router.get("/plumbing-code/{chapter_id}")
+async def get_plumbing_code_chapter(chapter_id: str):
+    """Get a specific chapter of the 2015 UPC"""
+    for chapter in UPC_2015_CHAPTERS:
+        if chapter["id"] == chapter_id:
+            return chapter
+    raise HTTPException(status_code=404, detail="Chapter not found")
+
 # ==================== HEALTH CHECK ====================
 
 @api_router.get("/")
