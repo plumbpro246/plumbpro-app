@@ -182,6 +182,79 @@ export default function TimesheetPage() {
 
   return (
     <div className="space-y-6" data-testid="timesheet-page">
+      {/* GPS Clock In/Out Banner */}
+      {activeJob ? (
+        <Card className="bg-green-500 text-white border-0">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
+              <div>
+                <p className="font-bold">Currently Tracking: {activeJob.name}</p>
+                <p className="text-sm text-green-100">Started at {activeJob.startTimeFormatted}</p>
+              </div>
+            </div>
+            <Button 
+              onClick={handleGPSClockOut}
+              variant="secondary"
+              className="font-bold"
+              data-testid="gps-clock-out"
+            >
+              <Square className="w-4 h-4 mr-2" /> Clock Out
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="bg-[#003366] text-white border-0">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <MapPin className="w-6 h-6 text-[#FF5F00]" />
+              <div>
+                <p className="font-bold">GPS Time Tracking</p>
+                <p className="text-sm text-slate-300">Auto-track time when you arrive at job sites</p>
+              </div>
+            </div>
+            <Dialog open={gpsDialogOpen} onOpenChange={setGpsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button 
+                  className="bg-[#FF5F00] hover:bg-[#FF5F00]/90 font-bold"
+                  data-testid="gps-clock-in-btn"
+                >
+                  <Play className="w-4 h-4 mr-2" /> Clock In
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle className="font-heading text-xl uppercase">GPS Clock In</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    This will record your current location and start tracking time. 
+                    Time will be logged automatically when you clock out or leave the area.
+                  </p>
+                  <div>
+                    <Label className="text-sm font-bold uppercase tracking-wide">Job Name</Label>
+                    <Input
+                      value={gpsJobName}
+                      onChange={(e) => setGpsJobName(e.target.value)}
+                      placeholder="e.g., 123 Main St - Kitchen"
+                      className="h-12"
+                      data-testid="gps-job-name"
+                    />
+                  </div>
+                  <Button 
+                    onClick={handleGPSClockIn}
+                    className="w-full h-12 bg-[#FF5F00] hover:bg-[#FF5F00]/90 font-bold uppercase"
+                    data-testid="confirm-gps-clock-in"
+                  >
+                    <MapPin className="w-4 h-4 mr-2" /> Start Tracking
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
