@@ -3,7 +3,7 @@
 ## Test User Account
 - Email: testplumber@test.com
 - Password: Test1234!
-- Tier: basic (on 7-day free trial)
+- Tier: pro (active, upgraded via Google Play verify test)
 
 ## Registration
 - Any new user can be registered at /login (Register tab)
@@ -12,3 +12,7 @@
 
 ## Stripe
 - Test keys are auto-configured in backend/.env
+
+## Google Play Billing
+- Product IDs: com.plumbpro.fieldcompanion.{basic,pro,enterprise}_monthly
+- Server-side verification: MOCKED (needs Google Cloud Service Account JSON)
