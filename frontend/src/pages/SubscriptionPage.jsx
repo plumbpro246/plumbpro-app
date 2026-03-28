@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth, API } from "@/App";
 import axios from "axios";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, Crown, Zap, Building } from "lucide-react";
+import { Check, Crown, Zap, Building, Gift, Clock, AlertCircle } from "lucide-react";
 
 const tiers = [
   {
@@ -42,8 +42,8 @@ const tiers = [
       "Timesheet Tracking",
       "Material Lists",
       "Calendar & Scheduling",
-      "25 Blueprint Uploads",
-      "Job History Export"
+      "GPS Time Tracking",
+      "PDF Exports"
     ],
     notIncluded: [
       "Job Bidding Tools",
@@ -60,6 +60,7 @@ const tiers = [
       "Everything in Pro",
       "Job Bidding & Estimates",
       "Unlimited Blueprints",
+      "Email Bid Sharing",
       "Priority Support",
       "Custom Branding (Coming Soon)",
       "Team Management (Coming Soon)"
@@ -69,8 +70,39 @@ const tiers = [
 ];
 
 export default function SubscriptionPage() {
-  const { user, token } = useAuth();
+  const { user, token, refreshUser } = useAuth();
   const [loading, setLoading] = useState(null);
+  const [trialStatus, setTrialStatus] = useState(null);
+
+  const headers = { Authorization: `Bearer ${token}` };
+
+  useEffect(() => {
+    const fetchTrialStatus = async () => {
+      try {
+        const response = await axios.get(`${API}/subscriptions/trial-status`, { headers });
+        setTrialStatus(response.data);
+      } catch (error) {
+        console.error("Failed to fetch trial status");
+      }
+    };
+    fetchTrialStatus();
+  }, []);
+
+  const handleStartTrial = async (tier) => {
+    setLoading(`trial-${tier.id}`);
+    try {
+      await axios.post(`${API}/subscriptions/start-trial`, { tier: tier.id }, { headers });
+      toast.success(`7-day free trial started for ${tier.name}!`);
+      await refreshUser();
+      // Refresh trial status
+      const response = await axios.get(`${API}/subscriptions/trial-status`, { headers });
+      setTrialStatus(response.data);
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Failed to start trial");
+    } finally {
+      setLoading(null);
+    }
+  };
 
   const handleSubscribe = async (tier) => {
     setLoading(tier.id);
@@ -79,7 +111,7 @@ export default function SubscriptionPage() {
       const response = await axios.post(
         `${API}/subscriptions/checkout`,
         { tier: tier.id, origin_url: originUrl },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers }
       );
       
       // Redirect to Stripe Checkout
@@ -91,6 +123,10 @@ export default function SubscriptionPage() {
   };
 
   const currentTier = user?.subscription_tier || "free";
+  const subscriptionStatus = user?.subscription_status || "inactive";
+  const canStartTrial = trialStatus?.can_start_trial && !trialStatus?.trial_started;
+  const isOnTrial = subscriptionStatus === "trial";
+  const trialExpired = trialStatus?.trial_expired;
 
   return (
     <div className="space-y-6" data-testid="subscription-page">
@@ -104,13 +140,70 @@ export default function SubscriptionPage() {
         </p>
       </div>
 
-      {/* Current Plan Banner */}
-      {currentTier !== "free" && (
+      {/* Trial Banner */}
+      {canStartTrial && (
+        <Card className="bg-gradient-to-r from-[#FF5F00] to-amber-500 text-white border-0">
+          <CardContent className="p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center">
+                <Gift className="w-7 h-7" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold">Try Any Plan FREE for 7 Days!</h3>
+                <p className="text-white/90">No credit card required. Full access to all features.</p>
+              </div>
+            </div>
+            <Badge className="bg-white text-[#FF5F00] font-bold text-sm px-4 py-2">
+              LIMITED TIME OFFER
+            </Badge>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Active Trial Banner */}
+      {isOnTrial && trialStatus && (
+        <Card className="bg-green-500 text-white border-0">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Clock className="w-6 h-6" />
+              <div>
+                <p className="font-bold">You&apos;re on a free trial of {currentTier.toUpperCase()}</p>
+                <p className="text-sm text-green-100">
+                  {trialStatus.days_remaining} days, {trialStatus.hours_remaining} hours remaining
+                </p>
+              </div>
+            </div>
+            <Button 
+              variant="secondary" 
+              className="font-bold"
+              onClick={() => handleSubscribe(tiers.find(t => t.id === currentTier))}
+            >
+              Subscribe Now
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Trial Expired Banner */}
+      {trialExpired && subscriptionStatus !== "active" && (
+        <Card className="bg-amber-500 text-white border-0">
+          <CardContent className="p-4 flex items-center gap-3">
+            <AlertCircle className="w-6 h-6" />
+            <div>
+              <p className="font-bold">Your free trial has ended</p>
+              <p className="text-sm text-amber-100">Subscribe now to continue using premium features</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Current Active Plan Banner */}
+      {subscriptionStatus === "active" && currentTier !== "free" && (
         <Card className="bg-green-50 dark:bg-green-900/20 border-green-500">
           <CardContent className="p-4 flex items-center gap-3">
             <Check className="w-6 h-6 text-green-500" />
             <p className="font-medium">
-              You&apos;re currently on the <span className="font-bold uppercase">{currentTier}</span> plan
+              You&apos;re subscribed to <span className="font-bold uppercase">{currentTier}</span>
             </p>
           </CardContent>
         </Card>
@@ -120,7 +213,8 @@ export default function SubscriptionPage() {
       <div className="grid gap-6 md:grid-cols-3">
         {tiers.map((tier) => {
           const Icon = tier.icon;
-          const isCurrentPlan = currentTier === tier.id;
+          const isCurrentPlan = currentTier === tier.id && subscriptionStatus === "active";
+          const isTrialPlan = currentTier === tier.id && isOnTrial;
           const isUpgrade = tiers.findIndex(t => t.id === tier.id) > tiers.findIndex(t => t.id === currentTier);
           
           return (
@@ -163,6 +257,26 @@ export default function SubscriptionPage() {
                   ))}
                 </ul>
 
+                {/* Trial Button */}
+                {canStartTrial && !isCurrentPlan && (
+                  <Button
+                    onClick={() => handleStartTrial(tier)}
+                    disabled={loading === `trial-${tier.id}`}
+                    variant="outline"
+                    className="w-full h-12 font-bold uppercase border-2 border-[#FF5F00] text-[#FF5F00] hover:bg-[#FF5F00] hover:text-white"
+                    data-testid={`trial-${tier.id}`}
+                  >
+                    {loading === `trial-${tier.id}` ? (
+                      "Starting..."
+                    ) : (
+                      <>
+                        <Gift className="w-4 h-4 mr-2" /> Start 7-Day Free Trial
+                      </>
+                    )}
+                  </Button>
+                )}
+
+                {/* Subscribe Button */}
                 <Button
                   onClick={() => handleSubscribe(tier)}
                   disabled={isCurrentPlan || loading === tier.id}
@@ -181,6 +295,8 @@ export default function SubscriptionPage() {
                     <>
                       <Check className="w-4 h-4 mr-2" /> Current Plan
                     </>
+                  ) : isTrialPlan ? (
+                    "Subscribe to Continue"
                   ) : isUpgrade ? (
                     "Upgrade Now"
                   ) : (
@@ -200,6 +316,13 @@ export default function SubscriptionPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
+            <h4 className="font-bold">How does the free trial work?</h4>
+            <p className="text-sm text-muted-foreground">
+              You get full access to your chosen plan for 7 days. No credit card required to start. 
+              After 7 days, subscribe to continue or your account reverts to free tier.
+            </p>
+          </div>
+          <div>
             <h4 className="font-bold">Can I cancel anytime?</h4>
             <p className="text-sm text-muted-foreground">
               Yes, you can cancel your subscription at any time. Your access continues until the end of the billing period.
@@ -215,12 +338,6 @@ export default function SubscriptionPage() {
             <h4 className="font-bold">Can I upgrade or downgrade my plan?</h4>
             <p className="text-sm text-muted-foreground">
               Yes, you can change your plan at any time. Upgrades take effect immediately, and you&apos;ll be credited for the unused portion of your current plan.
-            </p>
-          </div>
-          <div>
-            <h4 className="font-bold">Is my data secure?</h4>
-            <p className="text-sm text-muted-foreground">
-              Absolutely. All data is encrypted and stored securely. We never share your information with third parties.
             </p>
           </div>
         </CardContent>
