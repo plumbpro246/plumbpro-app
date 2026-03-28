@@ -303,13 +303,30 @@ async def login(login_data: UserLogin):
 
 @api_router.get("/auth/me", response_model=UserResponse)
 async def get_me(user: dict = Depends(get_current_user)):
+    # Check if trial has expired
+    trial_ends_at = user.get("trial_ends_at")
+    subscription_status = user.get("subscription_status", "inactive")
+    
+    if trial_ends_at and subscription_status == "trial":
+        trial_end = datetime.fromisoformat(trial_ends_at.replace('Z', '+00:00'))
+        if datetime.now(timezone.utc) > trial_end:
+            # Trial expired, update status
+            await db.users.update_one(
+                {"id": user["id"]},
+                {"$set": {"subscription_status": "expired", "subscription_tier": "free"}}
+            )
+            subscription_status = "expired"
+            user["subscription_tier"] = "free"
+    
     return UserResponse(
         id=user["id"],
         email=user["email"],
         full_name=user["full_name"],
         company=user.get("company"),
         subscription_tier=user.get("subscription_tier", "free"),
-        subscription_status=user.get("subscription_status", "inactive"),
+        subscription_status=subscription_status,
+        trial_ends_at=user.get("trial_ends_at"),
+        trial_started=user.get("trial_started", False),
         created_at=user["created_at"]
     )
 
@@ -318,6 +335,77 @@ async def get_me(user: dict = Depends(get_current_user)):
 @api_router.get("/subscriptions/tiers")
 async def get_subscription_tiers():
     return SUBSCRIPTION_TIERS
+
+@api_router.post("/subscriptions/start-trial")
+async def start_free_trial(req: StartTrialRequest, user: dict = Depends(get_current_user)):
+    """Start a 7-day free trial for a subscription tier"""
+    if req.tier not in SUBSCRIPTION_TIERS:
+        raise HTTPException(status_code=400, detail="Invalid subscription tier")
+    
+    # Check if user already had a trial
+    if user.get("trial_started"):
+        raise HTTPException(status_code=400, detail="You've already used your free trial")
+    
+    # Check if user already has an active subscription
+    if user.get("subscription_status") == "active":
+        raise HTTPException(status_code=400, detail="You already have an active subscription")
+    
+    trial_end = datetime.now(timezone.utc) + timedelta(days=FREE_TRIAL_DAYS)
+    
+    await db.users.update_one(
+        {"id": user["id"]},
+        {"$set": {
+            "subscription_tier": req.tier,
+            "subscription_status": "trial",
+            "trial_started": True,
+            "trial_ends_at": trial_end.isoformat(),
+            "trial_started_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    return {
+        "status": "trial_started",
+        "tier": req.tier,
+        "trial_ends_at": trial_end.isoformat(),
+        "days_remaining": FREE_TRIAL_DAYS
+    }
+
+@api_router.get("/subscriptions/trial-status")
+async def get_trial_status(user: dict = Depends(get_current_user)):
+    """Get current trial status"""
+    trial_ends_at = user.get("trial_ends_at")
+    subscription_status = user.get("subscription_status", "inactive")
+    
+    if not trial_ends_at or subscription_status != "trial":
+        return {
+            "has_trial": False,
+            "trial_started": user.get("trial_started", False),
+            "can_start_trial": not user.get("trial_started", False)
+        }
+    
+    trial_end = datetime.fromisoformat(trial_ends_at.replace('Z', '+00:00'))
+    now = datetime.now(timezone.utc)
+    
+    if now > trial_end:
+        return {
+            "has_trial": False,
+            "trial_expired": True,
+            "trial_started": True,
+            "can_start_trial": False
+        }
+    
+    days_remaining = (trial_end - now).days
+    hours_remaining = ((trial_end - now).seconds // 3600)
+    
+    return {
+        "has_trial": True,
+        "tier": user.get("subscription_tier"),
+        "trial_ends_at": trial_ends_at,
+        "days_remaining": days_remaining,
+        "hours_remaining": hours_remaining,
+        "trial_started": True,
+        "can_start_trial": False
+    }
 
 @api_router.post("/subscriptions/checkout")
 async def create_checkout_session(req: SubscriptionRequest, request: Request, user: dict = Depends(get_current_user)):
