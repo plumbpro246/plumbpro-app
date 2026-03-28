@@ -9,8 +9,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Clock, Trash2, CalendarDays, Download, FileText } from "lucide-react";
+import { Plus, Clock, Trash2, CalendarDays, Download, FileText, MapPin, Play, Square } from "lucide-react";
 import { exportTimesheetPDF } from "@/services/pdfExportService";
+import geofenceService from "@/services/geofenceService";
 
 export default function TimesheetPage() {
   const { token } = useAuth();
@@ -18,6 +19,9 @@ export default function TimesheetPage() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [gpsDialogOpen, setGpsDialogOpen] = useState(false);
+  const [activeJob, setActiveJob] = useState(null);
+  const [gpsJobName, setGpsJobName] = useState("");
   const [exportRange, setExportRange] = useState({
     start_date: new Date(new Date().setDate(1)).toISOString().split("T")[0],
     end_date: new Date().toISOString().split("T")[0]
