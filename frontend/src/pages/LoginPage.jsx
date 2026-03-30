@@ -227,6 +227,11 @@ export default function LoginPage() {
             </Tabs>
           </CardContent>
         </Card>
+        <div className="flex justify-center gap-4 mt-4">
+          <a href="/privacy" className="text-xs text-slate-400 hover:text-[#FF5F00] transition-colors">Privacy Policy</a>
+          <span className="text-xs text-slate-600">|</span>
+          <a href="/terms" className="text-xs text-slate-400 hover:text-[#FF5F00] transition-colors">Terms of Service</a>
+        </div>
       </div>
     </div>
   );

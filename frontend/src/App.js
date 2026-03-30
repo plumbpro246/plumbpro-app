@@ -25,6 +25,8 @@ import SubscriptionSuccessPage from "@/pages/SubscriptionSuccessPage";
 import SettingsPage from "@/pages/SettingsPage";
 import PlumbingCodePage from "@/pages/PlumbingCodePage";
 import LandingPage from "@/pages/LandingPage";
+import PrivacyPolicyPage from "@/pages/PrivacyPolicyPage";
+import TermsOfServicePage from "@/pages/TermsOfServicePage";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 export const API = `${BACKEND_URL}/api`;
@@ -299,6 +301,8 @@ function App() {
         <Routes>
           <Route path="/" element={<HomeRoute />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/privacy" element={<PrivacyPolicyPage />} />
+          <Route path="/terms" element={<TermsOfServicePage />} />
           <Route path="/dashboard" element={<ProtectedRoute><MainLayout><DashboardPage /></MainLayout></ProtectedRoute>} />
           <Route path="/notes" element={<ProtectedRoute><MainLayout><NotesPage /></MainLayout></ProtectedRoute>} />
           <Route path="/formulas" element={<ProtectedRoute><MainLayout><FormulasPage /></MainLayout></ProtectedRoute>} />

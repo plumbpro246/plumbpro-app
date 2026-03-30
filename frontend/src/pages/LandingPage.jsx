@@ -291,14 +291,40 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="bg-slate-900 border-t border-slate-800 py-8">
-        <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div>
-            <h3 className="font-heading text-xl font-bold">
-              PLUMB<span className="text-[#FF5F00]">PRO</span>
-            </h3>
-            <p className="text-xs text-slate-500 mt-1">Field Companion for Professional Plumbers</p>
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+            <div>
+              <h3 className="font-heading text-xl font-bold">
+                PLUMB<span className="text-[#FF5F00]">PRO</span>
+              </h3>
+              <p className="text-xs text-slate-500 mt-1">Field Companion for Professional Plumbers</p>
+            </div>
+            <div className="flex items-center gap-6">
+              <button
+                onClick={() => navigate("/privacy")}
+                className="text-sm text-slate-400 hover:text-[#FF5F00] transition-colors"
+                data-testid="footer-privacy-link"
+              >
+                Privacy Policy
+              </button>
+              <button
+                onClick={() => navigate("/terms")}
+                className="text-sm text-slate-400 hover:text-[#FF5F00] transition-colors"
+                data-testid="footer-terms-link"
+              >
+                Terms of Service
+              </button>
+              <a
+                href="mailto:support@plumbpro.com"
+                className="text-sm text-slate-400 hover:text-[#FF5F00] transition-colors"
+              >
+                Contact
+              </a>
+            </div>
           </div>
-          <p className="text-xs text-slate-500">&copy; {new Date().getFullYear()} PlumbPro. All rights reserved.</p>
+          <div className="mt-6 pt-4 border-t border-slate-800 text-center">
+            <p className="text-xs text-slate-500">&copy; {new Date().getFullYear()} PlumbPro. All rights reserved.</p>
+          </div>
         </div>
       </footer>
     </div>
