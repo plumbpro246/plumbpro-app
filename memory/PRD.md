@@ -1,14 +1,14 @@
 # PlumbPro Field Companion - Product Requirements Document
 
 ## Original Problem Statement
-Build an app with different tier monthly costs for plumbers to use in the field. The app should include main login page then multiple pages: notes page, plumbing formula page, job safety talk page that generates different safety talks daily, time sheet page, job material lists page, job bidding page, calendar page, OSHA requirements page, data safety sheet page, calculator page, total station page, blueprint page with downloadable and PDF blueprints, plumbing code section with the 2015 UPC plumbing code, and a marketing landing page.
+Build an app with different tier monthly costs for plumbers to use in the field with login, notes, plumbing formulas, AI safety talks, timesheets, material lists, job bidding, calendar, OSHA, safety data sheets, calculator, total station, blueprints, 2015 UPC plumbing code, marketing landing page, and legal pages.
 
 ## Architecture
 - **Frontend**: React 19 + Tailwind CSS + Shadcn/UI
 - **Backend**: FastAPI + MongoDB
 - **AI**: OpenAI via Emergent LLM key
 - **Payments**: Stripe (web) + Google Play Billing (Android)
-- **Mobile**: Capacitor for Android & iOS (PWA)
+- **Mobile**: Capacitor (Android & iOS) + PWA
 
 ## Subscription Pricing
 - Basic: $4.99/mo | Pro: $9.99/mo | Enterprise: $19.99/mo
@@ -29,21 +29,25 @@ Build an app with different tier monthly costs for plumbers to use in the field.
 - Google Play Billing native Kotlin plugin + backend verification
 - Frontend platform detection (Android → Play Billing, Web → Stripe)
 
-### Phase 6 — Landing Page & Promo (Complete - March 2026)
-- Marketing landing page at `/` (guests see landing, logged-in → dashboard)
-- "First 100 users get 3 months free" promo with live countdown
-- Hero, features grid, pricing section, "Built by a Plumber" story, CTAs
-- Backend promo tracking endpoint (`/api/promo/status`)
-- Early bird flag on user registration
+### Phase 6 — Landing Page & Promo (Complete)
+- Marketing landing page at `/` with promo countdown
+- "First 100 users get 3 months free" with live spot tracking
+- Hero, features grid, pricing, "Built by a Plumber" story, CTAs
+
+### Phase 7 — Legal Pages & Deployment Guide (Complete - March 2026)
+- Privacy Policy page at `/privacy` (11 sections)
+- Terms of Service page at `/terms` (15 sections, pricing table)
+- Footer links on landing page and login page
+- Vercel deployment guide created (`/app/DEPLOYMENT_GUIDE.md`)
 
 ## Prioritized Backlog
 
 ### P1 — Next
+- [ ] Deploy to Vercel (free subdomain) + backend hosting (Railway/Render)
+- [ ] Set up MongoDB Atlas free cluster
+- [ ] Configure Stripe live keys
 - [ ] Server-side Google Play verification (needs Service Account JSON)
 - [ ] Create products in Google Play Console
-- [ ] Generate Play Store screenshots & listing assets
-- [ ] Custom domain setup for web app
-- [ ] Privacy policy & terms of service pages
 
 ### P2 — Medium
 - [ ] Native push notifications via Capacitor
