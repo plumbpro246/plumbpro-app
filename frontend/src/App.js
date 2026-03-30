@@ -24,6 +24,7 @@ import SubscriptionPage from "@/pages/SubscriptionPage";
 import SubscriptionSuccessPage from "@/pages/SubscriptionSuccessPage";
 import SettingsPage from "@/pages/SettingsPage";
 import PlumbingCodePage from "@/pages/PlumbingCodePage";
+import LandingPage from "@/pages/LandingPage";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 export const API = `${BACKEND_URL}/api`;
@@ -283,14 +284,21 @@ const MainLayout = ({ children }) => {
   );
 };
 
+// Smart Home Route - Landing for guests, Dashboard for logged-in users
+const HomeRoute = () => {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  return user ? <Navigate to="/dashboard" replace /> : <LandingPage />;
+};
+
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Toaster position="top-right" richColors />
         <Routes>
+          <Route path="/" element={<HomeRoute />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<ProtectedRoute><MainLayout><DashboardPage /></MainLayout></ProtectedRoute>} />
           <Route path="/notes" element={<ProtectedRoute><MainLayout><NotesPage /></MainLayout></ProtectedRoute>} />
           <Route path="/formulas" element={<ProtectedRoute><MainLayout><FormulasPage /></MainLayout></ProtectedRoute>} />

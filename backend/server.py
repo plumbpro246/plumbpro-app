@@ -262,6 +262,19 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
 
 # ==================== AUTH ROUTES ====================
 
+@api_router.get("/promo/status")
+async def get_promo_status():
+    """Get the current promo status - first 100 users get 3 months free"""
+    total_users = await db.users.count_documents({})
+    spots_remaining = max(0, 100 - total_users)
+    return {
+        "total_users": total_users,
+        "spots_remaining": spots_remaining,
+        "promo_active": spots_remaining > 0,
+        "promo_offer": "3 months free" if spots_remaining > 0 else "7-day free trial",
+        "promo_days": 90 if spots_remaining > 0 else 7
+    }
+
 @api_router.post("/auth/register", response_model=TokenResponse)
 async def register(user_data: UserCreate):
     existing = await db.users.find_one({"email": user_data.email})
@@ -271,6 +284,10 @@ async def register(user_data: UserCreate):
     user_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc).isoformat()
     
+    # Check if this user qualifies for the first-100 promo
+    total_users = await db.users.count_documents({})
+    is_early_bird = total_users < 100
+    
     user_doc = {
         "id": user_id,
         "email": user_data.email,
@@ -279,6 +296,8 @@ async def register(user_data: UserCreate):
         "company": user_data.company,
         "subscription_tier": "free",
         "subscription_status": "inactive",
+        "is_early_bird": is_early_bird,
+        "user_number": total_users + 1,
         "created_at": now,
         "updated_at": now
     }
@@ -357,7 +376,7 @@ async def get_subscription_tiers():
 
 @api_router.post("/subscriptions/start-trial")
 async def start_free_trial(req: StartTrialRequest, user: dict = Depends(get_current_user)):
-    """Start a 7-day free trial for a subscription tier"""
+    """Start a free trial for a subscription tier. Early birds (first 100) get 3 months, others get 7 days."""
     if req.tier not in SUBSCRIPTION_TIERS:
         raise HTTPException(status_code=400, detail="Invalid subscription tier")
     
@@ -369,7 +388,10 @@ async def start_free_trial(req: StartTrialRequest, user: dict = Depends(get_curr
     if user.get("subscription_status") == "active":
         raise HTTPException(status_code=400, detail="You already have an active subscription")
     
-    trial_end = datetime.now(timezone.utc) + timedelta(days=FREE_TRIAL_DAYS)
+    # Early bird users get 90 days, others get 7 days
+    is_early_bird = user.get("is_early_bird", False)
+    trial_days = 90 if is_early_bird else FREE_TRIAL_DAYS
+    trial_end = datetime.now(timezone.utc) + timedelta(days=trial_days)
     
     await db.users.update_one(
         {"id": user["id"]},
@@ -386,7 +408,8 @@ async def start_free_trial(req: StartTrialRequest, user: dict = Depends(get_curr
         "status": "trial_started",
         "tier": req.tier,
         "trial_ends_at": trial_end.isoformat(),
-        "days_remaining": FREE_TRIAL_DAYS
+        "days_remaining": trial_days,
+        "is_early_bird": is_early_bird
     }
 
 @api_router.get("/subscriptions/trial-status")
