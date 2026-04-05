@@ -449,65 +449,72 @@ async def get_trial_status(user: dict = Depends(get_current_user)):
         "can_start_trial": False
     }
 
+import stripe as stripe_lib
+
 @api_router.post("/subscriptions/checkout")
 async def create_checkout_session(req: SubscriptionRequest, request: Request, user: dict = Depends(get_current_user)):
-    from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionRequest
-    
     if req.tier not in SUBSCRIPTION_TIERS:
         raise HTTPException(status_code=400, detail="Invalid subscription tier")
     
     tier_info = SUBSCRIPTION_TIERS[req.tier]
-    amount = tier_info["price"]
+    amount = int(tier_info["price"] * 100)  # Stripe uses cents
     
-    host_url = str(request.base_url).rstrip('/')
-    webhook_url = f"{host_url}/api/webhook/stripe"
-    
-    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+    stripe_lib.api_key = STRIPE_API_KEY
     
     success_url = f"{req.origin_url}/subscription/success?session_id={{CHECKOUT_SESSION_ID}}"
     cancel_url = f"{req.origin_url}/subscription"
     
-    checkout_request = CheckoutSessionRequest(
-        amount=float(amount),
-        currency="usd",
-        success_url=success_url,
-        cancel_url=cancel_url,
-        metadata={
-            "user_id": user["id"],
-            "tier": req.tier,
-            "user_email": user["email"]
-        }
-    )
+    try:
+        session = stripe_lib.checkout.Session.create(
+            payment_method_types=["card"],
+            mode="subscription",
+            line_items=[{
+                "price_data": {
+                    "currency": "usd",
+                    "unit_amount": amount,
+                    "recurring": {"interval": "month"},
+                    "product_data": {"name": f"PlumbPro {tier_info['name']} Plan"},
+                },
+                "quantity": 1,
+            }],
+            success_url=success_url,
+            cancel_url=cancel_url,
+            metadata={
+                "user_id": user["id"],
+                "tier": req.tier,
+                "user_email": user["email"]
+            },
+            subscription_data={
+                "trial_period_days": tier_info.get("trial_days", 7)
+            } if not user.get("trial_started") else {}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
     
-    session = await stripe_checkout.create_checkout_session(checkout_request)
-    
-    # Create payment transaction record
     transaction_doc = {
         "id": str(uuid.uuid4()),
         "user_id": user["id"],
-        "session_id": session.session_id,
+        "session_id": session.id,
         "tier": req.tier,
-        "amount": amount,
+        "amount": tier_info["price"],
         "currency": "usd",
         "payment_status": "pending",
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.payment_transactions.insert_one(transaction_doc)
     
-    return {"url": session.url, "session_id": session.session_id}
+    return {"url": session.url, "session_id": session.id}
 
 @api_router.get("/subscriptions/status/{session_id}")
 async def get_checkout_status(session_id: str, request: Request, user: dict = Depends(get_current_user)):
-    from emergentintegrations.payments.stripe.checkout import StripeCheckout
+    stripe_lib.api_key = STRIPE_API_KEY
     
-    host_url = str(request.base_url).rstrip('/')
-    webhook_url = f"{host_url}/api/webhook/stripe"
+    try:
+        session = stripe_lib.checkout.Session.retrieve(session_id)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
     
-    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
-    status = await stripe_checkout.get_checkout_status(session_id)
-    
-    # Update transaction and user if paid
-    if status.payment_status == "paid":
+    if session.payment_status == "paid":
         transaction = await db.payment_transactions.find_one({"session_id": session_id}, {"_id": 0})
         if transaction and transaction.get("payment_status") != "completed":
             await db.payment_transactions.update_one(
@@ -524,29 +531,25 @@ async def get_checkout_status(session_id: str, request: Request, user: dict = De
             )
     
     return {
-        "status": status.status,
-        "payment_status": status.payment_status,
-        "amount_total": status.amount_total,
-        "currency": status.currency
+        "status": session.status,
+        "payment_status": session.payment_status,
+        "amount_total": session.amount_total,
+        "currency": session.currency
     }
 
 @api_router.post("/webhook/stripe")
 async def stripe_webhook(request: Request):
-    from emergentintegrations.payments.stripe.checkout import StripeCheckout
-    
+    stripe_lib.api_key = STRIPE_API_KEY
     body = await request.body()
     signature = request.headers.get("Stripe-Signature")
     
-    host_url = str(request.base_url).rstrip('/')
-    webhook_url = f"{host_url}/api/webhook/stripe"
-    
-    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
-    
     try:
-        webhook_response = await stripe_checkout.handle_webhook(body, signature)
+        WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
+        event = stripe_lib.Webhook.construct_event(body, signature, WEBHOOK_SECRET)
         
-        if webhook_response.payment_status == "paid":
-            metadata = webhook_response.metadata
+        if event["type"] == "checkout.session.completed":
+            session = event["data"]["object"]
+            metadata = session.get("metadata", {})
             user_id = metadata.get("user_id")
             tier = metadata.get("tier")
             
@@ -560,7 +563,7 @@ async def stripe_webhook(request: Request):
                     }}
                 )
                 await db.payment_transactions.update_one(
-                    {"session_id": webhook_response.session_id},
+                    {"session_id": session.get("id")},
                     {"$set": {"payment_status": "completed"}}
                 )
         
@@ -916,17 +919,19 @@ async def get_daily_safety_talk(user: dict = Depends(get_current_user)):
     topic = SAFETY_TOPICS[day_of_year % len(SAFETY_TOPICS)]
     
     try:
-        from emergentintegrations.llm.chat import LlmChat, UserMessage
+        import openai
         
-        chat = LlmChat(
-            api_key=EMERGENT_LLM_KEY,
-            session_id=f"safety-talk-{today}",
-            system_message="You are a safety expert for plumbing and construction workers. Generate concise, practical safety talks that can be read in 5 minutes. Include specific hazards, prevention measures, and best practices."
-        ).with_model("openai", "gpt-5.2")
+        client = openai.OpenAI(api_key=EMERGENT_LLM_KEY)
         
-        message = UserMessage(text=f"Generate a 5-minute safety talk about '{topic}' for plumbers working in the field. Include: 1) Why this topic matters, 2) Common hazards, 3) Prevention measures, 4) Action items for today. Keep it practical and engaging.")
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": "You are a safety expert for plumbing and construction workers. Generate concise, practical safety talks that can be read in 5 minutes. Include specific hazards, prevention measures, and best practices."},
+                {"role": "user", "content": f"Generate a 5-minute safety talk about '{topic}' for plumbers working in the field. Include: 1) Why this topic matters, 2) Common hazards, 3) Prevention measures, 4) Action items for today. Keep it practical and engaging."}
+            ]
+        )
         
-        content = await chat.send_message(message)
+        content = response.choices[0].message.content
         title = f"Daily Safety Talk: {topic}"
     except Exception as e:
         logger.error(f"AI generation failed: {e}")
