@@ -101,3 +101,106 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "PlumbPro Field Companion - plumber field app with multi-tier subscriptions, AI safety talks, 13+ utility pages, PWA/mobile support. Latest update: Multi-edition UPC/IPC Plumbing Code with Chapter 2 Definitions."
+
+backend:
+  - task: "Plumbing Code API - Multi-edition UPC/IPC"
+    implemented: true
+    working: true
+    file: "backend/server.py, backend/plumbing_codes.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "GET /api/plumbing-code?code_type=upc&edition=2024 returns 13 chapters. GET /api/plumbing-code?code_type=ipc&edition=2021 returns 10 chapters. GET /api/plumbing-code/types returns both UPC and IPC with 4 editions each."
+  - task: "Auth endpoints (register/login)"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "Verified in iteration_7.json - login with testplumber@test.com / Test1234! works"
+  - task: "Safety Talks API (OpenAI)"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Uses Emergent LLM key via standard openai client with proxy base_url"
+
+frontend:
+  - task: "PlumbingCodePage - Multi-edition UPC/IPC with tabs and edition selector"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/PlumbingCodePage.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "New component with UPC/IPC toggle buttons, edition dropdown (2015-2024), search, accordion chapters, quick-jump chips, quick reference footer cards"
+  - task: "Landing Page with Promo Logic"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/LandingPage.jsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "Verified in iteration_7.json - loads with promo banner"
+  - task: "Auth flow (Login/Register/Dashboard redirect)"
+    implemented: true
+    working: true
+    file: "frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "Verified in iteration_7.json - login redirects to dashboard"
+  - task: "Privacy Policy and Terms pages"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/PrivacyPolicyPage.jsx, frontend/src/pages/TermsOfServicePage.jsx"
+    stuck_count: 0
+    priority: "low"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "Fully verified in iteration_7.json"
+
+metadata:
+  created_by: "main_agent"
+  version: "2.0"
+  test_sequence: 8
+  run_ui: true
+
+test_plan:
+  current_focus:
+    - "PlumbingCodePage - Multi-edition UPC/IPC with tabs and edition selector"
+    - "Plumbing Code API - Multi-edition UPC/IPC"
+    - "Auth flow regression"
+    - "Landing page regression"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    - agent: "main"
+      message: "Running iteration 8 regression test. Focus on the new Plumbing Code multi-edition feature (UPC/IPC toggle, edition dropdown 2015-2024, search, chapter accordion). Also do quick regression on auth flow and landing page. Backend APIs confirmed working via curl. Test credentials: testplumber@test.com / Test1234!"
