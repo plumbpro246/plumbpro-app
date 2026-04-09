@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { API } from "@/App";
+import { API, useAuth } from "@/App";
 import axios from "axios";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BookOpen, Search, Hash, FileText, Droplets, Flame, Wind, ShieldAlert, Ruler } from "lucide-react";
+import { BookOpen, Search, FileText, Droplets, Flame, Wind, ShieldAlert, Ruler, Bookmark, BookmarkCheck, Star, X } from "lucide-react";
 
 const chapterIcons = {
   2: BookOpen, 3: Ruler, 4: Droplets, 5: Flame, 6: Droplets,
@@ -37,7 +37,11 @@ export default function PlumbingCodePage() {
   const [codeType, setCodeType] = useState("upc");
   const [edition, setEdition] = useState("2024");
   const [activeChapter, setActiveChapter] = useState(null);
+  const [bookmarks, setBookmarks] = useState([]);
+  const [showBookmarks, setShowBookmarks] = useState(false);
+  const { token } = useAuth();
 
+  const headers = { Authorization: `Bearer ${token}` };
   const currentCode = CODE_TYPES.find(c => c.value === codeType);
 
   const fetchChapters = async (search = "") => {
@@ -54,16 +58,91 @@ export default function PlumbingCodePage() {
     }
   };
 
+  const fetchBookmarks = async () => {
+    try {
+      const res = await axios.get(`${API}/plumbing-code/bookmarks`, { headers });
+      setBookmarks(res.data);
+    } catch {
+      // silent - bookmarks are optional
+    }
+  };
+
   useEffect(() => {
     fetchChapters();
   }, [codeType, edition]);
+
+  useEffect(() => {
+    fetchBookmarks();
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => fetchChapters(searchTerm), 300);
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
+  const isBookmarked = (sectionCode) => {
+    return bookmarks.some(b => b.section_code === sectionCode && b.code_type === codeType && b.edition === edition);
+  };
+
+  const getBookmarkId = (sectionCode) => {
+    const b = bookmarks.find(bk => bk.section_code === sectionCode && bk.code_type === codeType && bk.edition === edition);
+    return b?.id;
+  };
+
+  const toggleBookmark = async (section, chapter) => {
+    const existing = getBookmarkId(section.code);
+    if (existing) {
+      try {
+        await axios.delete(`${API}/plumbing-code/bookmarks/${existing}`, { headers });
+        setBookmarks(prev => prev.filter(b => b.id !== existing));
+        toast.success("Bookmark removed");
+      } catch {
+        toast.error("Failed to remove bookmark");
+      }
+    } else {
+      try {
+        const res = await axios.post(`${API}/plumbing-code/bookmarks`, {
+          code_type: codeType,
+          edition,
+          section_code: section.code,
+          section_title: section.title,
+          chapter_title: chapter.title,
+          chapter_id: chapter.id,
+        }, { headers });
+        setBookmarks(prev => [res.data, ...prev]);
+        toast.success("Section bookmarked!");
+      } catch (err) {
+        if (err.response?.status === 409) {
+          toast.info("Already bookmarked");
+        } else {
+          toast.error("Failed to bookmark");
+        }
+      }
+    }
+  };
+
+  const removeBookmark = async (bookmarkId) => {
+    try {
+      await axios.delete(`${API}/plumbing-code/bookmarks/${bookmarkId}`, { headers });
+      setBookmarks(prev => prev.filter(b => b.id !== bookmarkId));
+      toast.success("Bookmark removed");
+    } catch {
+      toast.error("Failed to remove bookmark");
+    }
+  };
+
+  const jumpToBookmark = (bm) => {
+    setCodeType(bm.code_type);
+    setEdition(bm.edition);
+    setShowBookmarks(false);
+    setTimeout(() => {
+      document.getElementById(`chapter-${bm.chapter_id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 400);
+  };
+
   const getIcon = (chapterNum) => chapterIcons[chapterNum] || BookOpen;
+
+  const bookmarkCount = bookmarks.length;
 
   return (
     <div className="space-y-6" data-testid="plumbing-code-page">
@@ -78,10 +157,79 @@ export default function PlumbingCodePage() {
             {currentCode?.full} - Quick Field Reference
           </p>
         </div>
-        <Badge className="bg-[#003366] text-white self-start text-xs px-3 py-1" data-testid="code-edition-badge">
-          {currentCode?.label} {edition} ({currentCode?.publisher})
-        </Badge>
+        <div className="flex items-center gap-2 self-start">
+          <Button
+            variant={showBookmarks ? "default" : "outline"}
+            size="sm"
+            className={showBookmarks ? "bg-amber-500 hover:bg-amber-600 text-white border-amber-500" : ""}
+            onClick={() => setShowBookmarks(!showBookmarks)}
+            data-testid="bookmarks-toggle"
+          >
+            <Star className={`w-4 h-4 mr-1.5 ${showBookmarks ? "fill-white" : ""}`} />
+            Bookmarks
+            {bookmarkCount > 0 && (
+              <Badge className="ml-1.5 bg-white/20 text-inherit text-xs px-1.5 py-0" data-testid="bookmark-count">
+                {bookmarkCount}
+              </Badge>
+            )}
+          </Button>
+          <Badge className="bg-[#003366] text-white text-xs px-3 py-1" data-testid="code-edition-badge">
+            {currentCode?.label} {edition} ({currentCode?.publisher})
+          </Badge>
+        </div>
       </div>
+
+      {/* Bookmarks Panel */}
+      {showBookmarks && (
+        <Card className="border-2 border-amber-400 bg-amber-50/50 dark:bg-amber-900/10" data-testid="bookmarks-panel">
+          <CardHeader className="pb-2">
+            <CardTitle className="font-heading uppercase text-base flex items-center gap-2">
+              <Star className="w-5 h-5 text-amber-500 fill-amber-500" />
+              Saved Bookmarks ({bookmarkCount})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {bookmarkCount === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center" data-testid="no-bookmarks-msg">
+                No bookmarks yet. Tap the bookmark icon on any code section to save it for quick access.
+              </p>
+            ) : (
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {bookmarks.map((bm) => (
+                  <div
+                    key={bm.id}
+                    className="flex items-center justify-between bg-white dark:bg-slate-800 rounded-md px-3 py-2 border border-slate-200 dark:border-slate-700 group"
+                    data-testid={`bookmark-item-${bm.id}`}
+                  >
+                    <button
+                      className="flex-1 text-left flex items-center gap-2 min-w-0"
+                      onClick={() => jumpToBookmark(bm)}
+                      data-testid={`bookmark-jump-${bm.id}`}
+                    >
+                      <span className="font-mono text-xs bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded font-bold whitespace-nowrap">
+                        {bm.section_code}
+                      </span>
+                      <span className="text-sm font-medium truncate">{bm.section_title}</span>
+                      <Badge variant="outline" className="text-[10px] px-1.5 ml-auto flex-shrink-0">
+                        {bm.code_type.toUpperCase()} {bm.edition}
+                      </Badge>
+                    </button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-7 p-0 ml-2 opacity-50 group-hover:opacity-100 text-red-500 hover:text-red-600 hover:bg-red-50"
+                      onClick={() => removeBookmark(bm.id)}
+                      data-testid={`bookmark-remove-${bm.id}`}
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Code Type & Edition Selectors */}
       <div className="flex flex-col sm:flex-row gap-3">
@@ -141,7 +289,7 @@ export default function PlumbingCodePage() {
       </div>
 
       {/* Quick Jump Chips */}
-      {!searchTerm && (
+      {!searchTerm && !showBookmarks && (
         <div className="flex flex-wrap gap-2" data-testid="quick-jump-chips">
           {chapters.map((ch) => {
             const Icon = getIcon(ch.chapter);
@@ -205,11 +353,22 @@ export default function PlumbingCodePage() {
                     {chapter.sections.map((section) => (
                       <AccordionItem key={section.code} value={section.code} className="border-b border-border last:border-b-0">
                         <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/50" data-testid={`section-${section.code}`}>
-                          <div className="flex items-center gap-3 text-left">
+                          <div className="flex items-center gap-3 text-left flex-1 min-w-0">
                             <span className="font-mono text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-1 rounded-sm font-bold whitespace-nowrap">
                               {section.code}
                             </span>
-                            <span className="font-bold text-sm">{section.title}</span>
+                            <span className="font-bold text-sm truncate">{section.title}</span>
+                            <button
+                              className="ml-auto flex-shrink-0 p-1 rounded hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors"
+                              onClick={(e) => { e.stopPropagation(); toggleBookmark(section, chapter); }}
+                              data-testid={`bookmark-btn-${section.code}`}
+                            >
+                              {isBookmarked(section.code) ? (
+                                <BookmarkCheck className="w-4 h-4 text-amber-500" />
+                              ) : (
+                                <Bookmark className="w-4 h-4 text-slate-400 hover:text-amber-500" />
+                              )}
+                            </button>
                           </div>
                         </AccordionTrigger>
                         <AccordionContent className="px-4 pb-4">

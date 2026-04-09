@@ -1716,6 +1716,54 @@ async def get_plumbing_code_types():
         }
     return result
 
+# Bookmarks routes MUST be before {chapter_id} catch-all
+@api_router.get("/plumbing-code/bookmarks")
+async def get_bookmarks(user: dict = Depends(get_current_user)):
+    bookmarks = await db.code_bookmarks.find({"user_id": user["id"]}, {"_id": 0}).sort("created_at", -1).to_list(500)
+    return bookmarks
+
+@api_router.post("/plumbing-code/bookmarks")
+async def add_bookmark(request: Request, user: dict = Depends(get_current_user)):
+    body = await request.json()
+    code_type = body.get("code_type", "upc")
+    edition = body.get("edition", "2024")
+    section_code = body.get("section_code")
+    section_title = body.get("section_title")
+    chapter_title = body.get("chapter_title")
+    chapter_id = body.get("chapter_id")
+
+    if not section_code:
+        raise HTTPException(status_code=400, detail="section_code is required")
+
+    existing = await db.code_bookmarks.find_one({
+        "user_id": user["id"], "code_type": code_type,
+        "edition": edition, "section_code": section_code
+    })
+    if existing:
+        raise HTTPException(status_code=409, detail="Already bookmarked")
+
+    bookmark = {
+        "id": str(uuid.uuid4()),
+        "user_id": user["id"],
+        "code_type": code_type,
+        "edition": edition,
+        "section_code": section_code,
+        "section_title": section_title or "",
+        "chapter_title": chapter_title or "",
+        "chapter_id": chapter_id or "",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.code_bookmarks.insert_one(bookmark)
+    del bookmark["_id"]
+    return bookmark
+
+@api_router.delete("/plumbing-code/bookmarks/{bookmark_id}")
+async def delete_bookmark(bookmark_id: str, user: dict = Depends(get_current_user)):
+    result = await db.code_bookmarks.delete_one({"id": bookmark_id, "user_id": user["id"]})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Bookmark not found")
+    return {"status": "deleted"}
+
 @api_router.get("/plumbing-code/{chapter_id}")
 async def get_plumbing_code_chapter(chapter_id: str, code_type: str = "upc", edition: str = "2024"):
     """Get a specific chapter of a plumbing code"""
