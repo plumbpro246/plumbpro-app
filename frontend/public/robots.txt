@@ -1,0 +1,25 @@
+User-agent: *
+Allow: /
+Allow: /login
+Allow: /privacy
+Allow: /terms
+
+Disallow: /dashboard
+Disallow: /notes
+Disallow: /formulas
+Disallow: /safety-talks
+Disallow: /timesheet
+Disallow: /materials
+Disallow: /bidding
+Disallow: /calendar
+Disallow: /osha
+Disallow: /sds
+Disallow: /calculator
+Disallow: /total-station
+Disallow: /blueprints
+Disallow: /plumbing-code
+Disallow: /subscription
+Disallow: /settings
+Disallow: /api/
+
+Sitemap: https://plumbpro-app.vercel.app/sitemap.xml

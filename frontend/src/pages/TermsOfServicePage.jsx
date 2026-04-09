@@ -6,6 +6,8 @@ export default function TermsOfServicePage() {
   const navigate = useNavigate();
   const lastUpdated = "March 30, 2026";
 
+  document.title = "Terms of Service - PlumbPro Field Companion";
+
   return (
     <div className="min-h-screen bg-slate-900 text-white" data-testid="terms-of-service-page">
       {/* Header */}

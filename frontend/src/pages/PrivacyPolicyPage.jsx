@@ -6,6 +6,8 @@ export default function PrivacyPolicyPage() {
   const navigate = useNavigate();
   const lastUpdated = "March 30, 2026";
 
+  document.title = "Privacy Policy - PlumbPro Field Companion";
+
   return (
     <div className="min-h-screen bg-slate-900 text-white" data-testid="privacy-policy-page">
       {/* Header */}

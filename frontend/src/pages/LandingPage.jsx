@@ -16,6 +16,7 @@ export default function LandingPage() {
   const [promoStatus, setPromoStatus] = useState(null);
 
   useEffect(() => {
+    document.title = "PlumbPro Field Companion - Professional Plumbing App for the Field";
     axios.get(`${API}/promo/status`).then(res => setPromoStatus(res.data)).catch(() => {});
   }, []);
 

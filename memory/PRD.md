@@ -55,6 +55,16 @@ Build an app with different tier monthly costs for plumbers to use in the field 
 - Badge shows bookmark count, icons toggle filled/outline state
 - Regression tested: 100% pass (iteration_9.json)
 
+### Phase 10 -- SEO Improvements (Complete - Feb 2026)
+- Meta tags: title, description, keywords, author, robots
+- Open Graph tags for Facebook/social sharing
+- Twitter Card tags for Twitter sharing
+- Apple mobile web app tags
+- `sitemap.xml` with all public routes (/, /login, /privacy, /terms)
+- `robots.txt` allowing public pages, blocking auth-required pages
+- Dynamic page titles on Landing, Privacy, Terms pages
+- Canonical URL set to `plumbpro-app.vercel.app`
+
 ## Prioritized Backlog
 
 ### P1 -- Next
