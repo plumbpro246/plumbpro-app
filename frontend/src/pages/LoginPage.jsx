@@ -43,8 +43,8 @@ export default function LoginPage() {
         registerData.full_name, 
         registerData.company
       );
-      toast.success("Account created successfully!");
-      navigate("/dashboard");
+      toast.success("Account created! Choose your plan to get started.");
+      navigate("/subscription");
     } catch (error) {
       toast.error(error.response?.data?.detail || "Registration failed");
     } finally {
