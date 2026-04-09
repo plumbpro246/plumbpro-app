@@ -48,6 +48,13 @@ Build an app with different tier monthly costs for plumbers to use in the field 
 - Search, accordion, quick-jump chips, quick reference footer cards
 - Regression tested: 100% pass (iteration_8.json)
 
+### Phase 9 -- Plumbing Code Bookmarks (Complete - Feb 2026)
+- Bookmark any code section for quick field access
+- Per-user MongoDB storage with duplicate protection (409)
+- Bookmarks panel with jump-to-section and remove functionality
+- Badge shows bookmark count, icons toggle filled/outline state
+- Regression tested: 100% pass (iteration_9.json)
+
 ## Prioritized Backlog
 
 ### P1 -- Next
