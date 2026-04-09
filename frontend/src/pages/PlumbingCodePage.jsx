@@ -7,51 +7,45 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { BookOpen, Search, ChevronRight, Hash, FileText, Droplets, Flame, Wind, ShieldAlert, Ruler } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { BookOpen, Search, Hash, FileText, Droplets, Flame, Wind, ShieldAlert, Ruler } from "lucide-react";
 
 const chapterIcons = {
-  1: ShieldAlert,
-  3: Ruler,
-  4: Droplets,
-  5: Flame,
-  6: Droplets,
-  7: Droplets,
-  9: Wind,
-  10: Droplets,
-  11: Droplets,
-  12: Flame,
-  0: FileText,
+  2: BookOpen, 3: Ruler, 4: Droplets, 5: Flame, 6: Droplets,
+  7: Droplets, 9: Wind, 10: Droplets, 11: Droplets, 12: Flame,
+  15: Droplets, 16: Droplets, 0: FileText,
 };
 
 const chapterColors = {
-  1: "bg-slate-600",
-  3: "bg-blue-600",
-  4: "bg-cyan-600",
-  5: "bg-red-600",
-  6: "bg-sky-600",
-  7: "bg-emerald-600",
-  9: "bg-violet-600",
-  10: "bg-teal-600",
-  11: "bg-indigo-600",
-  12: "bg-orange-600",
+  2: "bg-blue-700", 3: "bg-blue-600", 4: "bg-cyan-600", 5: "bg-red-600",
+  6: "bg-sky-600", 7: "bg-emerald-600", 9: "bg-violet-600", 10: "bg-teal-600",
+  11: "bg-indigo-600", 12: "bg-orange-600", 15: "bg-lime-700", 16: "bg-green-700",
   0: "bg-amber-600",
 };
+
+const CODE_TYPES = [
+  { value: "upc", label: "UPC", full: "Uniform Plumbing Code", publisher: "IAPMO" },
+  { value: "ipc", label: "IPC", full: "International Plumbing Code", publisher: "ICC" },
+];
+
+const EDITIONS = ["2015", "2018", "2021", "2024"];
 
 export default function PlumbingCodePage() {
   const [chapters, setChapters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [codeType, setCodeType] = useState("upc");
+  const [edition, setEdition] = useState("2024");
   const [activeChapter, setActiveChapter] = useState(null);
 
-  useEffect(() => {
-    fetchChapters();
-  }, []);
+  const currentCode = CODE_TYPES.find(c => c.value === codeType);
 
   const fetchChapters = async (search = "") => {
     try {
       setLoading(true);
-      const params = search ? `?search=${encodeURIComponent(search)}` : "";
-      const response = await axios.get(`${API}/plumbing-code${params}`);
+      const params = new URLSearchParams({ code_type: codeType, edition });
+      if (search) params.set("search", search);
+      const response = await axios.get(`${API}/plumbing-code?${params}`);
       setChapters(response.data);
     } catch (error) {
       toast.error("Failed to load plumbing code");
@@ -61,16 +55,15 @@ export default function PlumbingCodePage() {
   };
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchChapters(searchTerm);
-    }, 300);
+    fetchChapters();
+  }, [codeType, edition]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => fetchChapters(searchTerm), 300);
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  const getIcon = (chapterNum) => {
-    const Icon = chapterIcons[chapterNum] || BookOpen;
-    return Icon;
-  };
+  const getIcon = (chapterNum) => chapterIcons[chapterNum] || BookOpen;
 
   return (
     <div className="space-y-6" data-testid="plumbing-code-page">
@@ -79,13 +72,42 @@ export default function PlumbingCodePage() {
         <div>
           <h1 className="font-heading text-3xl font-bold uppercase tracking-tight flex items-center gap-2">
             <BookOpen className="w-8 h-8 text-[#FF5F00]" />
-            2015 UPC Plumbing Code
+            Plumbing Code
           </h1>
-          <p className="text-muted-foreground text-sm">Uniform Plumbing Code - Quick Field Reference</p>
+          <p className="text-muted-foreground text-sm">
+            {currentCode?.full} - Quick Field Reference
+          </p>
         </div>
         <Badge className="bg-[#003366] text-white self-start text-xs px-3 py-1" data-testid="code-edition-badge">
-          2015 Edition (IAPMO)
+          {currentCode?.label} {edition} ({currentCode?.publisher})
         </Badge>
+      </div>
+
+      {/* Code Type & Edition Selectors */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex gap-2">
+          {CODE_TYPES.map((ct) => (
+            <Button
+              key={ct.value}
+              variant={codeType === ct.value ? "default" : "outline"}
+              className={codeType === ct.value ? "bg-[#FF5F00] hover:bg-[#FF5F00]/90 text-white border-[#FF5F00]" : ""}
+              onClick={() => setCodeType(ct.value)}
+              data-testid={`code-type-${ct.value}`}
+            >
+              {ct.label}
+            </Button>
+          ))}
+        </div>
+        <Select value={edition} onValueChange={setEdition}>
+          <SelectTrigger className="w-[140px]" data-testid="edition-selector">
+            <SelectValue placeholder="Edition" />
+          </SelectTrigger>
+          <SelectContent>
+            {EDITIONS.map((ed) => (
+              <SelectItem key={ed} value={ed}>{ed} Edition</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Disclaimer */}
@@ -95,16 +117,12 @@ export default function PlumbingCodePage() {
           <div>
             <p className="font-bold text-amber-700 dark:text-amber-400">Reference Only</p>
             <p className="text-sm text-amber-600 dark:text-amber-300">
-              This is a field reference summary of the 2015 Uniform Plumbing Code. Always refer to the
-              official published code for complete requirements. Local amendments may apply. Visit{" "}
-              <a
-                href="https://www.iapmo.org"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline font-bold"
-              >
-                iapmo.org
-              </a>{" "}for the official code.
+              This is a field reference summary. Always refer to the official published code for complete requirements. Local amendments may apply. Visit{" "}
+              {codeType === "upc" ? (
+                <a href="https://www.iapmo.org" target="_blank" rel="noopener noreferrer" className="underline font-bold">iapmo.org</a>
+              ) : (
+                <a href="https://www.iccsafe.org" target="_blank" rel="noopener noreferrer" className="underline font-bold">iccsafe.org</a>
+              )}{" "}for the official code.
             </p>
           </div>
         </CardContent>
@@ -167,14 +185,8 @@ export default function PlumbingCodePage() {
           {chapters.map((chapter) => {
             const Icon = getIcon(chapter.chapter);
             const colorClass = chapterColors[chapter.chapter] || "bg-slate-600";
-
             return (
-              <Card
-                key={chapter.id}
-                id={`chapter-${chapter.id}`}
-                className="overflow-hidden border border-border"
-                data-testid={`chapter-${chapter.id}`}
-              >
+              <Card key={chapter.id} id={`chapter-${chapter.id}`} className="overflow-hidden border border-border" data-testid={`chapter-${chapter.id}`}>
                 <CardHeader className={`${colorClass} text-white py-4`}>
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-white/20 rounded-sm flex items-center justify-center">
@@ -190,12 +202,8 @@ export default function PlumbingCodePage() {
                 </CardHeader>
                 <CardContent className="p-0">
                   <Accordion type="single" collapsible>
-                    {chapter.sections.map((section, idx) => (
-                      <AccordionItem
-                        key={section.code}
-                        value={section.code}
-                        className="border-b border-border last:border-b-0"
-                      >
+                    {chapter.sections.map((section) => (
+                      <AccordionItem key={section.code} value={section.code} className="border-b border-border last:border-b-0">
                         <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/50" data-testid={`section-${section.code}`}>
                           <div className="flex items-center gap-3 text-left">
                             <span className="font-mono text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-1 rounded-sm font-bold whitespace-nowrap">
@@ -226,62 +234,30 @@ export default function PlumbingCodePage() {
             <CardTitle className="font-heading uppercase text-sm">Drain Pipe Slopes</CardTitle>
           </CardHeader>
           <CardContent className="space-y-1.5 text-sm">
-            <div className="flex justify-between">
-              <span className="text-white/80">2-1/2" or less:</span>
-              <span className="font-bold font-mono">1/4" per ft</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-white/80">3" or larger:</span>
-              <span className="font-bold font-mono">1/8" per ft</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-white/80">Maximum all:</span>
-              <span className="font-bold font-mono">1/2" per ft</span>
-            </div>
+            <div className="flex justify-between"><span className="text-white/80">{codeType === "upc" ? '2-1/2"' : '3"'} or less:</span><span className="font-bold font-mono">1/4" per ft</span></div>
+            <div className="flex justify-between"><span className="text-white/80">{codeType === "upc" ? '3"' : '4"'} or larger:</span><span className="font-bold font-mono">1/8" per ft</span></div>
+            <div className="flex justify-between"><span className="text-white/80">Maximum all:</span><span className="font-bold font-mono">1/2" per ft</span></div>
           </CardContent>
         </Card>
-
         <Card className="bg-[#003366] text-white">
           <CardHeader className="pb-2">
             <CardTitle className="font-heading uppercase text-sm">Common DFU Values</CardTitle>
           </CardHeader>
           <CardContent className="space-y-1.5 text-sm">
-            <div className="flex justify-between">
-              <span className="text-white/80">Lavatory:</span>
-              <span className="font-bold font-mono">1 DFU</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-white/80">Water Closet:</span>
-              <span className="font-bold font-mono">3 DFU</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-white/80">Shower/Tub:</span>
-              <span className="font-bold font-mono">2 DFU</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-white/80">Kitchen Sink:</span>
-              <span className="font-bold font-mono">2 DFU</span>
-            </div>
+            <div className="flex justify-between"><span className="text-white/80">Lavatory:</span><span className="font-bold font-mono">1 DFU</span></div>
+            <div className="flex justify-between"><span className="text-white/80">Water Closet:</span><span className="font-bold font-mono">{edition >= "2024" ? "4" : "3"} DFU</span></div>
+            <div className="flex justify-between"><span className="text-white/80">Shower/Tub:</span><span className="font-bold font-mono">2 DFU</span></div>
+            <div className="flex justify-between"><span className="text-white/80">Kitchen Sink:</span><span className="font-bold font-mono">2 DFU</span></div>
           </CardContent>
         </Card>
-
         <Card className="bg-[#003366] text-white">
           <CardHeader className="pb-2">
             <CardTitle className="font-heading uppercase text-sm">Min. Vent Sizes</CardTitle>
           </CardHeader>
           <CardContent className="space-y-1.5 text-sm">
-            <div className="flex justify-between">
-              <span className="text-white/80">General min:</span>
-              <span className="font-bold font-mono">1-1/4"</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-white/80">Water Closet:</span>
-              <span className="font-bold font-mono">2"</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-white/80">Above Roof:</span>
-              <span className="font-bold font-mono">6" min</span>
-            </div>
+            <div className="flex justify-between"><span className="text-white/80">General min:</span><span className="font-bold font-mono">1-1/4"</span></div>
+            <div className="flex justify-between"><span className="text-white/80">Water Closet:</span><span className="font-bold font-mono">{codeType === "upc" ? '2"' : '1-1/2"'}</span></div>
+            <div className="flex justify-between"><span className="text-white/80">Above Roof:</span><span className="font-bold font-mono">6" min</span></div>
           </CardContent>
         </Card>
       </div>
