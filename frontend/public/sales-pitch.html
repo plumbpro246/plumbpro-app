@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PlumbPro - See It In Action</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Open Sans', sans-serif; background: #0a0f1a; color: white; overflow-x: hidden; }
+
+  /* Hero */
+  .hero {
+    min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;
+    text-align: center; padding: 60px 20px;
+    background: linear-gradient(180deg, #001a33 0%, #003366 50%, #001a33 100%);
+    position: relative;
+  }
+  .hero::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 120px;
+    background: linear-gradient(transparent, #0a0f1a);
+  }
+  .hero-badge {
+    display: inline-block; background: #FF5F00; padding: 10px 30px;
+    font-family: 'Oswald'; font-size: 16px; font-weight: 700;
+    letter-spacing: 3px; text-transform: uppercase; margin-bottom: 30px;
+    animation: fadeInDown 0.8s ease;
+  }
+  .hero h1 {
+    font-family: 'Oswald'; font-size: 80px; font-weight: 700; line-height: 1;
+    margin-bottom: 10px; animation: fadeInDown 0.8s 0.2s ease both;
+  }
+  .hero h1 span { color: #FF5F00; }
+  .hero .subtitle {
+    font-size: 24px; color: rgba(255,255,255,0.7); margin-bottom: 15px;
+    animation: fadeInDown 0.8s 0.4s ease both;
+  }
+  .hero .tagline {
+    font-family: 'Oswald'; font-size: 20px; color: #FF5F00;
+    letter-spacing: 3px; text-transform: uppercase; margin-bottom: 40px;
+    animation: fadeInDown 0.8s 0.6s ease both;
+  }
+  .scroll-hint {
+    position: absolute; bottom: 40px; z-index: 2;
+    font-family: 'Oswald'; font-size: 14px; letter-spacing: 3px;
+    text-transform: uppercase; color: rgba(255,255,255,0.4);
+    animation: bounce 2s infinite;
+  }
+  .scroll-hint::after {
+    content: ''; display: block; width: 2px; height: 40px;
+    background: rgba(255,255,255,0.2); margin: 10px auto 0;
+  }
+
+  /* Feature Sections */
+  .feature-section {
+    min-height: 100vh; display: flex; align-items: center; padding: 80px 0;
+    position: relative; overflow: hidden;
+  }
+  .feature-section:nth-child(even) { background: #0d1520; }
+  .feature-section:nth-child(odd) { background: #0a0f1a; }
+  .feature-inner {
+    max-width: 1300px; margin: 0 auto; padding: 0 40px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center;
+    width: 100%;
+  }
+  .feature-section:nth-child(even) .feature-inner { direction: rtl; }
+  .feature-section:nth-child(even) .feature-inner > * { direction: ltr; }
+  .feature-text { opacity: 0; transform: translateY(40px); transition: all 0.8s ease; }
+  .feature-text.visible { opacity: 1; transform: translateY(0); }
+  .feature-number {
+    font-family: 'Oswald'; font-size: 80px; font-weight: 700;
+    color: rgba(255,95,0,0.15); line-height: 1; margin-bottom: -10px;
+  }
+  .feature-label {
+    font-family: 'Oswald'; font-size: 14px; color: #FF5F00;
+    letter-spacing: 3px; text-transform: uppercase; margin-bottom: 10px;
+  }
+  .feature-title {
+    font-family: 'Oswald'; font-size: 42px; font-weight: 700;
+    text-transform: uppercase; line-height: 1.1; margin-bottom: 20px;
+  }
+  .feature-desc { font-size: 17px; color: rgba(255,255,255,0.7); line-height: 1.7; }
+  .feature-desc strong { color: #FF5F00; }
+  .feature-image {
+    opacity: 0; transform: translateX(40px) scale(0.95); transition: all 0.8s 0.2s ease;
+    border-radius: 12px; overflow: hidden;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.08);
+  }
+  .feature-section:nth-child(even) .feature-image { transform: translateX(-40px) scale(0.95); }
+  .feature-image.visible { opacity: 1; transform: translateX(0) scale(1); }
+  .feature-image img { width: 100%; display: block; }
+
+  /* Pitch Script Section */
+  .pitch-section {
+    padding: 100px 40px; text-align: center;
+    background: linear-gradient(180deg, #0a0f1a, #003366, #0a0f1a);
+  }
+  .pitch-section h2 {
+    font-family: 'Oswald'; font-size: 48px; font-weight: 700;
+    text-transform: uppercase; margin-bottom: 40px;
+  }
+  .pitch-section h2 span { color: #FF5F00; }
+  .pitch-card {
+    max-width: 800px; margin: 0 auto;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px; padding: 50px; text-align: left;
+  }
+  .pitch-card p {
+    font-size: 18px; line-height: 1.8; color: rgba(255,255,255,0.85);
+    margin-bottom: 20px;
+  }
+  .pitch-card p:last-child { margin-bottom: 0; }
+  .pitch-card em { font-style: normal; color: #FF5F00; font-weight: 700; }
+  .pitch-card .speaker {
+    font-family: 'Oswald'; font-size: 14px; color: rgba(255,255,255,0.4);
+    letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px;
+  }
+
+  /* CTA */
+  .cta-section {
+    padding: 100px 40px; text-align: center; background: #003366;
+  }
+  .cta-section h2 {
+    font-family: 'Oswald'; font-size: 52px; font-weight: 700; margin-bottom: 15px;
+  }
+  .cta-section h2 span { color: #FF5F00; }
+  .cta-section .sub { font-size: 20px; color: rgba(255,255,255,0.7); margin-bottom: 40px; }
+  .cta-btn {
+    display: inline-block; background: #FF5F00; color: white;
+    font-family: 'Oswald'; font-size: 22px; font-weight: 700;
+    padding: 18px 50px; text-decoration: none; text-transform: uppercase;
+    letter-spacing: 2px; transition: all 0.3s;
+  }
+  .cta-btn:hover { background: #e55500; transform: scale(1.05); }
+  .cta-info {
+    margin-top: 20px; font-size: 14px; color: rgba(255,255,255,0.5);
+  }
+
+  /* Animations */
+  @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-10px); }
+    60% { transform: translateY(-5px); }
+  }
+
+  @media (max-width: 768px) {
+    .hero h1 { font-size: 48px; }
+    .feature-inner { grid-template-columns: 1fr; gap: 30px; }
+    .feature-section:nth-child(even) .feature-inner { direction: ltr; }
+    .feature-title { font-size: 32px; }
+    .pitch-card { padding: 30px; }
+    .cta-section h2 { font-size: 36px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-badge">Built by a Plumber, For Plumbers</div>
+  <h1>PLUMB<span>PRO</span></h1>
+  <p class="subtitle">Field Companion App</p>
+  <p class="tagline">Your Entire Toolbox in One App</p>
+  <div class="scroll-hint">See It In Action</div>
+</section>
+
+<!-- Feature 1: Dashboard -->
+<section class="feature-section">
+  <div class="feature-inner">
+    <div class="feature-text">
+      <div class="feature-number">01</div>
+      <div class="feature-label">Command Center</div>
+      <h3 class="feature-title">Your Day at a Glance</h3>
+      <p class="feature-desc">
+        Open the app and see <strong>everything that matters</strong> — your notes, timesheets, bids, materials, and today's AI-generated safety talk. Quick access buttons get you to any tool in <strong>one tap</strong>.
+      </p>
+    </div>
+    <div class="feature-image"><img src="/demo/dashboard.jpg" alt="Dashboard" loading="lazy"></div>
+  </div>
+</section>
+
+<!-- Feature 2: Safety Talks -->
+<section class="feature-section">
+  <div class="feature-inner">
+    <div class="feature-text">
+      <div class="feature-number">02</div>
+      <div class="feature-label">AI-Powered</div>
+      <h3 class="feature-title">Daily Safety Talks</h3>
+      <p class="feature-desc">
+        Never write another toolbox talk. PlumbPro uses <strong>AI to generate a fresh safety briefing every single day</strong> — PPE, confined spaces, fall protection, electrical safety. Just open it and read it to your crew.
+      </p>
+    </div>
+    <div class="feature-image"><img src="/demo/safety-talks.jpg" alt="Safety Talks" loading="lazy"></div>
+  </div>
+</section>
+
+<!-- Feature 3: Formulas -->
+<section class="feature-section">
+  <div class="feature-inner">
+    <div class="feature-text">
+      <div class="feature-number">03</div>
+      <div class="feature-label">Instant Calculations</div>
+      <h3 class="feature-title">Plumbing Formulas</h3>
+      <p class="feature-desc">
+        <strong>Pipe volume, flow rates, head pressure, drainage slope, friction loss, pump horsepower</strong> — all the formulas you'd normally dig through a reference book for. Just select, enter your values, get the answer.
+      </p>
+    </div>
+    <div class="feature-image"><img src="/demo/formulas.jpg" alt="Formulas" loading="lazy"></div>
+  </div>
+</section>
+
+<!-- Feature 4: Calculator -->
+<section class="feature-section">
+  <div class="feature-inner">
+    <div class="feature-text">
+      <div class="feature-number">04</div>
+      <div class="feature-label">Field Ready</div>
+      <h3 class="feature-title">Calculator & Conversions</h3>
+      <p class="feature-desc">
+        A full calculator with <strong>built-in plumbing conversions</strong> — PSI to feet of head, GPM to CFM, gallons to liters, inches to millimeters. Plus a complete <strong>pipe size reference table</strong> with OD and ID measurements.
+      </p>
+    </div>
+    <div class="feature-image"><img src="/demo/calculator.jpg" alt="Calculator" loading="lazy"></div>
+  </div>
+</section>
+
+<!-- Feature 5: Timesheet -->
+<section class="feature-section">
+  <div class="feature-inner">
+    <div class="feature-text">
+      <div class="feature-number">05</div>
+      <div class="feature-label">GPS Tracking</div>
+      <h3 class="feature-title">Timesheet & Clock In/Out</h3>
+      <p class="feature-desc">
+        <strong>Clock in when you arrive, clock out when you leave.</strong> GPS geofencing automatically tracks your location at job sites. Export timesheets as PDF for payroll. Weekly summaries show total hours at a glance.
+      </p>
+    </div>
+    <div class="feature-image"><img src="/demo/timesheet.jpg" alt="Timesheet" loading="lazy"></div>
+  </div>
+</section>
+
+<!-- Feature 6: Job Bidding -->
+<section class="feature-section">
+  <div class="feature-inner">
+    <div class="feature-text">
+      <div class="feature-number">06</div>
+      <div class="feature-label">Win More Work</div>
+      <h3 class="feature-title">Job Bidding & Estimates</h3>
+      <p class="feature-desc">
+        Create <strong>professional bids right on the job site</strong> and email them to clients instantly. Track total bids, pending, won, and your total won value. No more going back to the office to write up estimates.
+      </p>
+    </div>
+    <div class="feature-image"><img src="/demo/bidding.jpg" alt="Job Bidding" loading="lazy"></div>
+  </div>
+</section>
+
+<!-- Feature 7: Plumbing Code -->
+<section class="feature-section">
+  <div class="feature-inner">
+    <div class="feature-text">
+      <div class="feature-number">07</div>
+      <div class="feature-label">Code Reference</div>
+      <h3 class="feature-title">UPC & IPC Plumbing Code</h3>
+      <p class="feature-desc">
+        <strong>2015, 2018, 2021, and 2024 editions</strong> of both UPC and IPC codes — searchable on your phone. Definitions, pipe sizing, fixture counts, vent sizing, drainage requirements. <strong>Bookmark your most-used sections</strong> for instant access.
+      </p>
+    </div>
+    <div class="feature-image"><img src="/demo/plumbing-code.jpg" alt="Plumbing Code" loading="lazy"></div>
+  </div>
+</section>
+
+<!-- Feature 8: OSHA -->
+<section class="feature-section">
+  <div class="feature-inner">
+    <div class="feature-text">
+      <div class="feature-number">08</div>
+      <div class="feature-label">Stay Compliant</div>
+      <h3 class="feature-title">OSHA Requirements</h3>
+      <p class="feature-desc">
+        <strong>PPE, confined spaces, trenching, fall protection, HazCom, electrical, scaffolding, lockout/tagout</strong> — all OSHA requirements at your fingertips with CFR references. Plus emergency numbers and reporting deadlines.
+      </p>
+    </div>
+    <div class="feature-image"><img src="/demo/osha.jpg" alt="OSHA" loading="lazy"></div>
+  </div>
+</section>
+
+<!-- Sales Pitch Script -->
+<section class="pitch-section">
+  <h2>The <span>Sales Pitch</span></h2>
+  <div class="pitch-card">
+    <div class="speaker">Your 60-Second Elevator Pitch</div>
+    <p>"Hey, you know how we're always flipping through code books, looking up formulas, writing safety talks on napkins, and going back to the office just to type up a bid?"</p>
+    <p>"I built an app called <em>PlumbPro</em> that puts all of that in your pocket. It's got every plumbing formula you'd ever need — pipe volume, flow rates, drainage slope — you just plug in the numbers and it gives you the answer."</p>
+    <p>"It writes your <em>safety talks for you</em> using AI. Every morning there's a fresh toolbox talk ready to go — PPE, confined spaces, fall protection, whatever. Just open it and read it to the crew."</p>
+    <p>"It's got <em>GPS timesheets</em> — clock in when you get to the site, clock out when you leave. It tracks your hours and exports PDFs for payroll. Plus you can create <em>professional bids</em> right on the job site and email them to the client on the spot."</p>
+    <p>"And the whole <em>UPC and IPC plumbing code</em> — 2015 through 2024 — is searchable right on your phone. No more hauling around code books."</p>
+    <p>"It's <em>free to start</em>. The basic tools are free forever. If you want the full toolkit — timesheets, bidding, everything — it's less than <em>ten bucks a month</em>. And right now, the first 300 people to sign up get <em>3 months completely free</em>."</p>
+    <p>"It was <em>built by a plumber, for plumbers</em>. Check it out — <em>plumbpro-app.vercel.app</em>."</p>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <h2>Ready to <span>Try It?</span></h2>
+  <p class="sub">Free plan available. No credit card needed to start.</p>
+  <a href="https://plumbpro-app.vercel.app" class="cta-btn" target="_blank">Get PlumbPro Free</a>
+  <p class="cta-info">plumbpro-app.vercel.app &bull; plumbpro246@gmail.com</p>
+</section>
+
+<script>
+// Scroll-triggered animations
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.2 });
+
+document.querySelectorAll('.feature-text, .feature-image').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
