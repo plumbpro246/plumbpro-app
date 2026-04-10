@@ -250,7 +250,7 @@ const MainLayout = ({ children }) => {
           ))}
         </nav>
 
-        <div className="p-4 border-t border-slate-800">
+        <div className="p-3 border-t border-slate-800 flex-shrink-0">
           <Link 
             to="/subscription" 
             className="flex items-center gap-2 px-4 py-2 mb-2 rounded-sm bg-[#FF5F00] text-white hover:bg-[#FF5F00]/90"
@@ -259,19 +259,22 @@ const MainLayout = ({ children }) => {
             <Crown className="w-4 h-4" />
             <span className="text-sm font-bold uppercase">{user?.subscription_tier || "Free"}</span>
           </Link>
-          <div className="flex items-center gap-2 px-2 py-2 text-sm text-slate-400">
-            <User className="w-4 h-4" />
-            <span className="truncate">{user?.full_name}</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 px-2 py-1 text-sm text-slate-400 truncate">
+              <User className="w-4 h-4 flex-shrink-0" />
+              <span className="truncate">{user?.full_name}</span>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="text-slate-400 hover:text-red-400 hover:bg-red-950/30 flex-shrink-0"
+              onClick={handleLogout}
+              data-testid="logout-btn"
+            >
+              <LogOut className="w-4 h-4 mr-1.5" />
+              Logout
+            </Button>
           </div>
-          <Button 
-            variant="ghost" 
-            className="w-full justify-start text-slate-400 hover:text-white hover:bg-slate-800"
-            onClick={handleLogout}
-            data-testid="logout-btn"
-          >
-            <LogOut className="w-4 h-4 mr-2" />
-            Logout
-          </Button>
         </div>
       </aside>
 
