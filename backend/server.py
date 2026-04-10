@@ -13,6 +13,9 @@ from datetime import datetime, timezone, timedelta
 import jwt
 import bcrypt
 import base64
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -30,6 +33,49 @@ JWT_EXPIRATION_HOURS = 24
 # Emergent LLM Key
 EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY')
 STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY')
+
+# Gmail SMTP Config
+GMAIL_ADDRESS = os.environ.get('GMAIL_ADDRESS')
+GMAIL_APP_PASSWORD = os.environ.get('GMAIL_APP_PASSWORD')
+
+def send_support_email(ticket: dict):
+    """Send support ticket notification via Gmail SMTP"""
+    if not GMAIL_ADDRESS or not GMAIL_APP_PASSWORD:
+        logger.warning("Gmail SMTP not configured, skipping email")
+        return False
+    try:
+        msg = MIMEMultipart()
+        msg["From"] = GMAIL_ADDRESS
+        msg["To"] = GMAIL_ADDRESS
+        msg["Subject"] = f"[PlumbPro Support] [{ticket['category'].upper()}] {ticket['subject']}"
+        
+        body = f"""New Support Ticket Received
+        
+Ticket ID: {ticket['id']}
+From: {ticket['user_name']} ({ticket['user_email']})
+Tier: {ticket['user_tier']}
+Category: {ticket['category']}
+Date: {ticket['created_at']}
+
+Subject: {ticket['subject']}
+
+Message:
+{ticket['message']}
+
+---
+Reply directly to: {ticket['user_email']}
+"""
+        msg.attach(MIMEText(body, "plain"))
+        
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(GMAIL_ADDRESS, GMAIL_APP_PASSWORD)
+            server.send_message(msg)
+        
+        logger.info(f"Support email sent for ticket {ticket['id']}")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to send support email: {e}")
+        return False
 
 # Create the main app
 app = FastAPI(title="PlumbPro Field Companion API")
@@ -1811,8 +1857,8 @@ async def create_support_ticket(request: Request, user: dict = Depends(get_curre
     }
     await db.support_tickets.insert_one(ticket)
 
-    # Log for email forwarding (owner checks DB or sets up email trigger)
-    logger.info(f"SUPPORT TICKET [{category}] from {user.get('email')} ({user.get('full_name')}): {subject}")
+    # Send email notification
+    send_support_email(ticket)
 
     return {"status": "submitted", "ticket_id": ticket["id"], "support_email": SUPPORT_EMAIL}
 
