@@ -12,6 +12,7 @@ Build an app with different tier monthly costs for plumbers to use in the field 
 - **Deployment**: Vercel (frontend) + Railway (backend) + MongoDB Atlas
 
 ## Subscription Pricing
+- Free: $0/mo (Calculator, Formulas, Safety Talks, Calendar, Plumbing Code)
 - Basic: $4.99/mo | Pro: $9.99/mo | Enterprise: $19.99/mo
 - Promo: First 100 users get 3 months free, others get 7-day trial
 
@@ -64,6 +65,15 @@ Build an app with different tier monthly costs for plumbers to use in the field 
 - `robots.txt` allowing public pages, blocking auth-required pages
 - Dynamic page titles on Landing, Privacy, Terms pages
 - Canonical URL set to `plumbpro-app.vercel.app`
+
+### Phase 11 -- Free Tier & Feature Gating (Complete - Feb 2026)
+- Free ($0) tier card on Subscription page with 4-tier pricing grid
+- Feature gating: free users access only Calculator, Formulas, Safety Talks, Calendar, Plumbing Code, Dashboard, Settings
+- Lock icons on sidebar for restricted pages (8 pages locked for free)
+- TierGatedRoute component redirects free users to /subscription
+- Registration flow redirects to /subscription instead of /dashboard
+- Toast notification on locked nav click
+- Regression tested: 100% pass (iteration_10.json)
 
 ## Prioritized Backlog
 
