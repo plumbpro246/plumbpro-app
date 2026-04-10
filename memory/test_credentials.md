@@ -1,18 +1,17 @@
 # PlumbPro Test Credentials
 
-## Test User Account
+## Owner/Admin Account (Full Enterprise Access)
+- Email: plumbpro246@gmail.com
+- Password: PlumbPro2025!
+- Tier: Enterprise (active)
+- Full access to all features
+
+## Test User (Pro Tier)
 - Email: testplumber@test.com
 - Password: Test1234!
-- Tier: pro (active, upgraded via Google Play verify test)
+- Tier: Pro (active)
 
-## Registration
-- Any new user can be registered at /login (Register tab)
-- Required fields: Full Name, Email, Password
-- Optional: Company
-
-## Stripe
-- Test keys are auto-configured in backend/.env
-
-## Google Play Billing
-- Product IDs: com.plumbpro.fieldcompanion.{basic,pro,enterprise}_monthly
-- Server-side verification: MOCKED (needs Google Cloud Service Account JSON)
+## Notes
+- Stripe: Test keys auto-configured in pod
+- OpenAI: Uses Emergent LLM Key via proxy
+- Google Play Billing verification: MOCKED (needs Google Cloud Service Account JSON)
