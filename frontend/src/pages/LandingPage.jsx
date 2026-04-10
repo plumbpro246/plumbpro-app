@@ -54,7 +54,7 @@ export default function LandingPage() {
       {/* Promo Banner */}
       {promoActive && (
         <div className="bg-[#FF5F00] text-white text-center py-2.5 px-4 text-sm font-bold tracking-wide" data-testid="promo-banner">
-          FIRST 100 USERS GET 3 MONTHS FREE — {spotsLeft} SPOTS LEFT
+          FIRST 300 USERS GET 3 MONTHS FREE — {spotsLeft} SPOTS LEFT
         </div>
       )}
 
@@ -210,7 +210,7 @@ export default function LandingPage() {
             </h2>
             {promoActive ? (
               <p className="text-[#FF5F00] font-bold mt-3">
-                First 100 users get 3 months FREE on any plan — {spotsLeft} spots left!
+                First 300 users get 3 months FREE on any plan — {spotsLeft} spots left!
               </p>
             ) : (
               <p className="text-slate-400 mt-3">Start with a 7-day free trial. Cancel anytime.</p>

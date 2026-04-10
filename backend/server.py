@@ -264,9 +264,9 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
 
 @api_router.get("/promo/status")
 async def get_promo_status():
-    """Get the current promo status - first 100 users get 3 months free"""
+    """Get the current promo status - first 300 users get 3 months free"""
     total_users = await db.users.count_documents({})
-    spots_remaining = max(0, 100 - total_users)
+    spots_remaining = max(0, 300 - total_users)
     return {
         "total_users": total_users,
         "spots_remaining": spots_remaining,
@@ -286,7 +286,7 @@ async def register(user_data: UserCreate):
     
     # Check if this user qualifies for the first-100 promo
     total_users = await db.users.count_documents({})
-    is_early_bird = total_users < 100
+    is_early_bird = total_users < 300
     
     user_doc = {
         "id": user_id,
