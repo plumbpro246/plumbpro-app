@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PlumbPro Social Media Flyer</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #1a1a2e; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+  .flyer {
+    width: 1080px; height: 1350px;
+    background: linear-gradient(180deg, #001a33 0%, #003366 40%, #002244 100%);
+    position: relative; overflow: hidden; font-family: 'Open Sans', sans-serif;
+    color: white;
+  }
+  .flyer::before {
+    content: ''; position: absolute; top: -100px; right: -100px;
+    width: 500px; height: 500px; border-radius: 50%;
+    background: rgba(255, 95, 0, 0.08);
+  }
+  .flyer::after {
+    content: ''; position: absolute; bottom: -200px; left: -150px;
+    width: 600px; height: 600px; border-radius: 50%;
+    background: rgba(255, 95, 0, 0.05);
+  }
+  .promo-bar {
+    background: #FF5F00; text-align: center; padding: 16px;
+    font-family: 'Oswald', sans-serif; font-size: 22px; font-weight: 700;
+    letter-spacing: 3px; text-transform: uppercase;
+  }
+  .content { padding: 60px 70px; position: relative; z-index: 1; }
+  .badge {
+    display: inline-block; background: rgba(255,95,0,0.15); border: 1px solid #FF5F00;
+    color: #FF5F00; font-family: 'Oswald', sans-serif; font-size: 16px;
+    padding: 8px 20px; letter-spacing: 3px; text-transform: uppercase;
+    margin-bottom: 30px;
+  }
+  .logo { font-family: 'Oswald', sans-serif; font-size: 90px; font-weight: 700; line-height: 1; margin-bottom: 8px; }
+  .logo span { color: #FF5F00; }
+  .subtitle { font-size: 28px; color: rgba(255,255,255,0.7); margin-bottom: 50px; font-weight: 300; }
+  .divider { width: 80px; height: 4px; background: #FF5F00; margin-bottom: 45px; }
+  .features { list-style: none; margin-bottom: 50px; }
+  .features li {
+    display: flex; align-items: center; gap: 20px;
+    padding: 18px 0; border-bottom: 1px solid rgba(255,255,255,0.06);
+    font-size: 24px; font-weight: 600;
+  }
+  .features li:last-child { border-bottom: none; }
+  .icon-circle {
+    width: 50px; height: 50px; border-radius: 50%;
+    background: rgba(255,95,0,0.15); display: flex;
+    align-items: center; justify-content: center; flex-shrink: 0;
+    font-size: 22px;
+  }
+  .pricing {
+    display: flex; gap: 16px; margin-bottom: 50px;
+  }
+  .price-box {
+    flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px; padding: 20px 16px; text-align: center;
+  }
+  .price-box.popular { border-color: #FF5F00; background: rgba(255,95,0,0.1); }
+  .price-box .tier { font-family: 'Oswald', sans-serif; font-size: 16px; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.6); margin-bottom: 8px; }
+  .price-box .amount { font-family: 'Oswald', sans-serif; font-size: 36px; font-weight: 700; }
+  .price-box .amount span { font-size: 16px; color: rgba(255,255,255,0.5); }
+  .price-box.popular .tier { color: #FF5F00; }
+  .website {
+    text-align: center; font-family: 'Oswald', sans-serif; font-size: 26px;
+    letter-spacing: 2px; color: rgba(255,255,255,0.8);
+  }
+  .website strong { color: #FF5F00; }
+  .tagline { text-align: center; font-size: 18px; color: rgba(255,255,255,0.5); margin-top: 10px; }
+</style>
+</head>
+<body>
+<div class="flyer">
+  <div class="promo-bar">FIRST 300 USERS GET 3 MONTHS FREE</div>
+  <div class="content">
+    <div class="badge">Built by a Plumber, For Plumbers</div>
+    <div class="logo">PLUMB<span>PRO</span></div>
+    <div class="subtitle">Field Companion App</div>
+    <div class="divider"></div>
+    <ul class="features">
+      <li><div class="icon-circle">&#128295;</div> Plumbing Formulas & Calculator</li>
+      <li><div class="icon-circle">&#9889;</div> AI-Generated Daily Safety Talks</li>
+      <li><div class="icon-circle">&#128205;</div> GPS Timesheet Tracking</li>
+      <li><div class="icon-circle">&#128176;</div> Job Bidding & Estimates</li>
+      <li><div class="icon-circle">&#128214;</div> UPC & IPC Code Reference</li>
+      <li><div class="icon-circle">&#128221;</div> Notes, Materials & Blueprints</li>
+    </ul>
+    <div class="pricing">
+      <div class="price-box"><div class="tier">Free</div><div class="amount">$0</div></div>
+      <div class="price-box"><div class="tier">Basic</div><div class="amount">$4.99<span>/mo</span></div></div>
+      <div class="price-box popular"><div class="tier">Pro</div><div class="amount">$9.99<span>/mo</span></div></div>
+      <div class="price-box"><div class="tier">Enterprise</div><div class="amount">$19.99<span>/mo</span></div></div>
+    </div>
+    <div class="website"><strong>plumbpro-app.vercel.app</strong></div>
+    <div class="tagline">Your Entire Toolbox in One App</div>
+  </div>
+</div>
+</body>
+</html>

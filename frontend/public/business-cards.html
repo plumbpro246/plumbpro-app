@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PlumbPro Business Cards</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #e8e8e8; display: flex; flex-direction: column;
+    justify-content: center; align-items: center; min-height: 100vh;
+    padding: 40px; gap: 40px; font-family: 'Open Sans', sans-serif;
+  }
+  h2 { font-family: 'Oswald'; color: #333; text-transform: uppercase; letter-spacing: 2px; margin-bottom: -20px; }
+  .card {
+    width: 700px; height: 400px; border-radius: 16px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+    position: relative; overflow: hidden;
+  }
+
+  /* ===== CARD FRONT ===== */
+  .card-front {
+    background: linear-gradient(135deg, #002244 0%, #003366 60%, #004080 100%);
+    color: white; display: flex; flex-direction: column;
+    justify-content: center; align-items: center; text-align: center;
+  }
+  .card-front::before {
+    content: ''; position: absolute; bottom: -60px; right: -60px;
+    width: 250px; height: 250px; border-radius: 50%;
+    background: rgba(255,95,0,0.08);
+  }
+  .card-front::after {
+    content: ''; position: absolute; top: 0; left: 0; right: 0;
+    height: 5px; background: #FF5F00;
+  }
+  .cf-logo { font-family: 'Oswald'; font-size: 72px; font-weight: 700; letter-spacing: 2px; position: relative; z-index: 1; }
+  .cf-logo span { color: #FF5F00; }
+  .cf-subtitle { font-size: 20px; color: rgba(255,255,255,0.6); letter-spacing: 6px; text-transform: uppercase; margin-top: -5px; position: relative; z-index: 1; }
+  .cf-divider { width: 60px; height: 3px; background: #FF5F00; margin: 20px 0; position: relative; z-index: 1; }
+  .cf-tagline { font-family: 'Oswald'; font-size: 16px; color: #FF5F00; letter-spacing: 3px; text-transform: uppercase; position: relative; z-index: 1; }
+
+  /* ===== CARD BACK ===== */
+  .card-back {
+    background: white; color: #222; padding: 40px 45px;
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .card-back::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+    height: 5px; background: #FF5F00;
+  }
+  .cb-top { display: flex; justify-content: space-between; align-items: flex-start; }
+  .cb-mini-logo { font-family: 'Oswald'; font-size: 24px; font-weight: 700; color: #003366; }
+  .cb-mini-logo span { color: #FF5F00; }
+  .cb-promo {
+    background: #FF5F00; color: white; font-family: 'Oswald';
+    font-size: 11px; padding: 5px 14px; letter-spacing: 1px;
+    text-transform: uppercase; font-weight: 700; border-radius: 4px;
+  }
+  .cb-features {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px 30px;
+    margin: 25px 0;
+  }
+  .cb-feat {
+    display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; color: #333;
+  }
+  .cb-dot {
+    width: 8px; height: 8px; background: #FF5F00; border-radius: 50%; flex-shrink: 0;
+  }
+  .cb-bottom { display: flex; justify-content: space-between; align-items: flex-end; border-top: 1px solid #eee; padding-top: 18px; }
+  .cb-website { font-family: 'Oswald'; font-size: 18px; color: #003366; letter-spacing: 1px; }
+  .cb-website strong { color: #FF5F00; }
+  .cb-contact { text-align: right; font-size: 13px; color: #666; }
+  .cb-contact a { color: #FF5F00; text-decoration: none; font-weight: 600; }
+
+  @media print {
+    body { background: white; padding: 0; }
+    .card { box-shadow: none; border: 1px solid #ccc; page-break-after: always; }
+  }
+</style>
+</head>
+<body>
+
+<h2>Business Card — Front</h2>
+<div class="card card-front">
+  <div class="cf-logo">PLUMB<span>PRO</span></div>
+  <div class="cf-subtitle">Field Companion</div>
+  <div class="cf-divider"></div>
+  <div class="cf-tagline">Built by a Plumber, For Plumbers</div>
+</div>
+
+<h2>Business Card — Back</h2>
+<div class="card card-back">
+  <div class="cb-top">
+    <div class="cb-mini-logo">PLUMB<span>PRO</span></div>
+    <div class="cb-promo">First 300 Users — 3 Months Free</div>
+  </div>
+  <div class="cb-features">
+    <div class="cb-feat"><div class="cb-dot"></div>Plumbing Formulas</div>
+    <div class="cb-feat"><div class="cb-dot"></div>GPS Timesheets</div>
+    <div class="cb-feat"><div class="cb-dot"></div>AI Safety Talks</div>
+    <div class="cb-feat"><div class="cb-dot"></div>Job Bidding</div>
+    <div class="cb-feat"><div class="cb-dot"></div>UPC & IPC Codes</div>
+    <div class="cb-feat"><div class="cb-dot"></div>OSHA Reference</div>
+    <div class="cb-feat"><div class="cb-dot"></div>Calculator</div>
+    <div class="cb-feat"><div class="cb-dot"></div>Notes & Materials</div>
+  </div>
+  <div class="cb-bottom">
+    <div class="cb-website"><strong>plumbpro-app.vercel.app</strong></div>
+    <div class="cb-contact">
+      <a href="mailto:plumbpro246@gmail.com">plumbpro246@gmail.com</a>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

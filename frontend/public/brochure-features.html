@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PlumbPro Feature Brochure</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #111; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+  .brochure {
+    width: 1200px; height: 800px;
+    background: #003366; position: relative; overflow: hidden;
+    font-family: 'Open Sans', sans-serif; color: white;
+    display: grid; grid-template-columns: 1fr 1fr;
+  }
+  .left { padding: 55px 50px; display: flex; flex-direction: column; justify-content: space-between; position: relative; z-index: 1; }
+  .right {
+    background: linear-gradient(135deg, #002244 0%, #001a33 100%);
+    padding: 55px 50px; display: flex; flex-direction: column; justify-content: center; align-items: center;
+    position: relative;
+  }
+  .right::before {
+    content: ''; position: absolute; top: -80px; right: -80px;
+    width: 300px; height: 300px; border-radius: 50%;
+    background: rgba(255,95,0,0.1);
+  }
+  .logo { font-family: 'Oswald', sans-serif; font-size: 52px; font-weight: 700; margin-bottom: 5px; }
+  .logo span { color: #FF5F00; }
+  .tagline-top { font-size: 14px; color: #FF5F00; letter-spacing: 3px; text-transform: uppercase; font-family: 'Oswald'; margin-bottom: 5px; }
+  .headline { font-family: 'Oswald', sans-serif; font-size: 34px; font-weight: 700; line-height: 1.2; margin-bottom: 30px; }
+  .headline em { font-style: normal; color: #FF5F00; }
+  .feature-list { list-style: none; }
+  .feature-list li {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 12px 0; font-size: 16px;
+  }
+  .check {
+    width: 26px; height: 26px; background: #FF5F00; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: bold; flex-shrink: 0; margin-top: 2px;
+  }
+  .feature-title { font-weight: 700; font-size: 17px; }
+  .feature-desc { font-size: 13px; color: rgba(255,255,255,0.6); margin-top: 2px; }
+  .bottom-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;
+  }
+  .website-text { font-family: 'Oswald'; font-size: 20px; letter-spacing: 1px; }
+  .website-text strong { color: #FF5F00; }
+  .email-text { font-size: 13px; color: rgba(255,255,255,0.6); }
+  .phone-mockup {
+    width: 280px; height: 500px; background: #0a1628;
+    border-radius: 30px; border: 3px solid rgba(255,255,255,0.15);
+    padding: 15px; position: relative; z-index: 1;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.4);
+  }
+  .phone-screen {
+    width: 100%; height: 100%; background: linear-gradient(180deg, #001a33, #003366);
+    border-radius: 20px; padding: 25px 20px; overflow: hidden;
+  }
+  .phone-header { font-family: 'Oswald'; font-size: 14px; color: rgba(255,255,255,0.5); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px; }
+  .phone-greeting { font-family: 'Oswald'; font-size: 22px; font-weight: 700; margin-bottom: 20px; }
+  .phone-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .phone-card {
+    background: rgba(255,255,255,0.06); border-radius: 10px; padding: 14px 10px;
+    text-align: center; font-size: 11px; font-weight: 600;
+  }
+  .phone-card-icon { font-size: 24px; margin-bottom: 6px; }
+  .phone-card.active { background: rgba(255,95,0,0.2); border: 1px solid rgba(255,95,0,0.4); }
+  .promo-badge {
+    position: absolute; top: 30px; right: -35px;
+    background: #FF5F00; color: white; font-family: 'Oswald';
+    font-size: 13px; font-weight: 700; padding: 8px 45px;
+    transform: rotate(35deg); letter-spacing: 1px; z-index: 2;
+  }
+  .pricing-row {
+    display: flex; gap: 10px; margin-top: 30px; z-index: 1;
+  }
+  .price-pill {
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 20px; padding: 8px 18px; text-align: center;
+    font-family: 'Oswald'; font-size: 14px;
+  }
+  .price-pill.hot { border-color: #FF5F00; background: rgba(255,95,0,0.15); }
+  .price-pill .p-label { font-size: 10px; color: rgba(255,255,255,0.5); letter-spacing: 1px; }
+  .price-pill .p-val { font-size: 18px; font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="brochure">
+  <div class="left">
+    <div>
+      <div class="tagline-top">Built by a Plumber, For Plumbers</div>
+      <div class="logo">PLUMB<span>PRO</span></div>
+      <div class="headline">Your Entire Toolbox<br><em>In One App</em></div>
+      <ul class="feature-list">
+        <li>
+          <div class="check">&#10003;</div>
+          <div><div class="feature-title">Plumbing Formulas & Calculator</div><div class="feature-desc">Pipe sizing, flow rates, pressure drops instantly</div></div>
+        </li>
+        <li>
+          <div class="check">&#10003;</div>
+          <div><div class="feature-title">AI-Generated Daily Safety Talks</div><div class="feature-desc">Fresh toolbox talks for your crew every morning</div></div>
+        </li>
+        <li>
+          <div class="check">&#10003;</div>
+          <div><div class="feature-title">GPS Timesheet Tracking</div><div class="feature-desc">Clock in/out with geofencing & automatic logs</div></div>
+        </li>
+        <li>
+          <div class="check">&#10003;</div>
+          <div><div class="feature-title">Job Bidding & Estimates</div><div class="feature-desc">Create bids and email them to clients on the spot</div></div>
+        </li>
+        <li>
+          <div class="check">&#10003;</div>
+          <div><div class="feature-title">UPC & IPC Code Reference</div><div class="feature-desc">2015–2024 editions, searchable in the field</div></div>
+        </li>
+        <li>
+          <div class="check">&#10003;</div>
+          <div><div class="feature-title">OSHA, Notes, Materials & More</div><div class="feature-desc">Everything else you need, all in your pocket</div></div>
+        </li>
+      </ul>
+    </div>
+    <div class="bottom-bar">
+      <div>
+        <div class="website-text"><strong>plumbpro-app.vercel.app</strong></div>
+        <div class="email-text">plumbpro246@gmail.com</div>
+      </div>
+    </div>
+  </div>
+  <div class="right">
+    <div class="promo-badge">3 MONTHS FREE</div>
+    <div class="phone-mockup">
+      <div class="phone-screen">
+        <div class="phone-header">PlumbPro</div>
+        <div class="phone-greeting">Good Morning!</div>
+        <div class="phone-grid">
+          <div class="phone-card active"><div class="phone-card-icon">&#128221;</div>Notes</div>
+          <div class="phone-card"><div class="phone-card-icon">&#128295;</div>Formulas</div>
+          <div class="phone-card"><div class="phone-card-icon">&#9889;</div>Safety Talk</div>
+          <div class="phone-card"><div class="phone-card-icon">&#128338;</div>Timesheet</div>
+          <div class="phone-card"><div class="phone-card-icon">&#128230;</div>Materials</div>
+          <div class="phone-card active"><div class="phone-card-icon">&#128176;</div>Job Bids</div>
+          <div class="phone-card"><div class="phone-card-icon">&#128197;</div>Calendar</div>
+          <div class="phone-card"><div class="phone-card-icon">&#128214;</div>Codes</div>
+        </div>
+      </div>
+    </div>
+    <div class="pricing-row">
+      <div class="price-pill"><div class="p-label">FREE</div><div class="p-val">$0</div></div>
+      <div class="price-pill"><div class="p-label">BASIC</div><div class="p-val">$4.99</div></div>
+      <div class="price-pill hot"><div class="p-label">PRO</div><div class="p-val">$9.99</div></div>
+      <div class="price-pill"><div class="p-label">ENTERPRISE</div><div class="p-val">$19.99</div></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
