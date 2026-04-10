@@ -316,7 +316,7 @@ export default function LandingPage() {
                 Terms of Service
               </button>
               <a
-                href="mailto:support@plumbpro.com"
+                href="mailto:plumbpro246@gmail.com"
                 className="text-sm text-slate-400 hover:text-[#FF5F00] transition-colors"
               >
                 Contact

@@ -141,7 +141,7 @@ export default function PrivacyPolicyPage() {
             </p>
             <div className="bg-slate-800 border border-slate-700 rounded-sm p-4 mt-3">
               <p className="text-white font-bold">PlumbPro</p>
-              <p className="text-slate-300">Email: <a href="mailto:support@plumbpro.com" className="text-[#FF5F00] hover:underline">support@plumbpro.com</a></p>
+              <p className="text-slate-300">Email: <a href="mailto:plumbpro246@gmail.com" className="text-[#FF5F00] hover:underline">plumbpro246@gmail.com</a></p>
             </div>
           </section>
 

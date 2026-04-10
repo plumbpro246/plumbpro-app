@@ -1773,6 +1773,44 @@ async def get_plumbing_code_chapter(chapter_id: str, code_type: str = "upc", edi
             return chapter
     raise HTTPException(status_code=404, detail="Chapter not found")
 
+# ==================== SUPPORT ====================
+
+SUPPORT_EMAIL = "plumbpro246@gmail.com"
+
+@api_router.post("/support/ticket")
+async def create_support_ticket(request: Request, user: dict = Depends(get_current_user)):
+    body = await request.json()
+    category = body.get("category", "general")
+    subject = body.get("subject", "")
+    message = body.get("message", "")
+
+    if not subject or not message:
+        raise HTTPException(status_code=400, detail="Subject and message are required")
+
+    ticket = {
+        "id": str(uuid.uuid4()),
+        "user_id": user["id"],
+        "user_email": user.get("email", ""),
+        "user_name": user.get("full_name", ""),
+        "user_tier": user.get("subscription_tier", "free"),
+        "category": category,
+        "subject": subject,
+        "message": message,
+        "status": "open",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.support_tickets.insert_one(ticket)
+
+    # Log for email forwarding (owner checks DB or sets up email trigger)
+    logger.info(f"SUPPORT TICKET [{category}] from {user.get('email')} ({user.get('full_name')}): {subject}")
+
+    return {"status": "submitted", "ticket_id": ticket["id"], "support_email": SUPPORT_EMAIL}
+
+@api_router.get("/support/tickets")
+async def get_support_tickets(user: dict = Depends(get_current_user)):
+    tickets = await db.support_tickets.find({"user_id": user["id"]}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    return tickets
+
 # ==================== HEALTH CHECK ====================
 
 @api_router.get("/")

@@ -23,6 +23,7 @@ import BlueprintsPage from "@/pages/BlueprintsPage";
 import SubscriptionPage from "@/pages/SubscriptionPage";
 import SubscriptionSuccessPage from "@/pages/SubscriptionSuccessPage";
 import SettingsPage from "@/pages/SettingsPage";
+import SupportPage from "@/pages/SupportPage";
 import PlumbingCodePage from "@/pages/PlumbingCodePage";
 import LandingPage from "@/pages/LandingPage";
 import PrivacyPolicyPage from "@/pages/PrivacyPolicyPage";
@@ -153,13 +154,13 @@ const TierGatedRoute = ({ children }) => {
 import { 
   Home, FileText, Calculator, Shield, Clock, Package, 
   DollarSign, Calendar, AlertTriangle, FileSpreadsheet, 
-  Cpu, Map, LogOut, Menu, X, User, Crown, Settings, BookOpen, Lock
+  Cpu, Map, LogOut, Menu, X, User, Crown, Settings, BookOpen, Lock, LifeBuoy
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
-// Free tier gets: Dashboard, Formulas, Safety Talks, Calendar, Calculator, Settings, Subscription, Plumbing Code
-const FREE_TIER_PATHS = ["/dashboard", "/formulas", "/safety-talks", "/calendar", "/calculator", "/settings", "/subscription", "/subscription/success", "/plumbing-code"];
+// Free tier gets: Dashboard, Formulas, Safety Talks, Calendar, Calculator, Settings, Subscription, Plumbing Code, Support
+const FREE_TIER_PATHS = ["/dashboard", "/formulas", "/safety-talks", "/calendar", "/calculator", "/settings", "/subscription", "/subscription/success", "/plumbing-code", "/support"];
 
 const navItems = [
   { path: "/dashboard", label: "Dashboard", icon: Home, free: true },
@@ -176,6 +177,7 @@ const navItems = [
   { path: "/total-station", label: "Total Station", icon: Map },
   { path: "/blueprints", label: "Blueprints", icon: FileText },
   { path: "/plumbing-code", label: "Plumbing Code", icon: BookOpen, free: true },
+  { path: "/support", label: "Support", icon: LifeBuoy, free: true },
   { path: "/settings", label: "Settings", icon: Settings, free: true },
 ];
 
@@ -358,6 +360,7 @@ function App() {
           <Route path="/total-station" element={<ProtectedRoute><TierGatedRoute><MainLayout><TotalStationPage /></MainLayout></TierGatedRoute></ProtectedRoute>} />
           <Route path="/blueprints" element={<ProtectedRoute><TierGatedRoute><MainLayout><BlueprintsPage /></MainLayout></TierGatedRoute></ProtectedRoute>} />
           <Route path="/plumbing-code" element={<ProtectedRoute><MainLayout><PlumbingCodePage /></MainLayout></ProtectedRoute>} />
+          <Route path="/support" element={<ProtectedRoute><MainLayout><SupportPage /></MainLayout></ProtectedRoute>} />
           <Route path="/subscription" element={<ProtectedRoute><MainLayout><SubscriptionPage /></MainLayout></ProtectedRoute>} />
           <Route path="/subscription/success" element={<ProtectedRoute><MainLayout><SubscriptionSuccessPage /></MainLayout></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><MainLayout><SettingsPage /></MainLayout></ProtectedRoute>} />

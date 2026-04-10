@@ -75,6 +75,15 @@ Build an app with different tier monthly costs for plumbers to use in the field 
 - Toast notification on locked nav click
 - Regression tested: 100% pass (iteration_10.json)
 
+### Phase 12 -- Support Page (Complete - Feb 2026)
+- Support page with contact form (Category, Subject, Message)
+- "Email Us Directly" card with plumbpro246@gmail.com
+- Common Questions FAQ (upgrade, cancel, refund)
+- Backend stores tickets in MongoDB (POST /api/support/ticket, GET /api/support/tickets)
+- Updated all email references across legal pages from placeholder to plumbpro246@gmail.com
+- Available to all users including free tier
+- NOTE: Tickets stored in DB only — email forwarding requires SendGrid/SMTP integration
+
 ## Prioritized Backlog
 
 ### P1 -- Next

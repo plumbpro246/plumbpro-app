@@ -122,7 +122,7 @@ export default function TermsOfServicePage() {
           <section>
             <h2 className="text-xl font-bold text-[#FF5F00] uppercase">7. Refund Policy</h2>
             <p className="text-slate-300 leading-relaxed">
-              Due to the digital nature of our Service, all sales are final. However, if you experience a technical issue that prevents you from using the Service, contact us at support@plumbpro.com within 7 days of your payment, and we will work to resolve the issue or provide a refund at our discretion. Refunds for Google Play purchases are subject to Google's refund policies.
+              Due to the digital nature of our Service, all sales are final. However, if you experience a technical issue that prevents you from using the Service, contact us at plumbpro246@gmail.com within 7 days of your payment, and we will work to resolve the issue or provide a refund at our discretion. Refunds for Google Play purchases are subject to Google's refund policies.
             </p>
           </section>
 
@@ -170,7 +170,7 @@ export default function TermsOfServicePage() {
           <section>
             <h2 className="text-xl font-bold text-[#FF5F00] uppercase">13. Termination</h2>
             <p className="text-slate-300 leading-relaxed">
-              We may suspend or terminate your account if you violate these Terms. You may terminate your account at any time by contacting support@plumbpro.com. Upon termination, your right to use the Service ceases immediately. We may retain your data for up to 30 days after termination before permanent deletion.
+              We may suspend or terminate your account if you violate these Terms. You may terminate your account at any time by contacting plumbpro246@gmail.com. Upon termination, your right to use the Service ceases immediately. We may retain your data for up to 30 days after termination before permanent deletion.
             </p>
           </section>
 
@@ -188,7 +188,7 @@ export default function TermsOfServicePage() {
             </p>
             <div className="bg-slate-800 border border-slate-700 rounded-sm p-4 mt-3">
               <p className="text-white font-bold">PlumbPro</p>
-              <p className="text-slate-300">Email: <a href="mailto:support@plumbpro.com" className="text-[#FF5F00] hover:underline">support@plumbpro.com</a></p>
+              <p className="text-slate-300">Email: <a href="mailto:plumbpro246@gmail.com" className="text-[#FF5F00] hover:underline">plumbpro246@gmail.com</a></p>
             </div>
           </section>
 
