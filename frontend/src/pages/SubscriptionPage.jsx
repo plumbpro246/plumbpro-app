@@ -10,15 +10,36 @@ import { isCapacitorAndroid, startGooglePlayPurchase, acknowledgeGooglePlayPurch
 
 const tiers = [
   {
+    id: "free",
+    name: "Free",
+    price: 0,
+    icon: Zap,
+    description: "Get started with the basics",
+    features: [
+      "Calculator & Formulas",
+      "Safety Talks",
+      "Calendar & Scheduling",
+      "Plumbing Code Reference"
+    ],
+    notIncluded: [
+      "Notes & Job Tracking",
+      "Timesheet Tracking",
+      "Material Lists",
+      "Job Bidding Tools",
+      "OSHA & Safety Data Sheets",
+      "Blueprints"
+    ]
+  },
+  {
     id: "basic",
     name: "Basic",
     price: 4.99,
     googlePlayId: "com.plumbpro.fieldcompanion.basic_monthly",
-    icon: Zap,
+    icon: Crown,
     description: "Essential tools for solo plumbers",
     features: [
+      "Everything in Free",
       "Notes & Job Tracking",
-      "Calculator & Formulas",
       "OSHA Reference",
       "Safety Data Sheets",
       "5 Blueprint Uploads"
@@ -27,7 +48,6 @@ const tiers = [
       "AI Safety Talks",
       "Timesheet Tracking",
       "Job Bidding Tools",
-      "Calendar & Scheduling",
       "Material Lists"
     ]
   },
@@ -44,7 +64,6 @@ const tiers = [
       "AI-Generated Safety Talks",
       "Timesheet Tracking",
       "Material Lists",
-      "Calendar & Scheduling",
       "GPS Time Tracking",
       "PDF Exports"
     ],
@@ -249,11 +268,12 @@ export default function SubscriptionPage() {
       )}
 
       {/* Pricing Cards */}
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {tiers.map((tier) => {
           const Icon = tier.icon;
-          const isCurrentPlan = currentTier === tier.id && subscriptionStatus === "active";
+          const isCurrentPlan = currentTier === tier.id && (tier.id === "free" || subscriptionStatus === "active");
           const isTrialPlan = currentTier === tier.id && isOnTrial;
+          const isFree = tier.id === "free";
           const isUpgrade = tiers.findIndex(t => t.id === tier.id) > tiers.findIndex(t => t.id === currentTier);
           
           return (
@@ -269,15 +289,21 @@ export default function SubscriptionPage() {
               )}
               <CardHeader className="text-center pb-2">
                 <div className={`w-14 h-14 mx-auto mb-4 rounded-sm flex items-center justify-center ${
-                  tier.popular ? "bg-[#FF5F00]" : "bg-[#003366]"
+                  isFree ? "bg-slate-500" : tier.popular ? "bg-[#FF5F00]" : "bg-[#003366]"
                 }`}>
                   <Icon className="w-7 h-7 text-white" />
                 </div>
                 <CardTitle className="font-heading text-2xl uppercase">{tier.name}</CardTitle>
                 <CardDescription>{tier.description}</CardDescription>
                 <div className="mt-4">
-                  <span className="text-4xl font-bold">${tier.price}</span>
-                  <span className="text-muted-foreground">/month</span>
+                  {isFree ? (
+                    <span className="text-4xl font-bold">$0</span>
+                  ) : (
+                    <>
+                      <span className="text-4xl font-bold">${tier.price}</span>
+                      <span className="text-muted-foreground">/month</span>
+                    </>
+                  )}
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -296,52 +322,70 @@ export default function SubscriptionPage() {
                   ))}
                 </ul>
 
-                {/* Trial Button */}
-                {canStartTrial && !isCurrentPlan && (
+                {/* Free tier: just show current plan or nothing */}
+                {isFree && (
                   <Button
-                    onClick={() => handleStartTrial(tier)}
-                    disabled={loading === `trial-${tier.id}`}
-                    variant="outline"
-                    className="w-full h-12 font-bold uppercase border-2 border-[#FF5F00] text-[#FF5F00] hover:bg-[#FF5F00] hover:text-white"
-                    data-testid={`trial-${tier.id}`}
+                    disabled={isCurrentPlan}
+                    className={`w-full h-12 font-bold uppercase ${
+                      isCurrentPlan
+                        ? "bg-green-500 text-white cursor-default"
+                        : "bg-slate-500 hover:bg-slate-600 text-white"
+                    }`}
+                    data-testid="select-free"
                   >
-                    {loading === `trial-${tier.id}` ? (
-                      "Starting..."
+                    {isCurrentPlan ? (
+                      <><Check className="w-4 h-4 mr-2" /> Current Plan</>
                     ) : (
-                      <>
-                        <Gift className="w-4 h-4 mr-2" /> Start 7-Day Free Trial
-                      </>
+                      "Free Forever"
                     )}
                   </Button>
                 )}
 
-                {/* Subscribe Button */}
-                <Button
-                  onClick={() => handleSubscribe(tier)}
-                  disabled={isCurrentPlan || loading === tier.id}
-                  className={`w-full h-12 font-bold uppercase ${
-                    tier.popular 
-                      ? "bg-[#FF5F00] hover:bg-[#FF5F00]/90 text-white" 
-                      : isCurrentPlan
-                        ? "bg-green-500 text-white cursor-default"
-                        : "bg-[#003366] hover:bg-[#003366]/90 text-white"
-                  }`}
-                  data-testid={`subscribe-${tier.id}`}
-                >
-                  {loading === tier.id ? (
-                    "Processing..."
-                  ) : isCurrentPlan ? (
-                    <>
-                      <Check className="w-4 h-4 mr-2" /> Current Plan
-                    </>
-                  ) : isTrialPlan ? (
-                    "Subscribe to Continue"
-                  ) : isUpgrade ? (
-                    "Upgrade Now"
-                  ) : (
-                    "Select Plan"
-                  )}
-                </Button>
+                {/* Paid tiers: trial + subscribe buttons */}
+                {!isFree && (
+                  <>
+                    {canStartTrial && !isCurrentPlan && (
+                      <Button
+                        onClick={() => handleStartTrial(tier)}
+                        disabled={loading === `trial-${tier.id}`}
+                        variant="outline"
+                        className="w-full h-12 font-bold uppercase border-2 border-[#FF5F00] text-[#FF5F00] hover:bg-[#FF5F00] hover:text-white"
+                        data-testid={`trial-${tier.id}`}
+                      >
+                        {loading === `trial-${tier.id}` ? (
+                          "Starting..."
+                        ) : (
+                          <><Gift className="w-4 h-4 mr-2" /> Start 7-Day Free Trial</>
+                        )}
+                      </Button>
+                    )}
+
+                    <Button
+                      onClick={() => handleSubscribe(tier)}
+                      disabled={isCurrentPlan || loading === tier.id}
+                      className={`w-full h-12 font-bold uppercase ${
+                        tier.popular 
+                          ? "bg-[#FF5F00] hover:bg-[#FF5F00]/90 text-white" 
+                          : isCurrentPlan
+                            ? "bg-green-500 text-white cursor-default"
+                            : "bg-[#003366] hover:bg-[#003366]/90 text-white"
+                      }`}
+                      data-testid={`subscribe-${tier.id}`}
+                    >
+                      {loading === tier.id ? (
+                        "Processing..."
+                      ) : isCurrentPlan ? (
+                        <><Check className="w-4 h-4 mr-2" /> Current Plan</>
+                      ) : isTrialPlan ? (
+                        "Subscribe to Continue"
+                      ) : isUpgrade ? (
+                        "Upgrade Now"
+                      ) : (
+                        "Select Plan"
+                      )}
+                    </Button>
+                  </>
+                )}
               </CardContent>
             </Card>
           );

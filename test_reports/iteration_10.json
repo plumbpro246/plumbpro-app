@@ -1,0 +1,133 @@
+{
+  "summary": "Completed testing of Free Tier feature (Iteration 10). All features working correctly: 4 subscription tiers displayed, lock icons on restricted pages for free users, proper redirects to /subscription, toast messages, and auth flow regression passed.",
+
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "PlumbingCodePage",
+        "issues": ["Console warning: nested button inside button (bookmark button inside accordion trigger) - not blocking functionality"]
+      }
+    ]
+  },
+
+  "test_report_links": [
+    "/app/test_reports/iteration_10.json"
+  ],
+
+  "action_items": [],
+
+  "critical_code_review_comments": [
+    "Google Play server-side verification is MOCKED - currently trusts purchase tokens from client without calling Google Play Developer API",
+    "Minor React warning: nested button inside button in PlumbingCodePage.jsx (bookmark button inside accordion trigger) - cosmetic issue, not blocking"
+  ],
+
+  "updated_files": [],
+
+  "success_rate": {
+    "backend": "N/A (frontend-only testing)",
+    "frontend": "100% (all free tier features working)"
+  },
+
+  "test_credentials": {
+    "pro_user": {
+      "email": "testplumber@test.com",
+      "password": "Test1234!",
+      "tier": "pro",
+      "status": "active"
+    },
+    "free_users_created": [
+      "freeuser_l5mvid@test.com",
+      "directtest_ny8ova@test.com"
+    ]
+  },
+
+  "seed_data_creation": "",
+
+  "retest_needed": false,
+
+  "should_main_agent_self_test": true,
+
+  "context_for_next_testing_agent": "Iteration 10 tested the new Free Tier feature. All features verified: 4 subscription tiers (Free $0, Basic $4.99, Pro $9.99, Enterprise $19.99), lock icons on restricted pages for free users (8 pages: Notes, Timesheet, Materials, Job Bidding, OSHA, Safety Data, Total Station, Blueprints), proper redirects to /subscription when free user tries to access restricted pages, toast message 'Upgrade your plan to access this feature' when clicking locked nav items, new user registration redirects to /subscription (not /dashboard), existing user login still redirects to /dashboard. Pro user (testplumber@test.com) has full access with no lock icons. FREE_TIER_PATHS in App.js: /dashboard, /formulas, /safety-talks, /calendar, /calculator, /settings, /subscription, /subscription/success, /plumbing-code.",
+
+  "passed_tests": [
+    "Subscription page shows 4 tiers: Free ($0), Basic ($4.99), Pro ($9.99), Enterprise ($19.99)",
+    "Free tier card shows 'Current Plan' button for free users",
+    "Free tier features listed: Calculator & Formulas, Safety Talks, Calendar & Scheduling, Plumbing Code Reference",
+    "Sidebar shows 8 lock icons on restricted pages for free users (Notes, Timesheet, Materials, Job Bidding, OSHA, Safety Data, Total Station, Blueprints)",
+    "Free user CAN access: /dashboard",
+    "Free user CAN access: /formulas",
+    "Free user CAN access: /safety-talks",
+    "Free user CAN access: /calendar",
+    "Free user CAN access: /calculator",
+    "Free user CAN access: /plumbing-code",
+    "Free user CAN access: /settings",
+    "Free user CANNOT access /notes - redirects to /subscription",
+    "Free user CANNOT access /timesheet - redirects to /subscription",
+    "Free user CANNOT access /materials - redirects to /subscription",
+    "Free user CANNOT access /bidding - redirects to /subscription",
+    "Free user CANNOT access /osha - redirects to /subscription",
+    "Free user CANNOT access /sds - redirects to /subscription",
+    "Free user CANNOT access /total-station - redirects to /subscription",
+    "Free user CANNOT access /blueprints - redirects to /subscription",
+    "Clicking a locked nav item redirects to /subscription with toast message 'Upgrade your plan to access this feature'",
+    "New user registration redirects to /subscription (not /dashboard)",
+    "Auth flow regression - existing user login still works and redirects to /dashboard",
+    "Pro user (testplumber@test.com) can access all pages without locks",
+    "Pro user sees NO lock icons in sidebar",
+    "Pro tier shows 'Current Plan' button for pro user on subscription page"
+  ],
+
+  "features_verified": {
+    "subscription_page_tiers": {
+      "status": "WORKING",
+      "tiers": [
+        {"id": "free", "name": "Free", "price": "$0", "data_testid": "tier-free"},
+        {"id": "basic", "name": "Basic", "price": "$4.99/month", "data_testid": "tier-basic"},
+        {"id": "pro", "name": "Pro", "price": "$9.99/month", "data_testid": "tier-pro"},
+        {"id": "enterprise", "name": "Enterprise", "price": "$19.99/month", "data_testid": "tier-enterprise"}
+      ]
+    },
+    "free_tier_features": {
+      "status": "WORKING",
+      "features_listed": [
+        "Calculator & Formulas",
+        "Safety Talks",
+        "Calendar & Scheduling",
+        "Plumbing Code Reference"
+      ]
+    },
+    "lock_icons_for_free_users": {
+      "status": "WORKING",
+      "locked_pages": ["Notes", "Timesheet", "Materials", "Job Bidding", "OSHA", "Safety Data", "Total Station", "Blueprints"],
+      "lock_count": 8
+    },
+    "tier_gated_route": {
+      "status": "WORKING",
+      "redirects_to": "/subscription",
+      "toast_message": "Upgrade your plan to access this feature"
+    },
+    "new_user_registration_flow": {
+      "status": "WORKING",
+      "redirects_to": "/subscription"
+    },
+    "existing_user_login_flow": {
+      "status": "WORKING",
+      "redirects_to": "/dashboard"
+    },
+    "pro_user_full_access": {
+      "status": "WORKING",
+      "lock_icons_visible": false
+    }
+  },
+
+  "mocked_apis": {
+    "google_play_server_verification": "Server-side Google Play Developer API verification is stubbed. Currently trusts purchase tokens from client and records them without calling Google API. Full verification requires Google Cloud Service Account JSON."
+  }
+}

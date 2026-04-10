@@ -130,31 +130,53 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
+// Tier-Gated Route - redirects free users to subscription page for paid features
+const TierGatedRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+  const location = useLocation();
+  
+  if (loading) return null;
+  if (!user) return <Navigate to="/login" replace />;
+  
+  const tier = user?.subscription_tier || "free";
+  const status = user?.subscription_status || "inactive";
+  const hasPaid = tier !== "free" && (status === "active" || status === "trial");
+  
+  if (!hasPaid && !FREE_TIER_PATHS.includes(location.pathname)) {
+    return <Navigate to="/subscription" replace />;
+  }
+  
+  return children;
+};
+
 // Main Layout with Navigation
 import { 
   Home, FileText, Calculator, Shield, Clock, Package, 
   DollarSign, Calendar, AlertTriangle, FileSpreadsheet, 
-  Cpu, Map, LogOut, Menu, X, User, Crown, Settings, BookOpen
+  Cpu, Map, LogOut, Menu, X, User, Crown, Settings, BookOpen, Lock
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
+// Free tier gets: Dashboard, Formulas, Safety Talks, Calendar, Calculator, Settings, Subscription, Plumbing Code
+const FREE_TIER_PATHS = ["/dashboard", "/formulas", "/safety-talks", "/calendar", "/calculator", "/settings", "/subscription", "/subscription/success", "/plumbing-code"];
+
 const navItems = [
-  { path: "/dashboard", label: "Dashboard", icon: Home },
+  { path: "/dashboard", label: "Dashboard", icon: Home, free: true },
   { path: "/notes", label: "Notes", icon: FileText },
-  { path: "/formulas", label: "Formulas", icon: Calculator },
-  { path: "/safety-talks", label: "Safety Talks", icon: Shield },
+  { path: "/formulas", label: "Formulas", icon: Calculator, free: true },
+  { path: "/safety-talks", label: "Safety Talks", icon: Shield, free: true },
   { path: "/timesheet", label: "Timesheet", icon: Clock },
   { path: "/materials", label: "Materials", icon: Package },
   { path: "/bidding", label: "Job Bidding", icon: DollarSign },
-  { path: "/calendar", label: "Calendar", icon: Calendar },
+  { path: "/calendar", label: "Calendar", icon: Calendar, free: true },
   { path: "/osha", label: "OSHA", icon: AlertTriangle },
   { path: "/sds", label: "Safety Data", icon: FileSpreadsheet },
-  { path: "/calculator", label: "Calculator", icon: Cpu },
+  { path: "/calculator", label: "Calculator", icon: Cpu, free: true },
   { path: "/total-station", label: "Total Station", icon: Map },
   { path: "/blueprints", label: "Blueprints", icon: FileText },
-  { path: "/plumbing-code", label: "Plumbing Code", icon: BookOpen },
-  { path: "/settings", label: "Settings", icon: Settings },
+  { path: "/plumbing-code", label: "Plumbing Code", icon: BookOpen, free: true },
+  { path: "/settings", label: "Settings", icon: Settings, free: true },
 ];
 
 const MainLayout = ({ children }) => {
@@ -172,6 +194,25 @@ const MainLayout = ({ children }) => {
   const NavLink = ({ item, mobile = false }) => {
     const isActive = location.pathname === item.path;
     const Icon = item.icon;
+    const tier = user?.subscription_tier || "free";
+    const status = user?.subscription_status || "inactive";
+    const hasPaid = tier !== "free" && (status === "active" || status === "trial");
+    const isLocked = !item.free && !hasPaid;
+    
+    if (isLocked) {
+      return (
+        <Link
+          to="/subscription"
+          onClick={() => { mobile && setMobileOpen(false); toast.info("Upgrade your plan to access this feature"); }}
+          className="flex items-center gap-3 px-4 py-3 rounded-sm text-slate-500 hover:bg-slate-800/50 transition-all"
+          data-testid={`nav-${item.path.slice(1)}`}
+        >
+          <Icon className="w-5 h-5 opacity-40" strokeWidth={2.5} />
+          <span className="font-medium opacity-60">{item.label}</span>
+          <Lock className="w-3.5 h-3.5 ml-auto opacity-40" />
+        </Link>
+      );
+    }
     
     return (
       <Link
@@ -304,18 +345,18 @@ function App() {
           <Route path="/privacy" element={<PrivacyPolicyPage />} />
           <Route path="/terms" element={<TermsOfServicePage />} />
           <Route path="/dashboard" element={<ProtectedRoute><MainLayout><DashboardPage /></MainLayout></ProtectedRoute>} />
-          <Route path="/notes" element={<ProtectedRoute><MainLayout><NotesPage /></MainLayout></ProtectedRoute>} />
+          <Route path="/notes" element={<ProtectedRoute><TierGatedRoute><MainLayout><NotesPage /></MainLayout></TierGatedRoute></ProtectedRoute>} />
           <Route path="/formulas" element={<ProtectedRoute><MainLayout><FormulasPage /></MainLayout></ProtectedRoute>} />
           <Route path="/safety-talks" element={<ProtectedRoute><MainLayout><SafetyTalksPage /></MainLayout></ProtectedRoute>} />
-          <Route path="/timesheet" element={<ProtectedRoute><MainLayout><TimesheetPage /></MainLayout></ProtectedRoute>} />
-          <Route path="/materials" element={<ProtectedRoute><MainLayout><MaterialsPage /></MainLayout></ProtectedRoute>} />
-          <Route path="/bidding" element={<ProtectedRoute><MainLayout><BiddingPage /></MainLayout></ProtectedRoute>} />
+          <Route path="/timesheet" element={<ProtectedRoute><TierGatedRoute><MainLayout><TimesheetPage /></MainLayout></TierGatedRoute></ProtectedRoute>} />
+          <Route path="/materials" element={<ProtectedRoute><TierGatedRoute><MainLayout><MaterialsPage /></MainLayout></TierGatedRoute></ProtectedRoute>} />
+          <Route path="/bidding" element={<ProtectedRoute><TierGatedRoute><MainLayout><BiddingPage /></MainLayout></TierGatedRoute></ProtectedRoute>} />
           <Route path="/calendar" element={<ProtectedRoute><MainLayout><CalendarPage /></MainLayout></ProtectedRoute>} />
-          <Route path="/osha" element={<ProtectedRoute><MainLayout><OSHAPage /></MainLayout></ProtectedRoute>} />
-          <Route path="/sds" element={<ProtectedRoute><MainLayout><SDSPage /></MainLayout></ProtectedRoute>} />
+          <Route path="/osha" element={<ProtectedRoute><TierGatedRoute><MainLayout><OSHAPage /></MainLayout></TierGatedRoute></ProtectedRoute>} />
+          <Route path="/sds" element={<ProtectedRoute><TierGatedRoute><MainLayout><SDSPage /></MainLayout></TierGatedRoute></ProtectedRoute>} />
           <Route path="/calculator" element={<ProtectedRoute><MainLayout><CalculatorPage /></MainLayout></ProtectedRoute>} />
-          <Route path="/total-station" element={<ProtectedRoute><MainLayout><TotalStationPage /></MainLayout></ProtectedRoute>} />
-          <Route path="/blueprints" element={<ProtectedRoute><MainLayout><BlueprintsPage /></MainLayout></ProtectedRoute>} />
+          <Route path="/total-station" element={<ProtectedRoute><TierGatedRoute><MainLayout><TotalStationPage /></MainLayout></TierGatedRoute></ProtectedRoute>} />
+          <Route path="/blueprints" element={<ProtectedRoute><TierGatedRoute><MainLayout><BlueprintsPage /></MainLayout></TierGatedRoute></ProtectedRoute>} />
           <Route path="/plumbing-code" element={<ProtectedRoute><MainLayout><PlumbingCodePage /></MainLayout></ProtectedRoute>} />
           <Route path="/subscription" element={<ProtectedRoute><MainLayout><SubscriptionPage /></MainLayout></ProtectedRoute>} />
           <Route path="/subscription/success" element={<ProtectedRoute><MainLayout><SubscriptionSuccessPage /></MainLayout></ProtectedRoute>} />
