@@ -111,22 +111,6 @@ export default function SubscriptionPage() {
     fetchTrialStatus();
   }, []);
 
-  const handleStartTrial = async (tier) => {
-    setLoading(`trial-${tier.id}`);
-    try {
-      await axios.post(`${API}/subscriptions/start-trial`, { tier: tier.id }, { headers });
-      toast.success(`7-day free trial started for ${tier.name}!`);
-      await refreshUser();
-      // Refresh trial status
-      const response = await axios.get(`${API}/subscriptions/trial-status`, { headers });
-      setTrialStatus(response.data);
-    } catch (error) {
-      toast.error(error.response?.data?.detail || "Failed to start trial");
-    } finally {
-      setLoading(null);
-    }
-  };
-
   const handleSubscribe = async (tier) => {
     setLoading(tier.id);
     try {
@@ -207,8 +191,8 @@ export default function SubscriptionPage() {
                 <Gift className="w-7 h-7" />
               </div>
               <div>
-                <h3 className="text-xl font-bold">Try Any Plan FREE for 7 Days!</h3>
-                <p className="text-white/90">No credit card required. Full access to all features.</p>
+                <h3 className="text-xl font-bold">Try Any Plan FREE — Cancel Anytime!</h3>
+                <p className="text-white/90">Enter your card to start. You won't be charged until your trial ends.</p>
               </div>
             </div>
             <Badge className="bg-white text-[#FF5F00] font-bold text-sm px-4 py-2">
@@ -341,25 +325,9 @@ export default function SubscriptionPage() {
                   </Button>
                 )}
 
-                {/* Paid tiers: trial + subscribe buttons */}
+                {/* Paid tiers: single button - goes through Stripe (card required for trial) */}
                 {!isFree && (
                   <>
-                    {canStartTrial && !isCurrentPlan && (
-                      <Button
-                        onClick={() => handleStartTrial(tier)}
-                        disabled={loading === `trial-${tier.id}`}
-                        variant="outline"
-                        className="w-full h-12 font-bold uppercase border-2 border-[#FF5F00] text-[#FF5F00] hover:bg-[#FF5F00] hover:text-white"
-                        data-testid={`trial-${tier.id}`}
-                      >
-                        {loading === `trial-${tier.id}` ? (
-                          "Starting..."
-                        ) : (
-                          <><Gift className="w-4 h-4 mr-2" /> Start 7-Day Free Trial</>
-                        )}
-                      </Button>
-                    )}
-
                     <Button
                       onClick={() => handleSubscribe(tier)}
                       disabled={isCurrentPlan || loading === tier.id}
@@ -378,12 +346,19 @@ export default function SubscriptionPage() {
                         <><Check className="w-4 h-4 mr-2" /> Current Plan</>
                       ) : isTrialPlan ? (
                         "Subscribe to Continue"
+                      ) : canStartTrial ? (
+                        <><Gift className="w-4 h-4 mr-2" /> Start Free Trial</>
                       ) : isUpgrade ? (
                         "Upgrade Now"
                       ) : (
                         "Select Plan"
                       )}
                     </Button>
+                    {canStartTrial && !isCurrentPlan && (
+                      <p className="text-xs text-center text-muted-foreground" data-testid={`trial-note-${tier.id}`}>
+                        Credit card required. You won't be charged until your trial ends. Cancel anytime.
+                      </p>
+                    )}
                   </>
                 )}
               </CardContent>
@@ -401,8 +376,8 @@ export default function SubscriptionPage() {
           <div>
             <h4 className="font-bold">How does the free trial work?</h4>
             <p className="text-sm text-muted-foreground">
-              You get full access to your chosen plan for 7 days. No credit card required to start. 
-              After 7 days, subscribe to continue or your account reverts to free tier.
+              Choose your plan and enter your credit card to start your free trial. You won't be charged during the trial period. 
+              Early bird users get 90 days free, otherwise you get 7 days. Cancel anytime before the trial ends and you won't be charged.
             </p>
           </div>
           <div>

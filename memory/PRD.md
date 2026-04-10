@@ -60,6 +60,8 @@ Build an app with different tier monthly costs for plumbers to use in the field 
 - Meta tags: title, description, keywords, author, robots
 - Open Graph tags for Facebook/social sharing
 - Twitter Card tags for Twitter sharing
+
+## Prioritized Backlog
 - Apple mobile web app tags
 - `sitemap.xml` with all public routes (/, /login, /privacy, /terms)
 - `robots.txt` allowing public pages, blocking auth-required pages
@@ -84,7 +86,13 @@ Build an app with different tier monthly costs for plumbers to use in the field 
 - Available to all users including free tier
 - NOTE: Tickets stored in DB only — email forwarding requires SendGrid/SMTP integration
 
-## Prioritized Backlog
+### Phase 13 -- Credit Card Required for Trial (Complete - Feb 2026)
+- Trial now goes through Stripe checkout (card captured, not charged until trial ends)
+- Removed old no-card trial endpoint, single "Start Free Trial" button per tier
+- Early birds (first 300) get 90-day trial, others get 7-day trial
+- Banner updated: "Try Any Plan FREE — Cancel Anytime!"
+- Note under buttons: "Credit card required. You won't be charged until your trial ends."
+- FAQ updated to reflect card-required trial flow
 
 ### P1 -- Next
 - [ ] iOS Build & App Store Configuration (Capacitor iOS)

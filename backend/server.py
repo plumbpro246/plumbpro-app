@@ -464,11 +464,19 @@ async def create_checkout_session(req: SubscriptionRequest, request: Request, us
     success_url = f"{req.origin_url}/subscription/success?session_id={{CHECKOUT_SESSION_ID}}"
     cancel_url = f"{req.origin_url}/subscription"
     
+    # Determine trial days: early birds get 90 days, others get 7 days
+    # No trial if user already had one
+    trial_days = 0
+    if not user.get("trial_started"):
+        total_users = await db.users.count_documents({})
+        is_early_bird = total_users < 300
+        trial_days = 90 if is_early_bird else FREE_TRIAL_DAYS
+    
     try:
-        session = stripe_lib.checkout.Session.create(
-            payment_method_types=["card"],
-            mode="subscription",
-            line_items=[{
+        checkout_params = {
+            "payment_method_types": ["card"],
+            "mode": "subscription",
+            "line_items": [{
                 "price_data": {
                     "currency": "usd",
                     "unit_amount": amount,
@@ -477,17 +485,19 @@ async def create_checkout_session(req: SubscriptionRequest, request: Request, us
                 },
                 "quantity": 1,
             }],
-            success_url=success_url,
-            cancel_url=cancel_url,
-            metadata={
+            "success_url": success_url,
+            "cancel_url": cancel_url,
+            "metadata": {
                 "user_id": user["id"],
                 "tier": req.tier,
                 "user_email": user["email"]
             },
-            subscription_data={
-                "trial_period_days": tier_info.get("trial_days", 7)
-            } if not user.get("trial_started") else {}
-        )
+        }
+        
+        if trial_days > 0:
+            checkout_params["subscription_data"] = {"trial_period_days": trial_days}
+        
+        session = stripe_lib.checkout.Session.create(**checkout_params)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
