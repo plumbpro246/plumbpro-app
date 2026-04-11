@@ -16,6 +16,8 @@ import base64
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from pywebpush import webpush, WebPushException
+import json as json_module
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -33,6 +35,11 @@ JWT_EXPIRATION_HOURS = 24
 # Emergent LLM Key
 EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY')
 STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY')
+
+# VAPID Keys for Web Push
+VAPID_PUBLIC_KEY = os.environ.get('VAPID_PUBLIC_KEY')
+VAPID_PRIVATE_KEY = os.environ.get('VAPID_PRIVATE_KEY')
+VAPID_CLAIMS = {"sub": "mailto:plumbpro246@gmail.com"}
 
 # Gmail SMTP Config
 GMAIL_ADDRESS = os.environ.get('GMAIL_ADDRESS')
@@ -1866,6 +1873,199 @@ async def create_support_ticket(request: Request, user: dict = Depends(get_curre
 async def get_support_tickets(user: dict = Depends(get_current_user)):
     tickets = await db.support_tickets.find({"user_id": user["id"]}, {"_id": 0}).sort("created_at", -1).to_list(100)
     return tickets
+
+# ==================== PUSH NOTIFICATIONS ====================
+
+@api_router.get("/push/vapid-key")
+async def get_vapid_key():
+    return {"public_key": VAPID_PUBLIC_KEY}
+
+@api_router.post("/push/subscribe")
+async def push_subscribe(request: Request, user: dict = Depends(get_current_user)):
+    body = await request.json()
+    subscription = body.get("subscription")
+    if not subscription:
+        raise HTTPException(status_code=400, detail="subscription required")
+    
+    await db.push_subscriptions.update_one(
+        {"user_id": user["id"], "endpoint": subscription.get("endpoint")},
+        {"$set": {"user_id": user["id"], "subscription": subscription, "updated_at": datetime.now(timezone.utc).isoformat()}},
+        upsert=True
+    )
+    return {"status": "subscribed"}
+
+@api_router.post("/push/unsubscribe")
+async def push_unsubscribe(request: Request, user: dict = Depends(get_current_user)):
+    body = await request.json()
+    endpoint = body.get("endpoint")
+    if endpoint:
+        await db.push_subscriptions.delete_one({"user_id": user["id"], "endpoint": endpoint})
+    return {"status": "unsubscribed"}
+
+@api_router.post("/push/send")
+async def send_push_notification(request: Request, user: dict = Depends(get_current_user)):
+    """Send push to a specific user (admin/self test)"""
+    body = await request.json()
+    target_user_id = body.get("user_id", user["id"])
+    title = body.get("title", "PlumbPro")
+    message = body.get("message", "You have a new notification")
+    url = body.get("url", "/dashboard")
+    
+    subs = await db.push_subscriptions.find({"user_id": target_user_id}).to_list(50)
+    sent = 0
+    for sub in subs:
+        try:
+            webpush(
+                subscription_info=sub["subscription"],
+                data=json_module.dumps({"title": title, "body": message, "url": url}),
+                vapid_private_key=VAPID_PRIVATE_KEY,
+                vapid_claims=VAPID_CLAIMS
+            )
+            sent += 1
+        except WebPushException as e:
+            if e.response and e.response.status_code in (404, 410):
+                await db.push_subscriptions.delete_one({"_id": sub["_id"]})
+            logger.error(f"Push failed: {e}")
+    return {"sent": sent}
+
+# ==================== TEAM MANAGEMENT ====================
+
+@api_router.post("/teams")
+async def create_team(request: Request, user: dict = Depends(get_current_user)):
+    body = await request.json()
+    team_name = body.get("name", "").strip()
+    if not team_name:
+        raise HTTPException(status_code=400, detail="Team name is required")
+    
+    existing = await db.teams.find_one({"owner_id": user["id"]})
+    if existing:
+        raise HTTPException(status_code=409, detail="You already have a team")
+    
+    team = {
+        "id": str(uuid.uuid4()),
+        "name": team_name,
+        "owner_id": user["id"],
+        "owner_name": user.get("full_name", ""),
+        "owner_email": user.get("email", ""),
+        "members": [],
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.teams.insert_one(team)
+    del team["_id"]
+    return team
+
+@api_router.get("/teams")
+async def get_my_team(user: dict = Depends(get_current_user)):
+    team = await db.teams.find_one(
+        {"$or": [{"owner_id": user["id"]}, {"members.user_id": user["id"]}]},
+        {"_id": 0}
+    )
+    if not team:
+        return None
+    return team
+
+@api_router.post("/teams/invite")
+async def invite_member(request: Request, user: dict = Depends(get_current_user)):
+    body = await request.json()
+    email = body.get("email", "").strip().lower()
+    role = body.get("role", "plumber")
+    
+    if not email:
+        raise HTTPException(status_code=400, detail="Email is required")
+    
+    team = await db.teams.find_one({"owner_id": user["id"]})
+    if not team:
+        raise HTTPException(status_code=404, detail="You don't have a team")
+    
+    if any(m["email"] == email for m in team.get("members", [])):
+        raise HTTPException(status_code=409, detail="Member already invited")
+    
+    invited_user = await db.users.find_one({"email": email})
+    
+    member = {
+        "id": str(uuid.uuid4()),
+        "email": email,
+        "user_id": invited_user["id"] if invited_user else None,
+        "name": invited_user.get("full_name", email) if invited_user else email,
+        "role": role,
+        "status": "active" if invited_user else "pending",
+        "invited_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.teams.update_one(
+        {"id": team["id"]},
+        {"$push": {"members": member}}
+    )
+    
+    # Send invite email
+    if GMAIL_ADDRESS and GMAIL_APP_PASSWORD:
+        try:
+            msg = MIMEMultipart()
+            msg["From"] = GMAIL_ADDRESS
+            msg["To"] = email
+            msg["Subject"] = f"You're invited to join {team['name']} on PlumbPro!"
+            invite_body = f"""Hi!
+
+{user.get('full_name', 'A team leader')} has invited you to join their team "{team['name']}" on PlumbPro Field Companion.
+
+PlumbPro is the all-in-one field app for professional plumbers — formulas, safety talks, timesheets, job bidding, plumbing codes, and more.
+
+{'Sign in to PlumbPro to see your team:' if invited_user else 'Sign up for free at:'} plumbpro-app.vercel.app
+
+- The PlumbPro Team
+"""
+            msg.attach(MIMEText(invite_body, "plain"))
+            with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+                server.login(GMAIL_ADDRESS, GMAIL_APP_PASSWORD)
+                server.send_message(msg)
+        except Exception as e:
+            logger.error(f"Failed to send invite email: {e}")
+    
+    return member
+
+@api_router.delete("/teams/members/{member_id}")
+async def remove_member(member_id: str, user: dict = Depends(get_current_user)):
+    team = await db.teams.find_one({"owner_id": user["id"]})
+    if not team:
+        raise HTTPException(status_code=404, detail="Team not found")
+    
+    await db.teams.update_one(
+        {"id": team["id"]},
+        {"$pull": {"members": {"id": member_id}}}
+    )
+    return {"status": "removed"}
+
+@api_router.get("/teams/timesheets")
+async def get_team_timesheets(user: dict = Depends(get_current_user)):
+    team = await db.teams.find_one({"owner_id": user["id"]})
+    if not team:
+        raise HTTPException(status_code=404, detail="Team not found")
+    
+    member_ids = [m["user_id"] for m in team.get("members", []) if m.get("user_id")]
+    member_ids.append(user["id"])
+    
+    timesheets = await db.timesheets.find(
+        {"user_id": {"$in": member_ids}},
+        {"_id": 0}
+    ).sort("date", -1).to_list(200)
+    
+    # Attach member names
+    user_map = {user["id"]: user.get("full_name", "Owner")}
+    for m in team.get("members", []):
+        if m.get("user_id"):
+            user_map[m["user_id"]] = m.get("name", m["email"])
+    
+    for ts in timesheets:
+        ts["member_name"] = user_map.get(ts.get("user_id"), "Unknown")
+    
+    return timesheets
+
+@api_router.delete("/teams")
+async def delete_team(user: dict = Depends(get_current_user)):
+    result = await db.teams.delete_one({"owner_id": user["id"]})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Team not found")
+    return {"status": "deleted"}
 
 # ==================== HEALTH CHECK ====================
 

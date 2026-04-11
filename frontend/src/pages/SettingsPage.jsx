@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { 
   Settings, Bell, Cloud, RefreshCw, CloudOff, CheckCircle2, 
-  AlertCircle, Wifi, WifiOff, Loader2
+  AlertCircle, Wifi, WifiOff, Loader2, BellRing
 } from "lucide-react";
 import offlineService from "@/services/offlineService";
 import { 
@@ -17,6 +17,7 @@ import {
   getNotificationPermission,
   isNotificationSupported
 } from "@/services/notificationService";
+import { subscribeToPush, unsubscribeFromPush, isPushSubscribed, sendTestPush } from "@/services/pushService";
 
 export default function SettingsPage() {
   const { token, user } = useAuth();
@@ -26,6 +27,8 @@ export default function SettingsPage() {
   const [lastSync, setLastSync] = useState(null);
   const [pendingCount, setPendingCount] = useState(0);
   const [notificationPermission, setNotificationPermission] = useState('default');
+  const [pushEnabled, setPushEnabled] = useState(false);
+  const [pushLoading, setPushLoading] = useState(false);
   const [settings, setSettings] = useState({
     calendar_reminders: true,
     reminder_minutes_before: 30,
@@ -59,6 +62,10 @@ export default function SettingsPage() {
 
         // Get notification permission
         setNotificationPermission(getNotificationPermission());
+        
+        // Check push subscription status
+        const pushSub = await isPushSubscribed();
+        setPushEnabled(pushSub);
       } catch (error) {
         console.error("Failed to load settings", error);
       } finally {
@@ -142,6 +149,35 @@ export default function SettingsPage() {
     } else if (permission === 'denied') {
       toast.error("Notifications blocked. Enable in browser settings.");
     }
+  };
+
+  const handleTogglePush = async () => {
+    setPushLoading(true);
+    try {
+      if (pushEnabled) {
+        await unsubscribeFromPush(token);
+        setPushEnabled(false);
+        toast.success("Push notifications disabled");
+      } else {
+        const result = await subscribeToPush(token);
+        if (result) {
+          setPushEnabled(true);
+          toast.success("Push notifications enabled!");
+        } else {
+          toast.error("Could not enable push. Allow notifications in browser settings.");
+        }
+      }
+    } catch {
+      toast.error("Failed to update push settings");
+    } finally {
+      setPushLoading(false);
+    }
+  };
+
+  const handleTestPush = async () => {
+    const sent = await sendTestPush(token);
+    if (sent) toast.success("Test push sent! Check your notifications.");
+    else toast.error("Failed to send test push");
   };
 
   if (loading) {
@@ -260,6 +296,29 @@ export default function SettingsPage() {
               </Button>
             </div>
           )}
+
+          {/* Calendar Reminders */}
+          <div className="flex items-center justify-between">
+            <div>
+              <Label className="font-bold flex items-center gap-2">
+                <BellRing className="w-4 h-4 text-[#FF5F00]" /> Push Notifications
+              </Label>
+              <p className="text-sm text-muted-foreground">Get alerts even when the app is closed</p>
+            </div>
+            <div className="flex items-center gap-2">
+              {pushEnabled && (
+                <Button variant="outline" size="sm" onClick={handleTestPush} data-testid="test-push-btn">
+                  Test
+                </Button>
+              )}
+              <Switch
+                checked={pushEnabled}
+                onCheckedChange={handleTogglePush}
+                disabled={pushLoading}
+                data-testid="push-notifications-toggle"
+              />
+            </div>
+          </div>
 
           {/* Calendar Reminders */}
           <div className="flex items-center justify-between">
