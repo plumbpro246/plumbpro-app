@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PlumbPro Business Card - Print Ready</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #e0e0e0; display: flex; flex-direction: column;
+    justify-content: center; align-items: center; min-height: 100vh;
+    padding: 40px; gap: 50px; font-family: 'Open Sans', sans-serif;
+  }
+  .label {
+    font-family: 'Oswald'; color: #555; text-transform: uppercase;
+    letter-spacing: 3px; font-size: 14px; margin-bottom: -30px;
+  }
+  .card {
+    width: 1050px; height: 600px; border-radius: 12px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+    position: relative; overflow: hidden;
+  }
+  .print-note {
+    max-width: 700px; text-align: center; font-size: 13px; color: #888;
+    margin-top: -30px; line-height: 1.6;
+  }
+
+  /* ===== FRONT ===== */
+  .front {
+    background: #003366;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    text-align: center; color: white;
+  }
+  .front .tools-bg {
+    position: absolute; inset: 0; opacity: 0.06;
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M30 5 L35 20 L25 20Z' fill='white'/%3E%3Crect x='10' y='35' width='40' height='6' rx='3' fill='white'/%3E%3Ccircle cx='15' cy='50' r='5' fill='none' stroke='white' stroke-width='2'/%3E%3Ccircle cx='45' cy='50' r='5' fill='none' stroke='white' stroke-width='2'/%3E%3C/svg%3E");
+    background-size: 80px 80px;
+  }
+  /* Decorative pipe elements */
+  .pipe-top {
+    position: absolute; top: 0; left: 0; right: 0; height: 8px; background: #FF5F00;
+  }
+  .pipe-bottom {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 8px; background: #FF5F00;
+  }
+  .pipe-accent-left {
+    position: absolute; left: 50px; top: 40px; bottom: 40px; width: 3px;
+    background: rgba(255,95,0,0.15); border-radius: 2px;
+  }
+  .pipe-accent-left::before {
+    content: ''; position: absolute; top: 0; left: -5px;
+    width: 13px; height: 13px; border-radius: 50%;
+    border: 3px solid rgba(255,95,0,0.15);
+  }
+  .pipe-accent-left::after {
+    content: ''; position: absolute; bottom: 0; left: -5px;
+    width: 13px; height: 13px; border-radius: 50%;
+    border: 3px solid rgba(255,95,0,0.15);
+  }
+  .pipe-accent-right {
+    position: absolute; right: 50px; top: 40px; bottom: 40px; width: 3px;
+    background: rgba(255,95,0,0.15); border-radius: 2px;
+  }
+  .pipe-accent-right::before {
+    content: ''; position: absolute; top: 0; right: -5px;
+    width: 13px; height: 13px; border-radius: 50%;
+    border: 3px solid rgba(255,95,0,0.15);
+  }
+  .pipe-accent-right::after {
+    content: ''; position: absolute; bottom: 0; right: -5px;
+    width: 13px; height: 13px; border-radius: 50%;
+    border: 3px solid rgba(255,95,0,0.15);
+  }
+  .front-content { position: relative; z-index: 1; }
+  .front .logo {
+    font-family: 'Oswald'; font-size: 82px; font-weight: 700;
+    letter-spacing: 4px; line-height: 1;
+  }
+  .front .logo span { color: #FF5F00; }
+  .front .sub {
+    font-size: 22px; letter-spacing: 8px; text-transform: uppercase;
+    color: rgba(255,255,255,0.6); margin-top: 2px;
+  }
+  .front .divider {
+    width: 80px; height: 4px; background: #FF5F00;
+    margin: 24px auto;
+  }
+  .front .tagline {
+    font-family: 'Oswald'; font-size: 17px; letter-spacing: 4px;
+    text-transform: uppercase; color: #FF5F00;
+  }
+  /* Water drop decorations */
+  .drop1, .drop2, .drop3 {
+    position: absolute; border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg); background: rgba(255,95,0,0.08);
+  }
+  .drop1 { width: 40px; height: 40px; top: 60px; right: 120px; }
+  .drop2 { width: 25px; height: 25px; bottom: 80px; left: 130px; }
+  .drop3 { width: 18px; height: 18px; top: 100px; left: 180px; }
+
+  /* ===== BACK ===== */
+  .back {
+    background: #fafafa; color: #222; padding: 45px 55px;
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .back .tools-bg-light {
+    position: absolute; inset: 0; opacity: 0.04;
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cpath d='M40 10 L48 30 L32 30Z' fill='%23003366'/%3E%3Crect x='15' y='45' width='50' height='5' rx='2.5' fill='%23003366'/%3E%3Ccircle cx='25' cy='65' r='6' fill='none' stroke='%23003366' stroke-width='2'/%3E%3Ccircle cx='55' cy='65' r='6' fill='none' stroke='%23003366' stroke-width='2'/%3E%3C/svg%3E");
+    background-size: 100px 100px;
+  }
+  .back-top-bar {
+    position: absolute; top: 0; left: 0; right: 0; height: 6px;
+    background: linear-gradient(90deg, #003366, #FF5F00, #003366);
+  }
+  .back-content { position: relative; z-index: 1; }
+  .back .logo-small {
+    font-family: 'Oswald'; font-size: 30px; font-weight: 700; color: #003366;
+    margin-bottom: 6px;
+  }
+  .back .logo-small span { color: #FF5F00; }
+  .back .headline {
+    font-family: 'Oswald'; font-size: 22px; font-weight: 700;
+    color: #003366; text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 28px;
+  }
+  .back .headline em { font-style: normal; color: #FF5F00; }
+  .features {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px 50px;
+    margin-bottom: 30px;
+  }
+  .feat {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 15px; font-weight: 600; color: #333;
+  }
+  .feat-dot {
+    width: 10px; height: 10px; flex-shrink: 0; border-radius: 50%;
+    background: #FF5F00;
+  }
+  .summary {
+    font-size: 13px; color: #666; line-height: 1.6;
+    border-left: 3px solid #FF5F00; padding-left: 15px;
+    margin-bottom: 30px; max-width: 600px;
+  }
+  .back-footer {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    border-top: 2px solid #eee; padding-top: 22px; position: relative; z-index: 1;
+  }
+  .contact-item {
+    display: flex; align-items: center; gap: 10px; font-size: 14px; color: #444;
+    margin-bottom: 6px;
+  }
+  .contact-icon {
+    width: 28px; height: 28px; background: #003366; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 14px; flex-shrink: 0;
+  }
+  .contact-icon.orange { background: #FF5F00; }
+  .contact-item a { color: #FF5F00; text-decoration: none; font-weight: 700; }
+  .promo-pill {
+    background: #FF5F00; color: white; font-family: 'Oswald';
+    font-size: 13px; padding: 8px 20px; letter-spacing: 1px;
+    text-transform: uppercase; font-weight: 700; border-radius: 6px;
+    white-space: nowrap;
+  }
+
+  @media print {
+    body { background: white; padding: 20px; gap: 30px; }
+    .card { box-shadow: none; border: 1px solid #ddd; page-break-inside: avoid; }
+    .label { color: #999; }
+    .print-note { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="label">Front</div>
+<div class="card front">
+  <div class="tools-bg"></div>
+  <div class="pipe-top"></div>
+  <div class="pipe-bottom"></div>
+  <div class="pipe-accent-left"></div>
+  <div class="pipe-accent-right"></div>
+  <div class="drop1"></div>
+  <div class="drop2"></div>
+  <div class="drop3"></div>
+  <div class="front-content">
+    <div class="logo">PLUMB<span>PRO</span></div>
+    <div class="sub">Field Companion</div>
+    <div class="divider"></div>
+    <div class="tagline">Built by a Plumber, For Plumbers</div>
+  </div>
+</div>
+
+<div class="label">Back</div>
+<div class="card back">
+  <div class="tools-bg-light"></div>
+  <div class="back-top-bar"></div>
+  <div class="back-content">
+    <div class="logo-small">PLUMB<span>PRO</span></div>
+    <div class="headline">Your Entire Plumbing Toolbox <em>In One App</em></div>
+    <div class="features">
+      <div class="feat"><div class="feat-dot"></div>Plumbing Formulas</div>
+      <div class="feat"><div class="feat-dot"></div>GPS Timesheets</div>
+      <div class="feat"><div class="feat-dot"></div>AI Daily Safety Talks</div>
+      <div class="feat"><div class="feat-dot"></div>Job Bidding & Estimates</div>
+      <div class="feat"><div class="feat-dot"></div>UPC & IPC Code Reference</div>
+      <div class="feat"><div class="feat-dot"></div>OSHA Requirements</div>
+      <div class="feat"><div class="feat-dot"></div>Plumbing Calculator</div>
+      <div class="feat"><div class="feat-dot"></div>Notes & Material Lists</div>
+    </div>
+    <div class="summary">
+      Professional plumbing tools, code references, safety compliance, and job management — all accessible from your phone, on any job site. Free plan available.
+    </div>
+  </div>
+  <div class="back-footer">
+    <div>
+      <div class="contact-item">
+        <div class="contact-icon">&#9993;</div>
+        <a href="mailto:plumbpro246@gmail.com">plumbpro246@gmail.com</a>
+      </div>
+      <div class="contact-item">
+        <div class="contact-icon orange">&#9758;</div>
+        <a href="https://plumbpro-app.vercel.app">plumbpro-app.vercel.app</a>
+      </div>
+    </div>
+    <div class="promo-pill">First 300 Users &mdash; 3 Months Free</div>
+  </div>
+</div>
+
+<p class="print-note">
+  <strong>To print at home:</strong> Press Ctrl+P (or Cmd+P on Mac), set to "Landscape" orientation, scale to fit, and print on cardstock paper. 
+  For best results, use thick cardstock (80-110 lb) and cut to standard business card size (3.5" x 2").
+  You can also save as PDF and upload to Vistaprint, Canva Print, or any print service.
+</p>
+
+</body>
+</html>
