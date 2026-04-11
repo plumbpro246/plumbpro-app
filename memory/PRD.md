@@ -94,6 +94,15 @@ Build an app with different tier monthly costs for plumbers to use in the field 
 - Note under buttons: "Credit card required. You won't be charged until your trial ends."
 - FAQ updated to reflect card-required trial flow
 
+### Phase 14 -- Push Notifications & Team Management (Complete - Apr 2026)
+- Web Push via VAPID keys (pywebpush backend, Push API frontend)
+- Push toggle in Settings with test button, subscribes to browser push
+- Team Management page: create team, invite members by email, assign roles (Foreman/Plumber)
+- Team timesheets view for owners, member list with status badges
+- Email invitations sent via Gmail SMTP
+- Enterprise-tier feature (locked for free/basic users)
+- Regression tested: 100% pass (iteration_11.json, 22/22 backend + all frontend)
+
 ### P1 -- Next
 - [ ] iOS Build & App Store Configuration (Capacitor iOS)
 - [ ] Free Trial verification end-to-end
