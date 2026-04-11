@@ -51,6 +51,32 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-slate-900 text-white" data-testid="landing-page">
+      {/* Top Nav */}
+      <nav className="sticky top-0 z-50 bg-slate-900/95 backdrop-blur border-b border-white/5">
+        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
+          <div className="font-heading text-xl font-bold uppercase tracking-tight">
+            PLUMB<span className="text-[#FF5F00]">PRO</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              onClick={() => navigate("/login")}
+              className="text-white hover:text-[#FF5F00] font-bold uppercase text-sm tracking-wide"
+              data-testid="nav-login-btn"
+            >
+              Login
+            </Button>
+            <Button
+              onClick={() => navigate("/login")}
+              className="bg-[#FF5F00] hover:bg-[#FF5F00]/90 text-white font-bold uppercase text-sm tracking-wide rounded-sm px-5"
+              data-testid="nav-signup-btn"
+            >
+              Sign Up Free
+            </Button>
+          </div>
+        </div>
+      </nav>
+
       {/* Promo Banner */}
       {promoActive && (
         <div className="bg-[#FF5F00] text-white text-center py-2.5 px-4 text-sm font-bold tracking-wide" data-testid="promo-banner">
