@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   FileText, Calculator, Shield, Clock, Package, 
   DollarSign, Calendar, AlertTriangle, FileSpreadsheet,
-  Cpu, Map, Crown, ChevronRight, BookOpen
+  Cpu, Map, Crown, ChevronRight, BookOpen, Mic, Cloud, Store
 } from "lucide-react";
 
 const quickLinks = [
@@ -23,6 +23,9 @@ const quickLinks = [
   { path: "/total-station", label: "Total Station", icon: Map, color: "bg-emerald-500" },
   { path: "/blueprints", label: "Blueprints", icon: FileText, color: "bg-slate-500" },
   { path: "/plumbing-code", label: "Plumbing Code", icon: BookOpen, color: "bg-sky-600" },
+  { path: "/voice-notes", label: "Voice Notes", icon: Mic, color: "bg-rose-500" },
+  { path: "/weather", label: "Weather", icon: Cloud, color: "bg-sky-400" },
+  { path: "/suppliers", label: "Suppliers", icon: Store, color: "bg-orange-600" },
 ];
 
 export default function DashboardPage() {
