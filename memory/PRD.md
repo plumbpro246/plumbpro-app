@@ -103,17 +103,37 @@ Build an app with different tier monthly costs for plumbers to use in the field 
 - Enterprise-tier feature (locked for free/basic users)
 - Regression tested: 100% pass (iteration_11.json, 22/22 backend + all frontend)
 
+### Phase 15 -- Voice Notes, Weather & Supplier Lookup (Complete - Apr 2026)
+- Voice Notes: Record audio in-browser, auto-transcribe via OpenAI Whisper (Emergent LLM Key)
+  - CRUD: Create (POST /api/voice-notes with multipart audio), List (GET /api/voice-notes), Delete
+  - Audio playback via query-param auth (GET /api/voice-notes/{id}/audio?t=TOKEN)
+  - Optional job/site name tagging, duration tracking
+  - Tier-gated (paid feature)
+- Weather: Real-time conditions via Open-Meteo API (no key required)
+  - Auto-detect location via browser geolocation, manual search by city/zip
+  - Current conditions: temp, feels-like, humidity, wind, precipitation
+  - 7-day forecast cards with high/low, condition icons, precipitation
+  - Plumber safety alerts: freeze (<=32F), heat (>=100F), high winds (>=40mph), rain
+- Supplier Lookup: Static directory of 12 major plumbing suppliers
+  - Search by name or specialty (PEX, water heaters, etc.)
+  - Filter by type: Wholesale, Retail/Pro, Online, Industrial
+  - Phone (tel: link), website link, specialty tags
+  - "Find Nearby" button → Google Maps search via geolocation
+  - Free feature (no tier gate)
+- All three integrated into sidebar nav and Dashboard quick access
+- Regression tested: 100% pass (iteration_12.json, 17/17 backend + all frontend)
+
 ### P1 -- Next
 - [ ] iOS Build & App Store Configuration (Capacitor iOS)
-- [ ] Free Trial verification end-to-end
 - [ ] Apple In-App Purchase compliance
 
 ### P2 -- Medium
-- [ ] Native push notifications via Capacitor
-- [ ] Team management features
-- [ ] Advanced reporting dashboard
-- [ ] server.py refactoring (split into routes/)
+- [ ] server.py refactoring (split into routes/) — now ~2300 lines
+- [ ] Customer portal
+- [ ] Weather caching to reduce Open-Meteo API calls
+- [ ] Voice notes: GridFS/object store for large audio files (current base64 in MongoDB has 16MB limit)
 
 ### P3 -- Nice to Have
-- [ ] Voice notes, weather integration, supplier lookups
-- [ ] Customer portal
+- [ ] Voice note transcription retry on failure
+- [ ] Supplier directory backed by DB instead of hardcoded list
+- [ ] Advanced reporting dashboard
