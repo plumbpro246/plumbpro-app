@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PlumbPro Facebook Promo</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  .promo-card {
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(145deg, #001a33 0%, #003366 40%, #002244 100%);
+    font-family: 'Inter', sans-serif;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+  }
+
+  /* Subtle grid pattern */
+  .promo-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: 
+      linear-gradient(rgba(255,95,0,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,95,0,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* Diagonal accent */
+  .promo-card::after {
+    content: '';
+    position: absolute;
+    top: -100px;
+    right: -100px;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(255,95,0,0.15) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  .left-content {
+    flex: 1;
+    padding: 60px 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+  }
+
+  .logo {
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: #fff;
+    margin-bottom: 30px;
+  }
+  .logo span { color: #FF5F00; }
+
+  .headline {
+    font-size: 44px;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1.1;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+    margin-bottom: 20px;
+  }
+  .headline .accent { color: #FF5F00; }
+
+  .subtext {
+    font-size: 17px;
+    color: rgba(255,255,255,0.7);
+    line-height: 1.6;
+    margin-bottom: 30px;
+    max-width: 460px;
+  }
+
+  .promo-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: #FF5F00;
+    color: #fff;
+    padding: 14px 28px;
+    font-weight: 800;
+    font-size: 18px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .promo-badge .small {
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 0.9;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  .right-content {
+    width: 440px;
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 50px 50px 50px 20px;
+  }
+
+  .feature-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .feature-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 14px 18px;
+    backdrop-filter: blur(4px);
+  }
+
+  .feature-icon {
+    width: 38px;
+    height: 38px;
+    background: rgba(255,95,0,0.15);
+    border: 1px solid rgba(255,95,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 18px;
+  }
+
+  .feature-text {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+  .feature-text .dim {
+    color: rgba(255,255,255,0.5);
+    font-weight: 400;
+    font-size: 12px;
+  }
+
+  /* Bottom bar */
+  .bottom-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #FF5F00, #FF8C40, #FF5F00);
+    z-index: 3;
+  }
+</style>
+</head>
+<body style="background:#001a33;margin:0;padding:0;">
+
+<div class="promo-card">
+  <div class="left-content">
+    <div class="logo">PLUMB<span>PRO</span></div>
+    <h1 class="headline">
+      Your Entire<br>
+      <span class="accent">Jobsite</span> In<br>
+      Your Pocket
+    </h1>
+    <p class="subtext">
+      The all-in-one field companion built by plumbers, for plumbers. 
+      Safety talks, voice notes, weather alerts, timesheets, bidding & more.
+    </p>
+    <div class="promo-badge">
+      3 Months Free
+      <span class="small">First 300 sign-ups &mdash; no charge until trial ends</span>
+    </div>
+  </div>
+
+  <div class="right-content">
+    <ul class="feature-list">
+      <li class="feature-item">
+        <div class="feature-icon">&#127908;</div>
+        <div class="feature-text">Voice Notes<br><span class="dim">AI-transcribed field recordings</span></div>
+      </li>
+      <li class="feature-item">
+        <div class="feature-icon">&#9729;&#65039;</div>
+        <div class="feature-text">Jobsite Weather<br><span class="dim">Freeze & heat alerts for pipe safety</span></div>
+      </li>
+      <li class="feature-item">
+        <div class="feature-icon">&#128736;</div>
+        <div class="feature-text">Plumbing Codes<br><span class="dim">UPC & IPC — all editions, offline</span></div>
+      </li>
+      <li class="feature-item">
+        <div class="feature-icon">&#128203;</div>
+        <div class="feature-text">Daily Safety Talks<br><span class="dim">AI-generated — new topic every day</span></div>
+      </li>
+      <li class="feature-item">
+        <div class="feature-icon">&#128200;</div>
+        <div class="feature-text">Bids, Timesheets & Materials<br><span class="dim">Track jobs from estimate to invoice</span></div>
+      </li>
+      <li class="feature-item">
+        <div class="feature-icon">&#128101;</div>
+        <div class="feature-text">Team Management<br><span class="dim">Crew timesheets & role assignments</span></div>
+      </li>
+    </ul>
+  </div>
+
+  <div class="bottom-bar"></div>
+</div>
+
+</body>
+</html>
