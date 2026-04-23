@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   FileText, Calculator, Shield, Clock, Package, 
   DollarSign, Calendar, AlertTriangle, FileSpreadsheet,
-  Cpu, Map, Crown, ChevronRight, BookOpen, Mic, Cloud, Store
+  Cpu, Map, Crown, ChevronRight, BookOpen, Mic, Cloud, Store,
+  Sun, CloudRain, Snowflake, CloudLightning, Wind, Droplets, Eye, ThermometerSun, MapPin
 } from "lucide-react";
 
 const quickLinks = [
@@ -28,6 +29,17 @@ const quickLinks = [
   { path: "/suppliers", label: "Suppliers", icon: Store, color: "bg-orange-600" },
 ];
 
+const getWeatherIcon = (condition) => {
+  const c = (condition || "").toLowerCase();
+  if (c.includes("clear") || c.includes("sunny")) return Sun;
+  if (c.includes("thunder")) return CloudLightning;
+  if (c.includes("snow") || c.includes("hail")) return Snowflake;
+  if (c.includes("rain") || c.includes("drizzle") || c.includes("shower")) return CloudRain;
+  if (c.includes("fog")) return Eye;
+  if (c.includes("cloud") || c.includes("overcast")) return Cloud;
+  return Sun;
+};
+
 export default function DashboardPage() {
   const { user, token } = useAuth();
   const [stats, setStats] = useState({
@@ -37,6 +49,7 @@ export default function DashboardPage() {
     materials: 0
   });
   const [todaySafetyTalk, setTodaySafetyTalk] = useState(null);
+  const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -66,7 +79,26 @@ export default function DashboardPage() {
       }
     };
 
+    const fetchWeather = () => {
+      if (!navigator.geolocation) return;
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          try {
+            const res = await axios.get(`${API}/weather`, {
+              params: { lat: pos.coords.latitude, lon: pos.coords.longitude }
+            });
+            setWeather(res.data);
+          } catch (e) {
+            console.error("Weather fetch failed", e);
+          }
+        },
+        () => {},
+        { timeout: 8000 }
+      );
+    };
+
     fetchData();
+    fetchWeather();
   }, [token]);
 
   const getGreeting = () => {
@@ -147,6 +179,71 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Weather Widget */}
+      {weather && (() => {
+        const cur = weather.current;
+        const WeatherIcon = getWeatherIcon(cur.condition);
+        const todayForecast = weather.forecast?.[0];
+        return (
+          <Card className="border border-border rounded-sm overflow-hidden" data-testid="dashboard-weather-widget">
+            <CardContent className="p-0">
+              <div className="flex flex-col sm:flex-row">
+                {/* Current conditions */}
+                <div className="flex items-center gap-4 p-4 sm:p-5 flex-1 min-w-0">
+                  <div className="flex-shrink-0">
+                    <WeatherIcon className="w-10 h-10 text-[#FF5F00]" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-3xl font-bold tracking-tight">{Math.round(cur.temp)}°F</span>
+                      <span className="text-sm text-muted-foreground">{cur.condition}</span>
+                    </div>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5 truncate">
+                      <MapPin className="w-3 h-3 flex-shrink-0" />
+                      <span className="truncate">{weather.location}</span>
+                    </div>
+                  </div>
+                  <div className="hidden md:flex items-center gap-4 ml-auto text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1"><Droplets className="w-3.5 h-3.5 text-cyan-500" />{cur.humidity}%</span>
+                    <span className="flex items-center gap-1"><Wind className="w-3.5 h-3.5" />{cur.wind_speed} mph</span>
+                    {todayForecast && <span className="flex items-center gap-1"><ThermometerSun className="w-3.5 h-3.5 text-amber-500" />H:{Math.round(todayForecast.high)}° L:{Math.round(todayForecast.low)}°</span>}
+                  </div>
+                  <Link
+                    to="/weather"
+                    className="hidden sm:inline-flex items-center gap-1 ml-4 text-[#FF5F00] font-bold text-xs uppercase hover:underline flex-shrink-0"
+                    data-testid="weather-widget-link"
+                  >
+                    Full Forecast <ChevronRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+
+                {/* Alerts strip */}
+                {weather.alerts && weather.alerts.length > 0 && (
+                  <div className="bg-red-950/60 border-t sm:border-t-0 sm:border-l border-red-900/50 px-4 py-3 sm:py-0 sm:flex sm:items-center sm:max-w-xs">
+                    <div className="flex items-start gap-2">
+                      <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+                      <div className="text-xs text-red-200 space-y-1">
+                        {weather.alerts.map((a, i) => (
+                          <p key={i}>{a.message}</p>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+              {/* Mobile: full forecast link */}
+              <Link
+                to="/weather"
+                className="sm:hidden flex items-center justify-center gap-1 py-2 border-t border-border text-[#FF5F00] font-bold text-xs uppercase"
+                data-testid="weather-widget-link-mobile"
+              >
+                Full Forecast <ChevronRight className="w-3.5 h-3.5" />
+              </Link>
+            </CardContent>
+          </Card>
+        );
+      })()}
 
       {/* Today's Safety Talk */}
       {todaySafetyTalk && (

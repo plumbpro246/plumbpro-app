@@ -114,11 +114,12 @@ Build an app with different tier monthly costs for plumbers to use in the field 
   - Current conditions: temp, feels-like, humidity, wind, precipitation
   - 7-day forecast cards with high/low, condition icons, precipitation
   - Plumber safety alerts: freeze (<=32F), heat (>=100F), high winds (>=40mph), rain
+  - **Dashboard weather widget**: compact card with current temp, condition, humidity, wind, hi/lo, alerts strip, and "Full Forecast" link
 - Supplier Lookup: Static directory of 12 major plumbing suppliers
   - Search by name or specialty (PEX, water heaters, etc.)
   - Filter by type: Wholesale, Retail/Pro, Online, Industrial
   - Phone (tel: link), website link, specialty tags
-  - "Find Nearby" button → Google Maps search via geolocation
+  - "Find Nearby" button -> Google Maps search via geolocation
   - Free feature (no tier gate)
 - All three integrated into sidebar nav and Dashboard quick access
 - Regression tested: 100% pass (iteration_12.json, 17/17 backend + all frontend)

@@ -2173,7 +2173,7 @@ async def get_weather(lat: float = None, lon: float = None, location: str = None
     
     # Geocode location name if provided
     if location and (not lat or not lon):
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=15.0) as client:
             geo = await client.get(
                 "https://geocoding-api.open-meteo.com/v1/search",
                 params={"name": location, "count": 1, "language": "en"}
@@ -2189,7 +2189,7 @@ async def get_weather(lat: float = None, lon: float = None, location: str = None
     if not lat or not lon:
         raise HTTPException(status_code=400, detail="Location required (lat/lon or location name)")
     
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=15.0) as client:
         resp = await client.get(
             "https://api.open-meteo.com/v1/forecast",
             params={
