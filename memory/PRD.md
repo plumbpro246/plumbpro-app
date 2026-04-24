@@ -118,6 +118,20 @@ Build an app with different tier monthly costs for plumbers to use in the field 
 - Supplier Lookup: Static directory of 12 major plumbing suppliers
   - Search by name or specialty (PEX, water heaters, etc.)
   - Filter by type: Wholesale, Retail/Pro, Online, Industrial
+
+### Phase 17 -- server.py Refactoring (Complete - Apr 2026)
+- Split monolithic server.py (2349 lines) into modular route structure:
+  - `server.py` (60 lines) — slim FastAPI entry point
+  - `routes/deps.py` (323 lines) — shared models, auth, DB, config
+  - `routes/auth.py` (98 lines) — auth & promo endpoints
+  - `routes/subscriptions.py` (163 lines) — Stripe, Google Play, trials
+  - `routes/crud.py` (134 lines) — Notes, Timesheets, Materials, Bids, Calendar
+  - `routes/reference.py` (168 lines) — Safety Talks, Formulas, OSHA, SDS, Total Station
+  - `routes/files.py` (201 lines) — Blueprints, Photos, Plumbing Code, Export, Sync, Notifications
+  - `routes/services.py` (285 lines) — Support, Push, Teams, Voice Notes, Weather, Suppliers
+- Total: 1433 lines across 8 modules (vs 2349 in single file)
+- Regression tested: 100% pass (iteration_13.json, 24/24 backend + all frontend)
+
   - Phone (tel: link), website link, specialty tags
   - "Find Nearby" button -> Google Maps search via geolocation
   - Free feature (no tier gate)
