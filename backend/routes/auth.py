@@ -5,8 +5,9 @@ from routes.deps import *
 router = APIRouter()
 
 
-@router.get("/promo/status")
+@router.get("/promo/status", summary="Get early-bird promo status")
 async def get_promo_status():
+    """Returns how many of the first 300 early-bird spots remain. Active promo = 3 months free trial."""
     total_users = await db.users.count_documents({})
     spots_remaining = max(0, 300 - total_users)
     return {
@@ -18,8 +19,9 @@ async def get_promo_status():
     }
 
 
-@router.post("/auth/register", response_model=TokenResponse)
+@router.post("/auth/register", response_model=TokenResponse, summary="Register a new user")
 async def register(user_data: UserCreate):
+    """Create a new account. Returns JWT token + user info. Early-bird status auto-assigned."""
     existing = await db.users.find_one({"email": user_data.email})
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -53,8 +55,9 @@ async def register(user_data: UserCreate):
     return TokenResponse(access_token=token, user=user_response)
 
 
-@router.post("/auth/login", response_model=TokenResponse)
+@router.post("/auth/login", response_model=TokenResponse, summary="Login")
 async def login(login_data: UserLogin):
+    """Authenticate with email/password. Returns JWT token + user info."""
     user = await db.users.find_one({"email": login_data.email}, {"_id": 0})
     if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials")

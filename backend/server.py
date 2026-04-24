@@ -14,7 +14,22 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 logger = logging.getLogger(__name__)
 
 # Create app
-app = FastAPI(title="PlumbPro Field Companion API")
+app = FastAPI(
+    title="PlumbPro Field Companion API",
+    description="""The backend API for PlumbPro — the all-in-one field companion for professional plumbers.
+
+## Features
+- **Auth & Subscriptions** — JWT auth, Stripe billing, Google Play Billing, free trials
+- **Field Tools** — Notes, Timesheets, Materials, Job Bidding, Calendar
+- **Reference** — AI Safety Talks, Plumbing Formulas (incl. 45°/22.5° offsets), OSHA, SDS, Total Station
+- **Files** — Blueprints (PDF), Photos, Plumbing Code (UPC/IPC), Export, Offline Sync
+- **Services** — Voice Notes (Whisper), Weather (Open-Meteo), Supplier Lookup, Push Notifications, Teams, Support
+""",
+    version="2.0.0",
+    docs_url="/api/docs",
+    redoc_url="/api/redoc",
+    openapi_url="/api/openapi.json",
+)
 api_router = APIRouter(prefix="/api")
 
 # Import route modules
@@ -26,20 +41,21 @@ from routes.files import router as files_router
 from routes.services import router as services_router
 
 # Register all routers
-api_router.include_router(auth_router)
-api_router.include_router(subscriptions_router)
-api_router.include_router(crud_router)
-api_router.include_router(reference_router)
-api_router.include_router(files_router)
-api_router.include_router(services_router)
+api_router.include_router(auth_router, tags=["Auth & Promo"])
+api_router.include_router(subscriptions_router, tags=["Subscriptions & Billing"])
+api_router.include_router(crud_router, tags=["Field Tools (CRUD)"])
+api_router.include_router(reference_router, tags=["Reference & AI"])
+api_router.include_router(files_router, tags=["Files, Codes & Sync"])
+api_router.include_router(services_router, tags=["Services"])
 
 # Health check
-@api_router.get("/")
+@api_router.get("/", tags=["System"], summary="API root")
 async def root():
     return {"message": "PlumbPro Field Companion API", "status": "running"}
 
-@api_router.get("/health")
+@api_router.get("/health", tags=["System"], summary="Health check")
 async def health_check():
+    """Returns API health status and current server timestamp."""
     from datetime import datetime, timezone
     return {"status": "healthy", "timestamp": datetime.now(timezone.utc).isoformat()}
 

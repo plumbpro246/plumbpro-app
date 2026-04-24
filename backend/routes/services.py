@@ -159,8 +159,9 @@ async def delete_team(user: dict = Depends(get_current_user)):
 
 
 # ==================== VOICE NOTES ====================
-@router.post("/voice-notes")
+@router.post("/voice-notes", summary="Record a voice note")
 async def create_voice_note(request: Request, user: dict = Depends(get_current_user)):
+    """Upload audio (webm/mp3/wav, max 25MB). Auto-transcribed via OpenAI Whisper. Returns transcript + metadata."""
     form = await request.form()
     audio_file = form.get("audio")
     job_name = form.get("job_name", "")
@@ -216,8 +217,9 @@ async def delete_voice_note(note_id: str, user: dict = Depends(get_current_user)
 
 
 # ==================== WEATHER ====================
-@router.get("/weather")
+@router.get("/weather", summary="Get job site weather")
 async def get_weather(lat: float = None, lon: float = None, location: str = None):
+    """Real-time weather via Open-Meteo (free, no API key). Includes plumber safety alerts for freeze/heat/wind/rain. Provide lat/lon or a location name."""
     if location and (not lat or not lon):
         async with httpx.AsyncClient(timeout=15.0) as client:
             geo = await client.get("https://geocoding-api.open-meteo.com/v1/search", params={"name": location, "count": 1, "language": "en"})
@@ -269,8 +271,9 @@ PLUMBING_SUPPLIERS = [
     {"name": "PlumbersStock", "type": "Online", "website": "https://www.plumbersstock.com", "phone": "1-801-805-4200", "specialties": ["Fixtures", "Pipes", "Valves", "Tools", "Water Heaters"]},
 ]
 
-@router.get("/suppliers")
+@router.get("/suppliers", summary="Search plumbing suppliers")
 async def get_suppliers(search: str = None, type: str = None):
+    """Returns plumbing supplier directory (12 major suppliers). Filter by name/specialty or type (Wholesale/Retail/Online/Industrial)."""
     results = PLUMBING_SUPPLIERS
     if search:
         s = search.lower()
@@ -279,7 +282,8 @@ async def get_suppliers(search: str = None, type: str = None):
         results = [sup for sup in results if type.lower() in sup["type"].lower()]
     return results
 
-@router.get("/suppliers/nearby")
+@router.get("/suppliers/nearby", summary="Find nearby suppliers")
 async def get_nearby_suppliers(lat: float, lon: float):
+    """Returns a Google Maps search URL for plumbing supply stores near the given coordinates."""
     maps_url = f"https://www.google.com/maps/search/plumbing+supply+store/@{lat},{lon},13z"
     return {"maps_url": maps_url, "search_text": "plumbing supply store", "lat": lat, "lon": lon}

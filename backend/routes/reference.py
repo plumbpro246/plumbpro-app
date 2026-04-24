@@ -15,8 +15,9 @@ SAFETY_TOPICS = [
     "Lockout/Tagout Procedures", "Emergency Response"
 ]
 
-@router.get("/safety-talks/today", response_model=SafetyTalkResponse)
+@router.get("/safety-talks/today", response_model=SafetyTalkResponse, summary="Get today's safety talk")
 async def get_daily_safety_talk(user: dict = Depends(get_current_user)):
+    """Returns today's AI-generated 5-minute safety talk. A new topic is auto-generated each day via GPT-4o."""
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     existing = await db.safety_talks.find_one({"date": today}, {"_id": 0})
     if existing:
@@ -65,12 +66,14 @@ PLUMBING_FORMULAS = [
     {"id": "offset-22", "name": "22.5° Pipe Offset", "formula": "Travel = Offset × 2.613", "description": "Calculate travel (fitting-to-fitting) for a 22.5° offset. Also gives the set (run).", "variables": {"Offset": "Offset distance (inches)"}, "unit": "inches"},
 ]
 
-@router.get("/formulas")
+@router.get("/formulas", summary="List all plumbing formulas")
 async def get_formulas():
+    """Returns all 10 plumbing formulas including pipe offset calculators (45° and 22.5°)."""
     return PLUMBING_FORMULAS
 
-@router.post("/formulas/calculate")
+@router.post("/formulas/calculate", summary="Calculate a plumbing formula")
 async def calculate_formula(formula_id: str, values: Dict[str, float]):
+    """Submit variable values for a formula. Offset formulas return both travel and set (run) in extras."""
     if formula_id == "pipe-volume":
         r = values.get("r", 0); L = values.get("L", 0)
         volume_cubic_inches = math.pi * (r ** 2) * (L * 12)
@@ -121,8 +124,9 @@ OSHA_REQUIREMENTS = [
     {"id": "lockout-tagout", "category": "Energy Control", "standard": "29 CFR 1926.417", "title": "Lockout/Tagout", "requirements": ["Written energy control procedure", "Each worker applies own lock", "Verify zero energy state before work", "Only authorized employees remove locks"], "penalties": "Up to $15,625 per violation"},
 ]
 
-@router.get("/osha")
+@router.get("/osha", summary="List all OSHA requirements")
 async def get_osha_requirements():
+    """Returns 8 OSHA construction safety requirements with standards, penalties, and checklists."""
     return OSHA_REQUIREMENTS
 
 @router.get("/osha/{requirement_id}")
@@ -142,8 +146,9 @@ SDS_DATABASE = [
     {"id": "drain-cleaner", "product_name": "Chemical Drain Cleaner", "manufacturer": "Generic", "hazards": ["Corrosive", "Severe Burns", "Reactive with metals"], "ppe_required": ["Face Shield", "Chemical Resistant Gloves", "Apron", "Safety Goggles"], "first_aid": {"eye_contact": "Flush immediately for 30 minutes. Seek emergency medical care.", "skin_contact": "Flush with water for 20 minutes. Remove contaminated clothing.", "inhalation": "Move to fresh air. Seek medical attention.", "ingestion": "Do NOT induce vomiting. Drink water/milk. Call poison control."}, "storage": "Store upright in original container. Keep away from metals and children.", "disposal": "Hazardous waste - dispose according to regulations."},
 ]
 
-@router.get("/sds")
+@router.get("/sds", summary="List all Safety Data Sheets")
 async def get_safety_data_sheets():
+    """Returns SDS entries for common plumbing chemicals (PVC cement, flux, propane, etc.)."""
     return SDS_DATABASE
 
 @router.get("/sds/{sds_id}")
