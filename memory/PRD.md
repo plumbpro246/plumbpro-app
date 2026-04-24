@@ -124,6 +124,17 @@ Build an app with different tier monthly costs for plumbers to use in the field 
 - All three integrated into sidebar nav and Dashboard quick access
 - Regression tested: 100% pass (iteration_12.json, 17/17 backend + all frontend)
 
+### Phase 16 -- Pipe Offset Formulas & Layout Guide (Complete - Apr 2026)
+- Added **45° Pipe Offset** formula: Travel = Offset × 1.414, Set = Offset
+- Added **22.5° Pipe Offset** formula: Travel = Offset × 2.613, Set = Offset × 2.414
+- Backend returns `extras` with both travel and set values for offset calculations
+- SVG diagrams showing offset, travel, and set dimensions for both angles
+- Step-by-step layout instructions (4 steps for 45°, 5 steps for 22.5°)
+- Worked examples (12" offset) with calculated values highlighted
+- **45° vs 22.5° Comparison Table**: multipliers, space, flow, best uses, pro tip
+- Quick Reference table updated with offset multipliers
+- Tested: backend calculations verified via curl, frontend verified via screenshot
+
 ### P1 -- Next
 - [ ] iOS Build & App Store Configuration (Capacitor iOS)
 - [ ] Apple In-App Purchase compliance

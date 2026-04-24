@@ -1147,6 +1147,22 @@ PLUMBING_FORMULAS = [
         "description": "Calculate required pump horsepower",
         "variables": {"Q": "Flow rate (GPM)", "H": "Total head (feet)", "η": "Pump efficiency"},
         "unit": "HP"
+    },
+    {
+        "id": "offset-45",
+        "name": "45° Pipe Offset",
+        "formula": "Travel = Offset × 1.414",
+        "description": "Calculate travel (fitting-to-fitting) for a 45° offset. Also gives the set (run).",
+        "variables": {"Offset": "Offset distance (inches)"},
+        "unit": "inches"
+    },
+    {
+        "id": "offset-22",
+        "name": "22.5° Pipe Offset",
+        "formula": "Travel = Offset × 2.613",
+        "description": "Calculate travel (fitting-to-fitting) for a 22.5° offset. Also gives the set (run).",
+        "variables": {"Offset": "Offset distance (inches)"},
+        "unit": "inches"
     }
 ]
 
@@ -1194,6 +1210,16 @@ async def calculate_formula(formula_id: str, values: Dict[str, float]):
         H = values.get("H", 0)
         eta = values.get("eta", 0.7)
         result = (Q * H) / (3960 * eta)
+    elif formula_id == "offset-45":
+        offset = values.get("Offset", 0)
+        travel = offset * 1.41421356  # offset / sin(45) = offset * √2
+        set_run = offset  # For 45°, set = offset (since tan(45°) = 1)
+        return {"result": round(travel, 4), "formula_id": formula_id, "extras": {"travel": round(travel, 4), "set": round(set_run, 4)}}
+    elif formula_id == "offset-22":
+        offset = values.get("Offset", 0)
+        travel = offset * 2.61312593  # offset / sin(22.5°)
+        set_run = offset * 2.41421356  # offset / tan(22.5°)
+        return {"result": round(travel, 4), "formula_id": formula_id, "extras": {"travel": round(travel, 4), "set": round(set_run, 4)}}
     else:
         raise HTTPException(status_code=404, detail="Formula not found")
     
