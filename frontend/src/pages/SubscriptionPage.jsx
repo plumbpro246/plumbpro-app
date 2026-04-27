@@ -5,10 +5,10 @@ import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, Crown, Zap, Building, Gift, Clock, AlertCircle, Smartphone } from "lucide-react";
+import { Check, Crown, Zap, Building, Gift, Clock, AlertCircle, Smartphone, Users, User } from "lucide-react";
 import { isCapacitorAndroid, startGooglePlayPurchase, acknowledgeGooglePlayPurchase } from "@/services/googlePlayBillingService";
 
-const tiers = [
+const individualTiers = [
   {
     id: "free",
     name: "Free",
@@ -85,17 +85,57 @@ const tiers = [
       "Unlimited Blueprints",
       "Email Bid Sharing",
       "Priority Support",
-      "Custom Branding (Coming Soon)",
-      "Team Management (Coming Soon)"
+      "Team Management"
     ],
     notIncluded: []
   }
+];
+
+const companyTiers = [
+  {
+    id: "company_10",
+    name: "Small Crew",
+    price: 49.99,
+    maxMembers: 10,
+    label: "1–10 employees",
+    description: "Perfect for small plumbing crews",
+    perUser: "$5.00"
+  },
+  {
+    id: "company_25",
+    name: "Mid-Size",
+    price: 99.99,
+    maxMembers: 25,
+    label: "11–25 employees",
+    popular: true,
+    description: "Growing plumbing companies",
+    perUser: "$4.00"
+  },
+  {
+    id: "company_50",
+    name: "Large Company",
+    price: 179.99,
+    maxMembers: 50,
+    label: "26–50 employees",
+    description: "Large-scale plumbing operations",
+    perUser: "$3.60"
+  },
+  {
+    id: "company_unlimited",
+    name: "Enterprise+",
+    price: 299.99,
+    maxMembers: 999,
+    label: "51+ employees",
+    description: "Unlimited scale for enterprises",
+    perUser: "Best value"
+  },
 ];
 
 export default function SubscriptionPage() {
   const { user, token, refreshUser } = useAuth();
   const [loading, setLoading] = useState(null);
   const [trialStatus, setTrialStatus] = useState(null);
+  const [planView, setPlanView] = useState("individual");
 
   const headers = { Authorization: `Bearer ${token}` };
 
@@ -251,121 +291,223 @@ export default function SubscriptionPage() {
         </Card>
       )}
 
-      {/* Pricing Cards */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {tiers.map((tier) => {
-          const Icon = tier.icon;
-          const isCurrentPlan = currentTier === tier.id && (tier.id === "free" || subscriptionStatus === "active");
-          const isTrialPlan = currentTier === tier.id && isOnTrial;
-          const isFree = tier.id === "free";
-          const isUpgrade = tiers.findIndex(t => t.id === tier.id) > tiers.findIndex(t => t.id === currentTier);
-          
-          return (
-            <Card 
-              key={tier.id}
-              className={`relative ${tier.popular ? "border-2 border-[#FF5F00]" : ""}`}
-              data-testid={`tier-${tier.id}`}
-            >
-              {tier.popular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <Badge className="bg-[#FF5F00] text-white font-bold uppercase">Most Popular</Badge>
-                </div>
-              )}
-              <CardHeader className="text-center pb-2">
-                <div className={`w-14 h-14 mx-auto mb-4 rounded-sm flex items-center justify-center ${
-                  isFree ? "bg-slate-500" : tier.popular ? "bg-[#FF5F00]" : "bg-[#003366]"
-                }`}>
-                  <Icon className="w-7 h-7 text-white" />
-                </div>
-                <CardTitle className="font-heading text-2xl uppercase">{tier.name}</CardTitle>
-                <CardDescription>{tier.description}</CardDescription>
-                <div className="mt-4">
-                  {isFree ? (
-                    <span className="text-4xl font-bold">$0</span>
-                  ) : (
+      {/* Plan Type Toggle */}
+      <div className="flex justify-center" data-testid="plan-toggle">
+        <div className="inline-flex bg-muted p-1 rounded-sm">
+          <Button
+            variant={planView === "individual" ? "default" : "ghost"}
+            className={`font-bold uppercase text-sm px-6 ${planView === "individual" ? "bg-[#003366] text-white hover:bg-[#003366]/90" : ""}`}
+            onClick={() => setPlanView("individual")}
+            data-testid="toggle-individual"
+          >
+            <User className="w-4 h-4 mr-2" /> Individual
+          </Button>
+          <Button
+            variant={planView === "company" ? "default" : "ghost"}
+            className={`font-bold uppercase text-sm px-6 ${planView === "company" ? "bg-[#003366] text-white hover:bg-[#003366]/90" : ""}`}
+            onClick={() => setPlanView("company")}
+            data-testid="toggle-company"
+          >
+            <Users className="w-4 h-4 mr-2" /> Company
+          </Button>
+        </div>
+      </div>
+
+      {/* Individual Pricing Cards */}
+      {planView === "individual" && (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {individualTiers.map((tier) => {
+            const Icon = tier.icon;
+            const isCurrentPlan = currentTier === tier.id && (tier.id === "free" || subscriptionStatus === "active");
+            const isTrialPlan = currentTier === tier.id && isOnTrial;
+            const isFree = tier.id === "free";
+            const isUpgrade = individualTiers.findIndex(t => t.id === tier.id) > individualTiers.findIndex(t => t.id === currentTier);
+            
+            return (
+              <Card 
+                key={tier.id}
+                className={`relative ${tier.popular ? "border-2 border-[#FF5F00]" : ""}`}
+                data-testid={`tier-${tier.id}`}
+              >
+                {tier.popular && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <Badge className="bg-[#FF5F00] text-white font-bold uppercase">Most Popular</Badge>
+                  </div>
+                )}
+                <CardHeader className="text-center pb-2">
+                  <div className={`w-14 h-14 mx-auto mb-4 rounded-sm flex items-center justify-center ${
+                    isFree ? "bg-slate-500" : tier.popular ? "bg-[#FF5F00]" : "bg-[#003366]"
+                  }`}>
+                    <Icon className="w-7 h-7 text-white" />
+                  </div>
+                  <CardTitle className="font-heading text-2xl uppercase">{tier.name}</CardTitle>
+                  <CardDescription>{tier.description}</CardDescription>
+                  <div className="mt-4">
+                    {isFree ? (
+                      <span className="text-4xl font-bold">$0</span>
+                    ) : (
+                      <>
+                        <span className="text-4xl font-bold">${tier.price}</span>
+                        <span className="text-muted-foreground">/month</span>
+                      </>
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <ul className="space-y-2">
+                    {tier.features.map((feature, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm">
+                        <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                    {tier.notIncluded.map((feature, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                        <span className="w-4 h-4 flex items-center justify-center flex-shrink-0">—</span>
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {isFree && (
+                    <Button
+                      disabled={isCurrentPlan}
+                      className={`w-full h-12 font-bold uppercase ${
+                        isCurrentPlan ? "bg-green-500 text-white cursor-default" : "bg-slate-500 hover:bg-slate-600 text-white"
+                      }`}
+                      data-testid="select-free"
+                    >
+                      {isCurrentPlan ? (<><Check className="w-4 h-4 mr-2" /> Current Plan</>) : "Free Forever"}
+                    </Button>
+                  )}
+
+                  {!isFree && (
                     <>
-                      <span className="text-4xl font-bold">${tier.price}</span>
-                      <span className="text-muted-foreground">/month</span>
+                      <Button
+                        onClick={() => handleSubscribe(tier)}
+                        disabled={isCurrentPlan || loading === tier.id}
+                        className={`w-full h-12 font-bold uppercase ${
+                          tier.popular ? "bg-[#FF5F00] hover:bg-[#FF5F00]/90 text-white" 
+                            : isCurrentPlan ? "bg-green-500 text-white cursor-default"
+                            : "bg-[#003366] hover:bg-[#003366]/90 text-white"
+                        }`}
+                        data-testid={`subscribe-${tier.id}`}
+                      >
+                        {loading === tier.id ? "Processing..."
+                          : isCurrentPlan ? (<><Check className="w-4 h-4 mr-2" /> Current Plan</>)
+                          : isTrialPlan ? "Subscribe to Continue"
+                          : canStartTrial ? (<><Gift className="w-4 h-4 mr-2" /> Start Free Trial</>)
+                          : isUpgrade ? "Upgrade Now"
+                          : "Select Plan"}
+                      </Button>
+                      {canStartTrial && !isCurrentPlan && (
+                        <p className="text-xs text-center text-muted-foreground" data-testid={`trial-note-${tier.id}`}>
+                          Credit card required. You won't be charged until your trial ends. Cancel anytime.
+                        </p>
+                      )}
                     </>
                   )}
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <ul className="space-y-2">
-                  {tier.features.map((feature, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm">
-                      <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                  {tier.notIncluded.map((feature, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                      <span className="w-4 h-4 flex items-center justify-center flex-shrink-0">—</span>
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
 
-                {/* Free tier: just show current plan or nothing */}
-                {isFree && (
-                  <Button
-                    disabled={isCurrentPlan}
-                    className={`w-full h-12 font-bold uppercase ${
-                      isCurrentPlan
-                        ? "bg-green-500 text-white cursor-default"
-                        : "bg-slate-500 hover:bg-slate-600 text-white"
-                    }`}
-                    data-testid="select-free"
-                  >
-                    {isCurrentPlan ? (
-                      <><Check className="w-4 h-4 mr-2" /> Current Plan</>
-                    ) : (
-                      "Free Forever"
-                    )}
-                  </Button>
-                )}
+      {/* Company Pricing Cards */}
+      {planView === "company" && (
+        <>
+          <div className="text-center mb-2">
+            <p className="text-muted-foreground text-sm">One bill. Full access for your entire crew. All features included.</p>
+          </div>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {companyTiers.map((tier) => {
+              const isCurrentPlan = currentTier === tier.id && subscriptionStatus === "active";
+              return (
+                <Card
+                  key={tier.id}
+                  className={`relative ${tier.popular ? "border-2 border-[#FF5F00]" : ""}`}
+                  data-testid={`tier-${tier.id}`}
+                >
+                  {tier.popular && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                      <Badge className="bg-[#FF5F00] text-white font-bold uppercase">Most Popular</Badge>
+                    </div>
+                  )}
+                  <CardHeader className="text-center pb-2">
+                    <div className={`w-14 h-14 mx-auto mb-4 rounded-sm flex items-center justify-center ${tier.popular ? "bg-[#FF5F00]" : "bg-[#003366]"}`}>
+                      <Users className="w-7 h-7 text-white" />
+                    </div>
+                    <CardTitle className="font-heading text-2xl uppercase">{tier.name}</CardTitle>
+                    <CardDescription>{tier.description}</CardDescription>
+                    <Badge variant="outline" className="mt-2 font-bold">{tier.label}</Badge>
+                    <div className="mt-4">
+                      <span className="text-4xl font-bold">${tier.price}</span>
+                      <span className="text-muted-foreground">/month</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      ~{tier.perUser}/user/mo
+                    </p>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <ul className="space-y-2">
+                      <li className="flex items-start gap-2 text-sm">
+                        <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                        <span><strong>Up to {tier.maxMembers === 999 ? "unlimited" : tier.maxMembers}</strong> team members</span>
+                      </li>
+                      <li className="flex items-start gap-2 text-sm">
+                        <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                        <span>All features unlocked for every member</span>
+                      </li>
+                      <li className="flex items-start gap-2 text-sm">
+                        <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                        <span>Team management dashboard</span>
+                      </li>
+                      <li className="flex items-start gap-2 text-sm">
+                        <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                        <span>Crew timesheets & reporting</span>
+                      </li>
+                      <li className="flex items-start gap-2 text-sm">
+                        <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                        <span>Voice Notes & AI Safety Talks</span>
+                      </li>
+                      <li className="flex items-start gap-2 text-sm">
+                        <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                        <span>Job Bidding & Materials</span>
+                      </li>
+                      <li className="flex items-start gap-2 text-sm">
+                        <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                        <span>Priority support</span>
+                      </li>
+                    </ul>
 
-                {/* Paid tiers: single button - goes through Stripe (card required for trial) */}
-                {!isFree && (
-                  <>
                     <Button
                       onClick={() => handleSubscribe(tier)}
                       disabled={isCurrentPlan || loading === tier.id}
                       className={`w-full h-12 font-bold uppercase ${
-                        tier.popular 
-                          ? "bg-[#FF5F00] hover:bg-[#FF5F00]/90 text-white" 
-                          : isCurrentPlan
-                            ? "bg-green-500 text-white cursor-default"
-                            : "bg-[#003366] hover:bg-[#003366]/90 text-white"
+                        tier.popular ? "bg-[#FF5F00] hover:bg-[#FF5F00]/90 text-white"
+                          : isCurrentPlan ? "bg-green-500 text-white cursor-default"
+                          : "bg-[#003366] hover:bg-[#003366]/90 text-white"
                       }`}
                       data-testid={`subscribe-${tier.id}`}
                     >
-                      {loading === tier.id ? (
-                        "Processing..."
-                      ) : isCurrentPlan ? (
-                        <><Check className="w-4 h-4 mr-2" /> Current Plan</>
-                      ) : isTrialPlan ? (
-                        "Subscribe to Continue"
-                      ) : canStartTrial ? (
-                        <><Gift className="w-4 h-4 mr-2" /> Start Free Trial</>
-                      ) : isUpgrade ? (
-                        "Upgrade Now"
-                      ) : (
-                        "Select Plan"
-                      )}
+                      {loading === tier.id ? "Processing..."
+                        : isCurrentPlan ? (<><Check className="w-4 h-4 mr-2" /> Current Plan</>)
+                        : canStartTrial ? (<><Gift className="w-4 h-4 mr-2" /> Start Free Trial</>)
+                        : "Get Started"}
                     </Button>
-                    {canStartTrial && !isCurrentPlan && (
-                      <p className="text-xs text-center text-muted-foreground" data-testid={`trial-note-${tier.id}`}>
-                        Credit card required. You won't be charged until your trial ends. Cancel anytime.
+                    {canStartTrial && (
+                      <p className="text-xs text-center text-muted-foreground">
+                        Credit card required. You won't be charged until your trial ends.
                       </p>
                     )}
-                  </>
-                )}
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </>
+      )}
 
       {/* FAQ Section */}
       <Card>
@@ -396,6 +538,19 @@ export default function SubscriptionPage() {
             <h4 className="font-bold">Can I upgrade or downgrade my plan?</h4>
             <p className="text-sm text-muted-foreground">
               Yes, you can change your plan at any time. Upgrades take effect immediately, and you&apos;ll be credited for the unused portion of your current plan.
+            </p>
+          </div>
+          <div>
+            <h4 className="font-bold">How do Company Plans work?</h4>
+            <p className="text-sm text-muted-foreground">
+              Company plans let the business owner pay a single monthly bill that covers the entire team. Invite employees via email — they get full access to every feature. 
+              The owner manages the team from the Team Management dashboard.
+            </p>
+          </div>
+          <div>
+            <h4 className="font-bold">What happens if my team grows past the plan limit?</h4>
+            <p className="text-sm text-muted-foreground">
+              Simply upgrade to the next company tier. Your existing team members keep their access, and you can invite more people immediately after upgrading.
             </p>
           </div>
         </CardContent>

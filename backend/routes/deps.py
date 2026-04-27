@@ -106,9 +106,13 @@ class TokenResponse(BaseModel):
 
 # Subscription Models
 SUBSCRIPTION_TIERS = {
-    "basic": {"name": "Basic", "price": 4.99, "features": ["notes", "calculator", "formulas"], "trial_days": 7},
-    "pro": {"name": "Pro", "price": 9.99, "features": ["notes", "calculator", "formulas", "timesheet", "materials", "calendar", "safety_talks"], "trial_days": 7},
-    "enterprise": {"name": "Enterprise", "price": 19.99, "features": ["all"], "trial_days": 7}
+    "basic": {"name": "Basic", "price": 4.99, "features": ["notes", "calculator", "formulas"], "trial_days": 7, "type": "individual"},
+    "pro": {"name": "Pro", "price": 9.99, "features": ["notes", "calculator", "formulas", "timesheet", "materials", "calendar", "safety_talks"], "trial_days": 7, "type": "individual"},
+    "enterprise": {"name": "Enterprise", "price": 19.99, "features": ["all"], "trial_days": 7, "type": "individual"},
+    "company_10": {"name": "Small Crew", "price": 49.99, "features": ["all"], "trial_days": 7, "type": "company", "max_members": 10},
+    "company_25": {"name": "Mid-Size", "price": 99.99, "features": ["all"], "trial_days": 7, "type": "company", "max_members": 25},
+    "company_50": {"name": "Large Company", "price": 179.99, "features": ["all"], "trial_days": 7, "type": "company", "max_members": 50},
+    "company_unlimited": {"name": "Enterprise+", "price": 299.99, "features": ["all"], "trial_days": 7, "type": "company", "max_members": 999},
 }
 
 GOOGLE_PLAY_PRODUCT_IDS = {
