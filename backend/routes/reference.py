@@ -171,3 +171,114 @@ TOTAL_STATION_INFO = {
 @router.get("/total-station")
 async def get_total_station_info():
     return TOTAL_STATION_INFO
+
+
+# ==================== OFFSET CUT CALCULATOR ====================
+
+# Fitting takeoffs (center-to-end, inches) for 45° elbows by material and pipe size
+# Other angles are derived geometrically from these base values
+FITTING_TAKEOFFS_45 = {
+    "pvc": {
+        "name": "PVC (Schedule 40, Solvent Weld)",
+        "sizes": {"1/2": 0.375, "3/4": 0.5, "1": 0.625, "1-1/4": 0.75, "1-1/2": 0.875, "2": 1.0, "2-1/2": 1.25, "3": 1.5, "4": 2.0, "6": 2.75}
+    },
+    "copper": {
+        "name": "Copper (Sweat/Solder)",
+        "sizes": {"1/2": 0.3125, "3/4": 0.375, "1": 0.4375, "1-1/4": 0.5, "1-1/2": 0.5625, "2": 0.6875, "2-1/2": 0.8125, "3": 1.0, "4": 1.25, "6": 1.75}
+    },
+    "cast_iron": {
+        "name": "Cast Iron (No-Hub)",
+        "sizes": {"1-1/2": 1.5, "2": 1.5, "3": 2.0, "4": 2.5, "6": 3.5}
+    },
+    "black_iron": {
+        "name": "Black Iron (Threaded)",
+        "sizes": {"1/2": 0.625, "3/4": 0.75, "1": 0.875, "1-1/4": 1.0, "1-1/2": 1.125, "2": 1.25, "2-1/2": 1.5, "3": 1.625, "4": 2.0, "6": 2.5}
+    },
+    "stainless": {
+        "name": "Stainless Steel (Press-Fit)",
+        "sizes": {"1/2": 0.375, "3/4": 0.4375, "1": 0.5, "1-1/4": 0.5625, "1-1/2": 0.625, "2": 0.75, "2-1/2": 0.875, "3": 1.125, "4": 1.375, "6": 2.0}
+    },
+}
+
+# Angle multipliers: ratio of center-to-end relative to 45°
+# Based on tan(angle/2) / tan(22.5°)
+ANGLE_TAKEOFF_RATIOS = {
+    "11.25": 0.238,
+    "22.5": 0.480,
+    "45": 1.0,
+    "60": 1.394,
+}
+
+# Travel multipliers: Offset / sin(angle)
+TRAVEL_MULTIPLIERS = {
+    "11.25": 5.1258,
+    "22.5": 2.6131,
+    "45": 1.4142,
+    "60": 1.1547,
+}
+
+PIPE_SIZES = ["1/2", "3/4", "1", "1-1/4", "1-1/2", "2", "2-1/2", "3", "4", "6"]
+
+
+@router.get("/offset-calculator/data", summary="Get offset calculator reference data")
+async def get_offset_calculator_data():
+    """Returns materials, pipe sizes, angles, and fitting takeoff lookup tables."""
+    return {
+        "materials": {k: v["name"] for k, v in FITTING_TAKEOFFS_45.items()},
+        "pipe_sizes": PIPE_SIZES,
+        "angles": ["11.25", "22.5", "45", "60"],
+        "travel_multipliers": TRAVEL_MULTIPLIERS,
+    }
+
+
+@router.post("/offset-calculator/calculate", summary="Calculate offset cut piece")
+async def calculate_offset_cut(
+    material: str,
+    pipe_size: str,
+    angle: str,
+    offset: float
+):
+    """Calculate the exact cut piece length for a pipe offset, accounting for fitting takeoffs.
+
+    Returns travel (center-to-center), fitting takeoff per fitting, and the final cut piece length.
+    """
+    if material not in FITTING_TAKEOFFS_45:
+        raise HTTPException(status_code=400, detail=f"Invalid material. Choose from: {list(FITTING_TAKEOFFS_45.keys())}")
+    if angle not in TRAVEL_MULTIPLIERS:
+        raise HTTPException(status_code=400, detail=f"Invalid angle. Choose from: {list(TRAVEL_MULTIPLIERS.keys())}")
+    if pipe_size not in PIPE_SIZES:
+        raise HTTPException(status_code=400, detail=f"Invalid pipe size. Choose from: {PIPE_SIZES}")
+
+    material_data = FITTING_TAKEOFFS_45[material]
+    if pipe_size not in material_data["sizes"]:
+        raise HTTPException(status_code=400, detail=f"Pipe size {pipe_size}\" not available in {material_data['name']}. Available: {list(material_data['sizes'].keys())}")
+
+    # Calculate travel (center-to-center distance between fittings)
+    travel_multiplier = TRAVEL_MULTIPLIERS[angle]
+    travel = offset * travel_multiplier
+
+    # Calculate fitting takeoff for this angle
+    base_takeoff = material_data["sizes"][pipe_size]
+    angle_ratio = ANGLE_TAKEOFF_RATIOS[angle]
+    fitting_takeoff = base_takeoff * angle_ratio
+
+    # Cut piece = Travel - (2 × fitting takeoff)
+    cut_piece = travel - (2 * fitting_takeoff)
+    cut_piece = max(0, cut_piece)  # Can't be negative
+
+    # Also calculate set (run)
+    angle_rad = math.radians(float(angle))
+    set_run = offset / math.tan(angle_rad) if angle != "90" else 0
+
+    return {
+        "material": material_data["name"],
+        "pipe_size": f'{pipe_size}"',
+        "angle": f"{angle}°",
+        "offset": round(offset, 4),
+        "travel_multiplier": travel_multiplier,
+        "travel": round(travel, 4),
+        "fitting_takeoff_each": round(fitting_takeoff, 4),
+        "total_takeoff": round(2 * fitting_takeoff, 4),
+        "cut_piece": round(cut_piece, 4),
+        "set_run": round(set_run, 4),
+    }
