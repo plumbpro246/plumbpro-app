@@ -30,6 +30,7 @@ import VoiceNotesPage from "@/pages/VoiceNotesPage";
 import WeatherPage from "@/pages/WeatherPage";
 import SupplierPage from "@/pages/SupplierPage";
 import OffsetCalculatorPage from "@/pages/OffsetCalculatorPage";
+import FittingTakeoffsPage from "@/pages/FittingTakeoffsPage";
 import LandingPage from "@/pages/LandingPage";
 import PrivacyPolicyPage from "@/pages/PrivacyPolicyPage";
 import TermsOfServicePage from "@/pages/TermsOfServicePage";
@@ -160,13 +161,13 @@ import {
   Home, FileText, Calculator, Shield, Clock, Package, 
   DollarSign, Calendar, AlertTriangle, FileSpreadsheet, 
   Cpu, Map, LogOut, Menu, X, User, Crown, Settings, BookOpen, Lock, LifeBuoy, Users,
-  Mic, Cloud, Store, Ruler
+  Mic, Cloud, Store, Ruler, Table2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 // Free tier gets: Dashboard, Formulas, Safety Talks, Calendar, Calculator, Settings, Subscription, Plumbing Code, Support
-const FREE_TIER_PATHS = ["/dashboard", "/formulas", "/safety-talks", "/calendar", "/calculator", "/offset-calc", "/settings", "/subscription", "/subscription/success", "/plumbing-code", "/support", "/weather", "/suppliers"];
+const FREE_TIER_PATHS = ["/dashboard", "/formulas", "/safety-talks", "/calendar", "/calculator", "/offset-calc", "/fitting-takeoffs", "/settings", "/subscription", "/subscription/success", "/plumbing-code", "/support", "/weather", "/suppliers"];
 
 const navItems = [
   { path: "/dashboard", label: "Dashboard", icon: Home, free: true },
@@ -181,6 +182,7 @@ const navItems = [
   { path: "/sds", label: "Safety Data", icon: FileSpreadsheet },
   { path: "/calculator", label: "Calculator", icon: Cpu, free: true },
   { path: "/offset-calc", label: "Offset Calc", icon: Ruler, free: true },
+  { path: "/fitting-takeoffs", label: "Fitting Data", icon: Table2, free: true },
   { path: "/total-station", label: "Total Station", icon: Map },
   { path: "/blueprints", label: "Blueprints", icon: FileText },
   { path: "/plumbing-code", label: "Plumbing Code", icon: BookOpen, free: true },
@@ -372,6 +374,7 @@ function App() {
           <Route path="/sds" element={<ProtectedRoute><TierGatedRoute><MainLayout><SDSPage /></MainLayout></TierGatedRoute></ProtectedRoute>} />
           <Route path="/calculator" element={<ProtectedRoute><MainLayout><CalculatorPage /></MainLayout></ProtectedRoute>} />
           <Route path="/offset-calc" element={<ProtectedRoute><MainLayout><OffsetCalculatorPage /></MainLayout></ProtectedRoute>} />
+          <Route path="/fitting-takeoffs" element={<ProtectedRoute><MainLayout><FittingTakeoffsPage /></MainLayout></ProtectedRoute>} />
           <Route path="/total-station" element={<ProtectedRoute><TierGatedRoute><MainLayout><TotalStationPage /></MainLayout></TierGatedRoute></ProtectedRoute>} />
           <Route path="/blueprints" element={<ProtectedRoute><TierGatedRoute><MainLayout><BlueprintsPage /></MainLayout></TierGatedRoute></ProtectedRoute>} />
           <Route path="/plumbing-code" element={<ProtectedRoute><MainLayout><PlumbingCodePage /></MainLayout></ProtectedRoute>} />

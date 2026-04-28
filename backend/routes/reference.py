@@ -175,33 +175,61 @@ async def get_total_station_info():
 
 # ==================== OFFSET CUT CALCULATOR ====================
 
-# Fitting takeoffs (center-to-end, inches) for 45° elbows by material and pipe size
-# Other angles are derived geometrically from these base values
-FITTING_TAKEOFFS_45 = {
-    "pvc": {
-        "name": "PVC (Schedule 40, Solvent Weld)",
-        "sizes": {"1/2": 0.375, "3/4": 0.5, "1": 0.625, "1-1/4": 0.75, "1-1/2": 0.875, "2": 1.0, "2-1/2": 1.25, "3": 1.5, "4": 2.0, "6": 2.75}
+# Manufacturer-specific fitting takeoffs (center-to-end, inches) for 45° elbows
+# Other angles derived via ANGLE_TAKEOFF_RATIOS
+MANUFACTURERS = {
+    "charlotte_pvc": {
+        "id": "charlotte_pvc", "name": "Charlotte Pipe", "material": "PVC", "type": "pvc",
+        "joint": "Schedule 40, Solvent Weld",
+        "sizes": {"1/2": 0.50, "3/4": 0.625, "1": 0.75, "1-1/4": 0.875, "1-1/2": 1.0, "2": 1.125, "2-1/2": 1.375, "3": 1.625, "4": 2.125, "6": 3.0}
     },
-    "copper": {
-        "name": "Copper (Sweat/Solder)",
-        "sizes": {"1/2": 0.3125, "3/4": 0.375, "1": 0.4375, "1-1/4": 0.5, "1-1/2": 0.5625, "2": 0.6875, "2-1/2": 0.8125, "3": 1.0, "4": 1.25, "6": 1.75}
+    "charlotte_ci": {
+        "id": "charlotte_ci", "name": "Charlotte Pipe", "material": "Cast Iron", "type": "cast_iron",
+        "joint": "No-Hub",
+        "sizes": {"1-1/2": 1.50, "2": 1.50, "3": 2.125, "4": 2.625, "6": 3.625}
     },
-    "cast_iron": {
-        "name": "Cast Iron (No-Hub)",
-        "sizes": {"1-1/2": 1.5, "2": 1.5, "3": 2.0, "4": 2.5, "6": 3.5}
+    "cerro_copper": {
+        "id": "cerro_copper", "name": "Cerro Copper", "material": "Copper", "type": "copper",
+        "joint": "Sweat/Solder",
+        "sizes": {"1/2": 0.375, "3/4": 0.4375, "1": 0.50, "1-1/4": 0.5625, "1-1/2": 0.625, "2": 0.75, "2-1/2": 0.875, "3": 1.0625, "4": 1.3125, "6": 1.8125}
     },
-    "black_iron": {
-        "name": "Black Iron (Threaded)",
-        "sizes": {"1/2": 0.625, "3/4": 0.75, "1": 0.875, "1-1/4": 1.0, "1-1/2": 1.125, "2": 1.25, "2-1/2": 1.5, "3": 1.625, "4": 2.0, "6": 2.5}
+    "ward_black_iron": {
+        "id": "ward_black_iron", "name": "Ward Manufacturing", "material": "Black Iron", "type": "black_iron",
+        "joint": "Threaded",
+        "sizes": {"1/2": 0.625, "3/4": 0.75, "1": 0.875, "1-1/4": 1.0, "1-1/2": 1.125, "2": 1.3125, "2-1/2": 1.50, "3": 1.6875, "4": 2.0625, "6": 2.625}
     },
-    "stainless": {
-        "name": "Stainless Steel (Press-Fit)",
-        "sizes": {"1/2": 0.375, "3/4": 0.4375, "1": 0.5, "1-1/4": 0.5625, "1-1/2": 0.625, "2": 0.75, "2-1/2": 0.875, "3": 1.125, "4": 1.375, "6": 2.0}
+    "anvil_black_iron": {
+        "id": "anvil_black_iron", "name": "Anvil International", "material": "Black Iron", "type": "black_iron",
+        "joint": "Threaded",
+        "sizes": {"1/2": 0.625, "3/4": 0.6875, "1": 0.8125, "1-1/4": 0.9375, "1-1/2": 1.0625, "2": 1.25, "2-1/2": 1.4375, "3": 1.625, "4": 2.0, "6": 2.5625}
+    },
+    "viega_ss": {
+        "id": "viega_ss", "name": "Viega ProPress", "material": "Stainless Steel", "type": "stainless",
+        "joint": "Press-Fit",
+        "sizes": {"1/2": 0.4375, "3/4": 0.50, "1": 0.5625, "1-1/4": 0.625, "1-1/2": 0.6875, "2": 0.8125, "2-1/2": 0.9375, "3": 1.1875, "4": 1.4375}
+    },
+    "sharkbite_pex": {
+        "id": "sharkbite_pex", "name": "SharkBite", "material": "PEX", "type": "pex",
+        "joint": "Push-Fit",
+        "sizes": {"1/2": 1.0, "3/4": 1.125, "1": 1.25, "1-1/4": 1.375, "1-1/2": 1.50, "2": 1.75}
+    },
+    "nibco_pvc": {
+        "id": "nibco_pvc", "name": "Nibco", "material": "PVC", "type": "pvc",
+        "joint": "Schedule 40, Solvent Weld",
+        "sizes": {"1/2": 0.4375, "3/4": 0.5625, "1": 0.6875, "1-1/4": 0.8125, "1-1/2": 0.9375, "2": 1.0625, "2-1/2": 1.3125, "3": 1.5625, "4": 2.0625, "6": 2.875}
+    },
+    "nibco_copper": {
+        "id": "nibco_copper", "name": "Nibco", "material": "Copper", "type": "copper",
+        "joint": "Sweat/Solder",
+        "sizes": {"1/2": 0.34375, "3/4": 0.40625, "1": 0.46875, "1-1/4": 0.53125, "1-1/2": 0.59375, "2": 0.71875, "2-1/2": 0.84375, "3": 1.03125, "4": 1.28125, "6": 1.78125}
+    },
+    "nibco_pex": {
+        "id": "nibco_pex", "name": "Nibco", "material": "PEX", "type": "pex",
+        "joint": "Press / Crimp",
+        "sizes": {"1/2": 0.875, "3/4": 1.0, "1": 1.125, "1-1/4": 1.25, "1-1/2": 1.375, "2": 1.625}
     },
 }
 
-# Angle multipliers: ratio of center-to-end relative to 45°
-# Based on tan(angle/2) / tan(22.5°)
 ANGLE_TAKEOFF_RATIOS = {
     "11.25": 0.238,
     "22.5": 0.480,
@@ -209,7 +237,6 @@ ANGLE_TAKEOFF_RATIOS = {
     "60": 1.394,
 }
 
-# Travel multipliers: Offset / sin(angle)
 TRAVEL_MULTIPLIERS = {
     "11.25": 5.1258,
     "22.5": 2.6131,
@@ -222,58 +249,71 @@ PIPE_SIZES = ["1/2", "3/4", "1", "1-1/4", "1-1/2", "2", "2-1/2", "3", "4", "6"]
 
 @router.get("/offset-calculator/data", summary="Get offset calculator reference data")
 async def get_offset_calculator_data():
-    """Returns materials, pipe sizes, angles, and fitting takeoff lookup tables."""
+    """Returns manufacturers, pipe sizes, angles, and fitting takeoff lookup tables."""
     return {
-        "materials": {k: v["name"] for k, v in FITTING_TAKEOFFS_45.items()},
+        "manufacturers": {k: {"name": v["name"], "material": v["material"], "type": v["type"], "joint": v["joint"], "sizes": list(v["sizes"].keys())} for k, v in MANUFACTURERS.items()},
         "pipe_sizes": PIPE_SIZES,
-        "angles": ["11.25", "22.5", "45", "60"],
+        "angles": list(TRAVEL_MULTIPLIERS.keys()),
         "travel_multipliers": TRAVEL_MULTIPLIERS,
     }
 
 
+@router.get("/fitting-takeoffs", summary="Get all manufacturer fitting takeoff data")
+async def get_fitting_takeoffs():
+    """Returns complete fitting takeoff reference for all manufacturers, materials, and pipe sizes."""
+    result = []
+    for mfr_id, mfr in MANUFACTURERS.items():
+        takeoffs = {}
+        for size, base in mfr["sizes"].items():
+            takeoffs[size] = {}
+            for angle, ratio in ANGLE_TAKEOFF_RATIOS.items():
+                takeoffs[size][angle] = round(base * ratio, 4)
+        result.append({
+            "id": mfr_id,
+            "name": mfr["name"],
+            "material": mfr["material"],
+            "type": mfr["type"],
+            "joint": mfr["joint"],
+            "takeoffs": takeoffs,
+        })
+    return result
+
+
 @router.post("/offset-calculator/calculate", summary="Calculate offset cut piece")
 async def calculate_offset_cut(
-    material: str,
+    manufacturer: str,
     pipe_size: str,
     angle: str,
     offset: float
 ):
-    """Calculate the exact cut piece length for a pipe offset, accounting for fitting takeoffs.
-
-    Returns travel (center-to-center), fitting takeoff per fitting, and the final cut piece length.
-    """
-    if material not in FITTING_TAKEOFFS_45:
-        raise HTTPException(status_code=400, detail=f"Invalid material. Choose from: {list(FITTING_TAKEOFFS_45.keys())}")
+    """Calculate the exact cut piece length for a pipe offset using manufacturer-specific fitting takeoffs."""
+    if manufacturer not in MANUFACTURERS:
+        raise HTTPException(status_code=400, detail=f"Invalid manufacturer. Choose from: {list(MANUFACTURERS.keys())}")
     if angle not in TRAVEL_MULTIPLIERS:
         raise HTTPException(status_code=400, detail=f"Invalid angle. Choose from: {list(TRAVEL_MULTIPLIERS.keys())}")
-    if pipe_size not in PIPE_SIZES:
-        raise HTTPException(status_code=400, detail=f"Invalid pipe size. Choose from: {PIPE_SIZES}")
 
-    material_data = FITTING_TAKEOFFS_45[material]
-    if pipe_size not in material_data["sizes"]:
-        raise HTTPException(status_code=400, detail=f"Pipe size {pipe_size}\" not available in {material_data['name']}. Available: {list(material_data['sizes'].keys())}")
+    mfr = MANUFACTURERS[manufacturer]
+    if pipe_size not in mfr["sizes"]:
+        raise HTTPException(status_code=400, detail=f"Pipe size {pipe_size}\" not available for {mfr['name']} {mfr['material']}. Available: {list(mfr['sizes'].keys())}")
 
-    # Calculate travel (center-to-center distance between fittings)
     travel_multiplier = TRAVEL_MULTIPLIERS[angle]
     travel = offset * travel_multiplier
 
-    # Calculate fitting takeoff for this angle
-    base_takeoff = material_data["sizes"][pipe_size]
+    base_takeoff = mfr["sizes"][pipe_size]
     angle_ratio = ANGLE_TAKEOFF_RATIOS[angle]
     fitting_takeoff = base_takeoff * angle_ratio
 
-    # Cut piece = Travel - (2 × fitting takeoff)
-    cut_piece = travel - (2 * fitting_takeoff)
-    cut_piece = max(0, cut_piece)  # Can't be negative
+    cut_piece = max(0, travel - (2 * fitting_takeoff))
 
-    # Also calculate set (run)
     angle_rad = math.radians(float(angle))
-    set_run = offset / math.tan(angle_rad) if angle != "90" else 0
+    set_run = offset / math.tan(angle_rad)
 
     return {
-        "material": material_data["name"],
+        "manufacturer": mfr["name"],
+        "material": mfr["material"],
+        "joint": mfr["joint"],
         "pipe_size": f'{pipe_size}"',
-        "angle": f"{angle}°",
+        "angle": f"{angle}\u00b0",
         "offset": round(offset, 4),
         "travel_multiplier": travel_multiplier,
         "travel": round(travel, 4),
