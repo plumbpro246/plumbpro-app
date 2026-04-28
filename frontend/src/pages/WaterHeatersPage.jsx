@@ -123,25 +123,41 @@ function CodeSection({ codes }) {
   );
 }
 
-function PipingDiagrams({ diagrams, title }) {
+import {
+  SingleWaterHeaterDiagram, SeriesWaterHeaterDiagram,
+  ParallelWaterHeaterDiagram, ReverseReturnWHDiagram
+} from "@/components/PipingDiagrams";
+
+function WaterHeaterPipingSection() {
   return (
-    <div>
-      <h2 className="font-heading text-xl font-bold uppercase tracking-tight mb-4">{title}</h2>
-      <div className="grid gap-4 lg:grid-cols-3">
-        {diagrams.map((d) => (
-          <Card key={d.id} className="border-2 border-[#003366]">
-            <CardHeader className="bg-[#003366] text-white py-3">
-              <CardTitle className="font-heading text-base uppercase">{d.name}</CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 space-y-3">
-              <p className="text-sm text-muted-foreground">{d.description}</p>
-              {d.use_case && <p className="text-xs"><strong>Best for:</strong> {d.use_case}</p>}
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-sm p-3 border border-border">
-                <pre className="text-xs font-mono whitespace-pre-wrap leading-relaxed">{d.diagram_lines.join("\n")}</pre>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+    <div className="space-y-8">
+      <h2 className="font-heading text-xl font-bold uppercase tracking-tight">Piping Diagrams</h2>
+      <Card className="border-2 border-[#003366]">
+        <CardHeader className="bg-[#003366] text-white py-3">
+          <CardTitle className="font-heading uppercase">Single Water Heater — Proper Installation</CardTitle>
+          <CardDescription className="text-slate-300">Complete installation with all required components per code</CardDescription>
+        </CardHeader>
+        <CardContent className="p-4"><SingleWaterHeaterDiagram /></CardContent>
+      </Card>
+      <Card className="border-2 border-[#003366]">
+        <CardHeader className="bg-[#003366] text-white py-3">
+          <CardTitle className="font-heading uppercase">Series Piping — Two Water Heaters</CardTitle>
+        </CardHeader>
+        <CardContent className="p-4"><SeriesWaterHeaterDiagram /></CardContent>
+      </Card>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card className="border-2 border-[#003366]">
+          <CardHeader className="bg-[#003366] text-white py-3">
+            <CardTitle className="font-heading uppercase">Parallel Piping</CardTitle>
+          </CardHeader>
+          <CardContent className="p-4"><ParallelWaterHeaterDiagram /></CardContent>
+        </Card>
+        <Card className="border-2 border-[#003366]">
+          <CardHeader className="bg-[#003366] text-white py-3">
+            <CardTitle className="font-heading uppercase">Reverse Return</CardTitle>
+          </CardHeader>
+          <CardContent className="p-4"><ReverseReturnWHDiagram /></CardContent>
+        </Card>
       </div>
     </div>
   );
@@ -202,7 +218,7 @@ export default function WaterHeatersPage() {
       )}
 
       {section === "codes" && <CodeSection codes={data.codes} />}
-      {section === "piping" && <PipingDiagrams diagrams={data.multi_heater_piping} title="Multi-Heater Piping Configurations" />}
+      {section === "piping" && <WaterHeaterPipingSection />}
     </div>
   );
 }

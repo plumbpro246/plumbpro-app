@@ -120,24 +120,46 @@ function CodeSection({ codes }) {
   );
 }
 
-function PipingDiagrams({ diagrams }) {
+import {
+  SingleBoilerDiagram, PrimarySecondaryDiagram,
+  ParallelBoilerDiagram, ReverseReturnBoilerDiagram
+} from "@/components/PipingDiagrams";
+
+function BoilerPipingSection() {
   return (
-    <div>
-      <h2 className="font-heading text-xl font-bold uppercase tracking-tight mb-4">Multi-Boiler Piping Configurations</h2>
-      <div className="grid gap-4 lg:grid-cols-3">
-        {diagrams.map((d) => (
-          <Card key={d.id} className="border-2 border-[#003366]">
-            <CardHeader className="bg-[#003366] text-white py-3">
-              <CardTitle className="font-heading text-base uppercase">{d.name}</CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 space-y-3">
-              <p className="text-sm text-muted-foreground">{d.description}</p>
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-sm p-3 border border-border">
-                <pre className="text-xs font-mono whitespace-pre-wrap leading-relaxed">{d.diagram_lines.join("\n")}</pre>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+    <div className="space-y-8">
+      <h2 className="font-heading text-xl font-bold uppercase tracking-tight">Piping Diagrams</h2>
+
+      <Card className="border-2 border-[#003366]">
+        <CardHeader className="bg-[#003366] text-white py-3">
+          <CardTitle className="font-heading uppercase">Single Boiler — Near-Boiler Piping</CardTitle>
+          <CardDescription className="text-slate-300">Complete near-boiler piping with all required components</CardDescription>
+        </CardHeader>
+        <CardContent className="p-4"><SingleBoilerDiagram /></CardContent>
+      </Card>
+
+      <Card className="border-2 border-[#003366]">
+        <CardHeader className="bg-[#003366] text-white py-3">
+          <CardTitle className="font-heading uppercase">Primary / Secondary Piping</CardTitle>
+          <CardDescription className="text-slate-300">Essential for modulating-condensing boilers</CardDescription>
+        </CardHeader>
+        <CardContent className="p-4"><PrimarySecondaryDiagram /></CardContent>
+      </Card>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card className="border-2 border-[#003366]">
+          <CardHeader className="bg-[#003366] text-white py-3">
+            <CardTitle className="font-heading uppercase">Parallel Header (Cascade)</CardTitle>
+          </CardHeader>
+          <CardContent className="p-4"><ParallelBoilerDiagram /></CardContent>
+        </Card>
+
+        <Card className="border-2 border-[#003366]">
+          <CardHeader className="bg-[#003366] text-white py-3">
+            <CardTitle className="font-heading uppercase">Reverse Return</CardTitle>
+          </CardHeader>
+          <CardContent className="p-4"><ReverseReturnBoilerDiagram /></CardContent>
+        </Card>
       </div>
     </div>
   );
@@ -184,7 +206,7 @@ export default function BoilersPage() {
       )}
 
       {section === "codes" && <CodeSection codes={data.codes} />}
-      {section === "piping" && <PipingDiagrams diagrams={data.multi_boiler_piping} />}
+      {section === "piping" && <BoilerPipingSection />}
     </div>
   );
 }
