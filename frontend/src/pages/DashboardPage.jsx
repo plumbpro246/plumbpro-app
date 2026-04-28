@@ -8,7 +8,7 @@ import {
   DollarSign, Calendar, AlertTriangle, FileSpreadsheet,
   Cpu, Map, Crown, ChevronRight, BookOpen, Mic, Cloud, Store,
   Sun, CloudRain, Snowflake, CloudLightning, Wind, Droplets, Eye, ThermometerSun, MapPin,
-  Ruler, Table2
+  Ruler, Table2, Wrench
 } from "lucide-react";
 
 const quickLinks = [
@@ -26,6 +26,7 @@ const quickLinks = [
   { path: "/fitting-takeoffs", label: "Fitting Data", icon: Table2, color: "bg-zinc-600" },
   { path: "/water-heaters", label: "Water Heaters", icon: Droplets, color: "bg-blue-600" },
   { path: "/boilers", label: "Boilers", icon: ThermometerSun, color: "bg-red-600" },
+  { path: "/fixtures", label: "Fixtures", icon: Wrench, color: "bg-lime-600" },
   { path: "/total-station", label: "Total Station", icon: Map, color: "bg-emerald-500" },
   { path: "/blueprints", label: "Blueprints", icon: FileText, color: "bg-slate-500" },
   { path: "/plumbing-code", label: "Plumbing Code", icon: BookOpen, color: "bg-sky-600" },

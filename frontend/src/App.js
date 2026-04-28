@@ -33,6 +33,7 @@ import OffsetCalculatorPage from "@/pages/OffsetCalculatorPage";
 import FittingTakeoffsPage from "@/pages/FittingTakeoffsPage";
 import WaterHeatersPage from "@/pages/WaterHeatersPage";
 import BoilersPage from "@/pages/BoilersPage";
+import FixturesPage from "@/pages/FixturesPage";
 import LandingPage from "@/pages/LandingPage";
 import PrivacyPolicyPage from "@/pages/PrivacyPolicyPage";
 import TermsOfServicePage from "@/pages/TermsOfServicePage";
@@ -163,7 +164,7 @@ import {
   Home, FileText, Calculator, Shield, Clock, Package, 
   DollarSign, Calendar, AlertTriangle, FileSpreadsheet, 
   Cpu, Map, LogOut, Menu, X, User, Crown, Settings, BookOpen, Lock, LifeBuoy, Users,
-  Mic, Cloud, Store, Ruler, Table2, Droplets, ThermometerSun
+  Mic, Cloud, Store, Ruler, Table2, Droplets, ThermometerSun, Wrench
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -187,6 +188,7 @@ const navItems = [
   { path: "/fitting-takeoffs", label: "Fitting Data", icon: Table2, free: true },
   { path: "/water-heaters", label: "Water Heaters", icon: Droplets },
   { path: "/boilers", label: "Boilers", icon: ThermometerSun },
+  { path: "/fixtures", label: "Fixtures", icon: Wrench },
   { path: "/total-station", label: "Total Station", icon: Map },
   { path: "/blueprints", label: "Blueprints", icon: FileText },
   { path: "/plumbing-code", label: "Plumbing Code", icon: BookOpen, free: true },
@@ -381,6 +383,7 @@ function App() {
           <Route path="/fitting-takeoffs" element={<ProtectedRoute><MainLayout><FittingTakeoffsPage /></MainLayout></ProtectedRoute>} />
           <Route path="/water-heaters" element={<ProtectedRoute><TierGatedRoute><MainLayout><WaterHeatersPage /></MainLayout></TierGatedRoute></ProtectedRoute>} />
           <Route path="/boilers" element={<ProtectedRoute><TierGatedRoute><MainLayout><BoilersPage /></MainLayout></TierGatedRoute></ProtectedRoute>} />
+          <Route path="/fixtures" element={<ProtectedRoute><TierGatedRoute><MainLayout><FixturesPage /></MainLayout></TierGatedRoute></ProtectedRoute>} />
           <Route path="/total-station" element={<ProtectedRoute><TierGatedRoute><MainLayout><TotalStationPage /></MainLayout></TierGatedRoute></ProtectedRoute>} />
           <Route path="/blueprints" element={<ProtectedRoute><TierGatedRoute><MainLayout><BlueprintsPage /></MainLayout></TierGatedRoute></ProtectedRoute>} />
           <Route path="/plumbing-code" element={<ProtectedRoute><MainLayout><PlumbingCodePage /></MainLayout></ProtectedRoute>} />

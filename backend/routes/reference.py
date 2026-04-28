@@ -354,3 +354,28 @@ async def get_boiler_manufacturer(manufacturer_id: str):
         if mfr["id"] == manufacturer_id:
             return mfr
     raise HTTPException(status_code=404, detail="Manufacturer not found")
+
+
+# ==================== FIXTURES ====================
+from fixtures_data import FIXTURES_DATA
+
+@router.get("/fixtures", summary="Get plumbing fixtures reference data")
+async def get_fixtures():
+    """Returns all fixture categories with manufacturers, parts, and troubleshooting."""
+    return FIXTURES_DATA
+
+@router.get("/fixtures/{category_id}", summary="Get fixtures by category")
+async def get_fixtures_by_category(category_id: str):
+    for cat in FIXTURES_DATA["categories"]:
+        if cat["id"] == category_id:
+            return cat
+    raise HTTPException(status_code=404, detail="Category not found")
+
+@router.get("/fixtures/{category_id}/{manufacturer_id}", summary="Get specific fixture manufacturer")
+async def get_fixture_manufacturer(category_id: str, manufacturer_id: str):
+    for cat in FIXTURES_DATA["categories"]:
+        if cat["id"] == category_id:
+            for mfr in cat["manufacturers"]:
+                if mfr["id"] == manufacturer_id:
+                    return mfr
+    raise HTTPException(status_code=404, detail="Manufacturer not found")
