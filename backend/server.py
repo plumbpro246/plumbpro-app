@@ -70,6 +70,33 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.on_event("startup")
+async def seed_owner_account():
+    """Auto-create Enterprise owner account if it doesn't exist."""
+    from routes.deps import db, hash_password
+    import uuid as _uuid
+    from datetime import datetime as _dt, timezone as _tz
+    owner_email = "plumbpro246@gmail.com"
+    existing = await db.users.find_one({"email": owner_email})
+    if not existing:
+        owner = {
+            "id": str(_uuid.uuid4()),
+            "email": owner_email,
+            "password_hash": hash_password("PlumbPro2025!"),
+            "full_name": "PlumbPro Owner",
+            "company": "PlumbPro",
+            "subscription_tier": "enterprise",
+            "subscription_status": "active",
+            "is_early_bird": True,
+            "user_number": 1,
+            "created_at": _dt.now(_tz.utc).isoformat(),
+            "updated_at": _dt.now(_tz.utc).isoformat(),
+        }
+        await db.users.insert_one(owner)
+        logger.info(f"Seeded owner account: {owner_email}")
+    else:
+        logger.info(f"Owner account already exists: {owner_email}")
+
 @app.on_event("shutdown")
 async def shutdown_db_client():
     from routes.deps import client
