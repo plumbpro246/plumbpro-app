@@ -7,7 +7,8 @@ import {
   FileText, Calculator, Shield, Clock, Package, 
   DollarSign, Calendar, AlertTriangle, FileSpreadsheet,
   Cpu, Map, Crown, ChevronRight, BookOpen, Mic, Cloud, Store,
-  Sun, CloudRain, Snowflake, CloudLightning, Wind, Droplets, Eye, ThermometerSun, MapPin
+  Sun, CloudRain, Snowflake, CloudLightning, Wind, Droplets, Eye, ThermometerSun, MapPin,
+  Ruler, Table2
 } from "lucide-react";
 
 const quickLinks = [
@@ -21,6 +22,10 @@ const quickLinks = [
   { path: "/osha", label: "OSHA", icon: AlertTriangle, color: "bg-red-500" },
   { path: "/sds", label: "Safety Data", icon: FileSpreadsheet, color: "bg-pink-500" },
   { path: "/calculator", label: "Calculator", icon: Cpu, color: "bg-cyan-500" },
+  { path: "/offset-calc", label: "Offset Calc", icon: Ruler, color: "bg-violet-500" },
+  { path: "/fitting-takeoffs", label: "Fitting Data", icon: Table2, color: "bg-zinc-600" },
+  { path: "/water-heaters", label: "Water Heaters", icon: Droplets, color: "bg-blue-600" },
+  { path: "/boilers", label: "Boilers", icon: ThermometerSun, color: "bg-red-600" },
   { path: "/total-station", label: "Total Station", icon: Map, color: "bg-emerald-500" },
   { path: "/blueprints", label: "Blueprints", icon: FileText, color: "bg-slate-500" },
   { path: "/plumbing-code", label: "Plumbing Code", icon: BookOpen, color: "bg-sky-600" },
