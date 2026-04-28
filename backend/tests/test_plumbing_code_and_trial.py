@@ -9,8 +9,7 @@ import os
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://plumb-ops-suite.preview.emergentagent.com')
 
 # Test credentials
-TEST_EMAIL = "testplumber@test.com"
-TEST_PASSWORD = "Test1234!"
+from tests.conftest import TEST_EMAIL, TEST_PASSWORD
 
 
 class TestPlumbingCodeAPI:

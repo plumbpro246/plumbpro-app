@@ -1,5 +1,5 @@
 """Support, Push Notifications, Teams, Voice Notes, Weather, Suppliers."""
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, HTTPException
 from fastapi.responses import Response
 from pywebpush import webpush, WebPushException
 import smtplib
@@ -7,7 +7,13 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import httpx
 import tempfile
-from routes.deps import *
+from routes.deps import (
+    db, uuid, datetime, timezone, os, base64, jwt, json_module, logger,
+    JWT_SECRET, JWT_ALGORITHM, EMERGENT_LLM_KEY,
+    VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_CLAIMS,
+    GMAIL_ADDRESS, GMAIL_APP_PASSWORD,
+    send_support_email, get_current_user
+)
 
 router = APIRouter()
 

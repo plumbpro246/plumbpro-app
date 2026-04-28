@@ -41,10 +41,11 @@ export default function SettingsPage() {
 
   useEffect(() => {
     const loadSettings = async () => {
+      const authHeaders = { Authorization: `Bearer ${token}` };
       try {
         // Load from server if online, otherwise from cache
         if (navigator.onLine) {
-          const response = await axios.get(`${API}/notifications/settings`, { headers });
+          const response = await axios.get(`${API}/notifications/settings`, { headers: authHeaders });
           setSettings(response.data);
           await offlineService.saveNotificationSettings(response.data);
         } else {
@@ -85,7 +86,7 @@ export default function SettingsPage() {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, []);
+  }, [token]);
 
   const handleSaveSettings = async () => {
     try {

@@ -47,8 +47,8 @@ Thank you for your business!
       });
       return { success: true, method: 'native' };
     }
-  } catch (error) {
-    console.log('Native share failed, trying fallback');
+  } catch {
+    // Native share unavailable, using fallback
   }
 
   // Fallback to mailto link
@@ -89,8 +89,8 @@ Generated: ${new Date().toLocaleString()}
       });
       return { success: true, method: 'native' };
     }
-  } catch (error) {
-    console.log('Native share failed');
+  } catch {
+    // Native share unavailable
   }
 
   // Fallback
@@ -113,8 +113,8 @@ export const shareContent = async (title, text, url = null) => {
       });
       return { success: true };
     }
-  } catch (error) {
-    console.log('Share failed:', error);
+  } catch {
+    // Native share unavailable
   }
 
   // Fallback to clipboard

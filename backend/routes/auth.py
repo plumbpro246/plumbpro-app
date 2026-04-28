@@ -1,6 +1,10 @@
 """Auth & Promo routes."""
-from fastapi import APIRouter, Depends
-from routes.deps import *
+from fastapi import APIRouter, Depends, HTTPException
+from routes.deps import (
+    db, uuid, datetime, timezone,
+    UserCreate, UserLogin, UserResponse, TokenResponse,
+    hash_password, verify_password, create_token, get_current_user
+)
 
 router = APIRouter()
 

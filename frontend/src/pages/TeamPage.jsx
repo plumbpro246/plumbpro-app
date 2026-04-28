@@ -46,7 +46,9 @@ export default function TeamPage() {
     try {
       const res = await axios.get(`${API}/teams/timesheets`, { headers });
       setTeamTimesheets(res.data);
-    } catch {}
+    } catch (err) {
+      console.error("Failed to load team timesheets", err);
+    }
   };
 
   useEffect(() => { fetchTeam(); }, []);

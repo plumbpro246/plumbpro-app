@@ -62,8 +62,8 @@ export default function PlumbingCodePage() {
     try {
       const res = await axios.get(`${API}/plumbing-code/bookmarks`, { headers });
       setBookmarks(res.data);
-    } catch {
-      // silent - bookmarks are optional
+    } catch (err) {
+      console.error("Bookmarks load failed (non-critical)", err);
     }
   };
 

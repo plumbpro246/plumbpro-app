@@ -7,8 +7,7 @@ import requests
 
 BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://plumb-ops-suite.preview.emergentagent.com").rstrip("/")
 
-OWNER_EMAIL = "plumbpro246@gmail.com"
-OWNER_PASSWORD = "PlumbPro2025!"
+from tests.conftest import OWNER_EMAIL, OWNER_PASSWORD
 
 
 @pytest.fixture(scope="module")

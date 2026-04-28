@@ -1,7 +1,12 @@
 """Subscription, Stripe, Google Play Billing routes."""
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, HTTPException
 import stripe as stripe_lib
-from routes.deps import *
+from routes.deps import (
+    db, uuid, datetime, timezone, timedelta, os, logger,
+    STRIPE_API_KEY, SUBSCRIPTION_TIERS, GOOGLE_PLAY_PRODUCT_IDS,
+    FREE_TRIAL_DAYS, StartTrialRequest, SubscriptionRequest,
+    GooglePlayVerifyRequest, get_tier_from_product_id, get_current_user
+)
 
 router = APIRouter()
 

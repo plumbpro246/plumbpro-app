@@ -1,6 +1,14 @@
 """Notes, Timesheets, Materials, Bids, Calendar CRUD routes."""
-from fastapi import APIRouter, Depends
-from routes.deps import *
+from fastapi import APIRouter, Depends, HTTPException
+from routes.deps import (
+    db, uuid, datetime, timezone, List,
+    NoteCreate, NoteUpdate, NoteResponse,
+    TimesheetEntry, TimesheetResponse,
+    MaterialListCreate, MaterialListResponse,
+    BidCreate, BidResponse,
+    CalendarEvent, CalendarEventResponse,
+    get_current_user
+)
 
 router = APIRouter()
 

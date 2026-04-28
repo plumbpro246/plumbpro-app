@@ -1,7 +1,10 @@
 """Safety Talks, Formulas, OSHA, SDS, Total Station — reference & AI content."""
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 import math
-from routes.deps import *
+from routes.deps import (
+    db, uuid, datetime, timezone, os, logger, List, Dict,
+    SafetyTalkResponse, EMERGENT_LLM_KEY, get_current_user
+)
 
 router = APIRouter()
 
@@ -74,6 +77,7 @@ async def get_formulas():
 @router.post("/formulas/calculate", summary="Calculate a plumbing formula")
 async def calculate_formula(formula_id: str, values: Dict[str, float]):
     """Submit variable values for a formula. Offset formulas return both travel and set (run) in extras."""
+    result = 0
     if formula_id == "pipe-volume":
         r = values.get("r", 0); L = values.get("L", 0)
         volume_cubic_inches = math.pi * (r ** 2) * (L * 12)

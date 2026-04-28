@@ -16,7 +16,7 @@ export default function TotalStationPage() {
   useEffect(() => {
     const fetchInfo = async () => {
       try {
-        const response = await axios.get(`${API}/total-station`, { headers });
+        const response = await axios.get(`${API}/total-station`, { headers: { Authorization: `Bearer ${token}` } });
         setInfo(response.data);
       } catch (error) {
         toast.error("Failed to load total station info");
@@ -25,7 +25,7 @@ export default function TotalStationPage() {
       }
     };
     fetchInfo();
-  }, []);
+  }, [token]);
 
   if (loading) {
     return (

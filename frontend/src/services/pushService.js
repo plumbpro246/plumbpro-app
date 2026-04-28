@@ -14,7 +14,6 @@ function urlBase64ToUint8Array(base64String) {
 
 export async function subscribeToPush(token) {
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-    console.warn('Push not supported');
     return false;
   }
   
@@ -39,8 +38,7 @@ export async function subscribeToPush(token) {
     });
     
     return true;
-  } catch (err) {
-    console.error('Push subscribe failed:', err);
+  } catch {
     return false;
   }
 }
@@ -59,8 +57,7 @@ export async function unsubscribeFromPush(token) {
       });
     }
     return true;
-  } catch (err) {
-    console.error('Push unsubscribe failed:', err);
+  } catch {
     return false;
   }
 }

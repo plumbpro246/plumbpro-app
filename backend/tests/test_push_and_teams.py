@@ -12,8 +12,7 @@ import uuid
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 
 # Test credentials
-OWNER_EMAIL = "plumbpro246@gmail.com"
-OWNER_PASSWORD = "PlumbPro2025!"
+from tests.conftest import OWNER_EMAIL, OWNER_PASSWORD
 TEST_USER_EMAIL = "testplumber@test.com"
 TEST_USER_PASSWORD = "Test1234!"
 

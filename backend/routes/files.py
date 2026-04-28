@@ -1,6 +1,10 @@
 """Blueprints, Photos, Plumbing Code, Export, Sync routes."""
-from fastapi import APIRouter, Depends, UploadFile, File, Request
-from routes.deps import *
+from fastapi import APIRouter, Depends, UploadFile, File, Request, HTTPException
+from typing import Optional
+from routes.deps import (
+    db, uuid, datetime, timezone, base64, List,
+    get_current_user
+)
 from plumbing_codes import PLUMBING_CODES, get_plumbing_code
 
 router = APIRouter()
@@ -167,7 +171,13 @@ async def get_sync_data(user: dict = Depends(get_current_user)):
     return {"user": {"id": user["id"], "email": user["email"], "full_name": user["full_name"], "company": user.get("company"), "subscription_tier": user.get("subscription_tier", "free")}, "notes": notes, "timesheets": timesheets, "materials": materials, "bids": bids, "events": events, "photos": photos, "synced_at": datetime.now(timezone.utc).isoformat()}
 
 @router.post("/sync/pending")
-async def sync_pending_data(pending_notes: List[dict] = [], pending_timesheets: List[dict] = [], pending_events: List[dict] = [], user: dict = Depends(get_current_user)):
+async def sync_pending_data(pending_notes: Optional[List[dict]] = None, pending_timesheets: Optional[List[dict]] = None, pending_events: Optional[List[dict]] = None, user: dict = Depends(get_current_user)):
+    if pending_notes is None:
+        pending_notes = []
+    if pending_timesheets is None:
+        pending_timesheets = []
+    if pending_events is None:
+        pending_events = []
     synced = {"notes": 0, "timesheets": 0, "events": 0}
     for note in pending_notes:
         note["user_id"] = user["id"]; note["synced_at"] = datetime.now(timezone.utc).isoformat()
