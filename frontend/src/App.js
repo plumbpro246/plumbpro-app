@@ -31,6 +31,8 @@ import WeatherPage from "@/pages/WeatherPage";
 import SupplierPage from "@/pages/SupplierPage";
 import OffsetCalculatorPage from "@/pages/OffsetCalculatorPage";
 import FittingTakeoffsPage from "@/pages/FittingTakeoffsPage";
+import WaterHeatersPage from "@/pages/WaterHeatersPage";
+import BoilersPage from "@/pages/BoilersPage";
 import LandingPage from "@/pages/LandingPage";
 import PrivacyPolicyPage from "@/pages/PrivacyPolicyPage";
 import TermsOfServicePage from "@/pages/TermsOfServicePage";
@@ -161,7 +163,7 @@ import {
   Home, FileText, Calculator, Shield, Clock, Package, 
   DollarSign, Calendar, AlertTriangle, FileSpreadsheet, 
   Cpu, Map, LogOut, Menu, X, User, Crown, Settings, BookOpen, Lock, LifeBuoy, Users,
-  Mic, Cloud, Store, Ruler, Table2
+  Mic, Cloud, Store, Ruler, Table2, Droplets, ThermometerSun
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -183,6 +185,8 @@ const navItems = [
   { path: "/calculator", label: "Calculator", icon: Cpu, free: true },
   { path: "/offset-calc", label: "Offset Calc", icon: Ruler, free: true },
   { path: "/fitting-takeoffs", label: "Fitting Data", icon: Table2, free: true },
+  { path: "/water-heaters", label: "Water Heaters", icon: Droplets },
+  { path: "/boilers", label: "Boilers", icon: ThermometerSun },
   { path: "/total-station", label: "Total Station", icon: Map },
   { path: "/blueprints", label: "Blueprints", icon: FileText },
   { path: "/plumbing-code", label: "Plumbing Code", icon: BookOpen, free: true },
@@ -375,6 +379,8 @@ function App() {
           <Route path="/calculator" element={<ProtectedRoute><MainLayout><CalculatorPage /></MainLayout></ProtectedRoute>} />
           <Route path="/offset-calc" element={<ProtectedRoute><MainLayout><OffsetCalculatorPage /></MainLayout></ProtectedRoute>} />
           <Route path="/fitting-takeoffs" element={<ProtectedRoute><MainLayout><FittingTakeoffsPage /></MainLayout></ProtectedRoute>} />
+          <Route path="/water-heaters" element={<ProtectedRoute><TierGatedRoute><MainLayout><WaterHeatersPage /></MainLayout></TierGatedRoute></ProtectedRoute>} />
+          <Route path="/boilers" element={<ProtectedRoute><TierGatedRoute><MainLayout><BoilersPage /></MainLayout></TierGatedRoute></ProtectedRoute>} />
           <Route path="/total-station" element={<ProtectedRoute><TierGatedRoute><MainLayout><TotalStationPage /></MainLayout></TierGatedRoute></ProtectedRoute>} />
           <Route path="/blueprints" element={<ProtectedRoute><TierGatedRoute><MainLayout><BlueprintsPage /></MainLayout></TierGatedRoute></ProtectedRoute>} />
           <Route path="/plumbing-code" element={<ProtectedRoute><MainLayout><PlumbingCodePage /></MainLayout></ProtectedRoute>} />

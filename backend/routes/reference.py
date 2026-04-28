@@ -326,3 +326,31 @@ async def calculate_offset_cut(
         "cut_piece": round(cut_piece, 4),
         "set_run": round(set_run, 4),
     }
+
+
+# ==================== WATER HEATERS & BOILERS ====================
+from water_heater_boiler_data import WATER_HEATER_DATA, BOILER_DATA
+
+@router.get("/water-heaters", summary="Get water heater reference data")
+async def get_water_heaters():
+    """Returns all water heater manufacturers, install guides, troubleshooting, parts, codes, and piping diagrams."""
+    return WATER_HEATER_DATA
+
+@router.get("/water-heaters/{manufacturer_id}", summary="Get specific water heater manufacturer")
+async def get_water_heater_manufacturer(manufacturer_id: str):
+    for mfr in WATER_HEATER_DATA["manufacturers"]:
+        if mfr["id"] == manufacturer_id:
+            return mfr
+    raise HTTPException(status_code=404, detail="Manufacturer not found")
+
+@router.get("/boilers", summary="Get boiler reference data")
+async def get_boilers():
+    """Returns all boiler manufacturers, install guides, troubleshooting, parts, codes, and piping diagrams."""
+    return BOILER_DATA
+
+@router.get("/boilers/{manufacturer_id}", summary="Get specific boiler manufacturer")
+async def get_boiler_manufacturer(manufacturer_id: str):
+    for mfr in BOILER_DATA["manufacturers"]:
+        if mfr["id"] == manufacturer_id:
+            return mfr
+    raise HTTPException(status_code=404, detail="Manufacturer not found")
