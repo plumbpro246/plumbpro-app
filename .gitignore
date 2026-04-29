@@ -327,3 +327,12 @@ memory/test_credentials.md
 
 # Backend test files (contain test credentials)
 backend/tests/
+-e 
+# Environment and credential files
+.env
+.env.*
+*.env
+credentials.json
+*.pem
+*.key
+.credentials
