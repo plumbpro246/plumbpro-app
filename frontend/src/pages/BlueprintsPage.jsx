@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { FileText, Upload, Trash2, Download, Eye, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { FileText, Upload, Trash2, Download, Eye, X, Loader2, ClipboardList } from "lucide-react";
 
 export default function BlueprintsPage() {
   const { token } = useAuth();
@@ -17,6 +18,8 @@ export default function BlueprintsPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedBlueprint, setSelectedBlueprint] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [analyzing, setAnalyzing] = useState(null);
+  const [takeoff, setTakeoff] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
     description: ""
@@ -163,6 +166,43 @@ export default function BlueprintsPage() {
     if (bytes < 1024) return bytes + ' B';
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  };
+
+  const handleTakeoff = async (blueprint) => {
+    setAnalyzing(blueprint.id);
+    setTakeoff(null);
+    try {
+      const res = await axios.post(`${API}/blueprints/${blueprint.id}/takeoff`, {}, { headers, timeout: 120000 });
+      setTakeoff(res.data);
+      toast.success("Takeoff analysis complete!");
+    } catch (err) {
+      if (err.response?.status === 404) {
+        toast.error("Blueprint not found");
+      } else {
+        toast.error(err.response?.data?.detail || "Analysis failed. Try again.");
+      }
+    } finally {
+      setAnalyzing(null);
+    }
+  };
+
+  const loadExistingTakeoff = async (blueprint) => {
+    try {
+      const res = await axios.get(`${API}/blueprints/${blueprint.id}/takeoff`, { headers });
+      setTakeoff(res.data);
+    } catch {
+      setTakeoff(null);
+    }
+  };
+
+  const deleteTakeoff = async (blueprintId) => {
+    try {
+      await axios.delete(`${API}/blueprints/${blueprintId}/takeoff`, { headers });
+      setTakeoff(null);
+      toast.success("Takeoff deleted — you can re-analyze");
+    } catch {
+      toast.error("Failed to delete takeoff");
+    }
   };
 
   return (
@@ -341,6 +381,21 @@ export default function BlueprintsPage() {
                     <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>
+                {/* Takeoff Button */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full mt-2 border-[#FF5F00] text-[#FF5F00] hover:bg-[#FF5F00] hover:text-white font-bold uppercase"
+                  onClick={() => { loadExistingTakeoff(blueprint); handleTakeoff(blueprint); }}
+                  disabled={analyzing === blueprint.id}
+                  data-testid={`takeoff-blueprint-${blueprint.id}`}
+                >
+                  {analyzing === blueprint.id ? (
+                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Analyzing...</>
+                  ) : (
+                    <><ClipboardList className="w-4 h-4 mr-2" /> Pipe &amp; Fitting Takeoff</>
+                  )}
+                </Button>
                 <p className="text-xs text-muted-foreground mt-3">
                   Uploaded {new Date(blueprint.created_at).toLocaleDateString()}
                 </p>
@@ -348,6 +403,148 @@ export default function BlueprintsPage() {
             </Card>
           ))}
         </div>
+      )}
+
+      {/* Takeoff Results Panel */}
+      {takeoff && takeoff.takeoff && (
+        <Card className="border-2 border-[#003366]" data-testid="takeoff-results">
+          <CardHeader className="bg-[#003366] text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="font-heading uppercase">Pipe & Fitting Takeoff</CardTitle>
+                <p className="text-sm text-slate-300 mt-1">{takeoff.blueprint_name}</p>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-white hover:text-red-300"
+                  onClick={() => deleteTakeoff(takeoff.blueprint_id)}
+                  data-testid="delete-takeoff-btn"
+                >
+                  <Trash2 className="w-4 h-4 mr-1" /> Re-analyze
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-white"
+                  onClick={() => setTakeoff(null)}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="p-6 space-y-6">
+            {takeoff.takeoff.parse_error ? (
+              <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-300 p-4 rounded-sm">
+                <p className="text-sm font-bold">AI Response (could not parse into structured format):</p>
+                <pre className="text-xs mt-2 whitespace-pre-wrap">{takeoff.takeoff.raw_response}</pre>
+              </div>
+            ) : (
+              <>
+                {takeoff.takeoff.project_name && (
+                  <p className="text-sm font-bold uppercase">Project: {takeoff.takeoff.project_name}</p>
+                )}
+
+                {/* Sections */}
+                {Object.entries(takeoff.takeoff.sections || {}).map(([key, section]) => (
+                  <div key={key} className="border border-border rounded-sm overflow-hidden">
+                    <div className="bg-muted px-4 py-2">
+                      <h3 className="font-bold text-sm uppercase">{section.label || key}</h3>
+                    </div>
+                    <div className="p-4 space-y-3">
+                      {/* Pipes */}
+                      {section.pipes && section.pipes.length > 0 && (
+                        <div>
+                          <p className="text-xs font-bold uppercase text-muted-foreground mb-2">Piping</p>
+                          <table className="w-full text-sm">
+                            <thead>
+                              <tr className="border-b">
+                                <th className="text-left py-1 px-2 text-xs font-bold uppercase">Size</th>
+                                <th className="text-left py-1 px-2 text-xs font-bold uppercase">Material</th>
+                                <th className="text-right py-1 px-2 text-xs font-bold uppercase">Length (ft)</th>
+                                <th className="text-left py-1 px-2 text-xs font-bold uppercase">Notes</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {section.pipes.filter(p => p.length_ft > 0).map((pipe, i) => (
+                                <tr key={i} className="border-b last:border-0">
+                                  <td className="py-1 px-2 font-mono font-bold">{pipe.size}</td>
+                                  <td className="py-1 px-2">{pipe.material}</td>
+                                  <td className="py-1 px-2 text-right font-mono">{pipe.length_ft}</td>
+                                  <td className="py-1 px-2 text-muted-foreground text-xs">{pipe.notes}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+
+                      {/* Fittings */}
+                      {section.fittings && section.fittings.length > 0 && (
+                        <div>
+                          <p className="text-xs font-bold uppercase text-muted-foreground mb-2">Fittings</p>
+                          <div className="flex flex-wrap gap-2">
+                            {section.fittings.filter(f => f.qty > 0).map((fitting, i) => (
+                              <Badge key={i} variant="outline" className="text-xs py-1 px-2 font-mono">
+                                {fitting.qty}x {fitting.size} {fitting.type} ({fitting.material})
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Fixtures */}
+                      {section.items && section.items.length > 0 && (
+                        <div>
+                          <table className="w-full text-sm">
+                            <thead>
+                              <tr className="border-b">
+                                <th className="text-left py-1 px-2 text-xs font-bold uppercase">Fixture Type</th>
+                                <th className="text-right py-1 px-2 text-xs font-bold uppercase">Count</th>
+                                <th className="text-right py-1 px-2 text-xs font-bold uppercase">DFU (each)</th>
+                                <th className="text-right py-1 px-2 text-xs font-bold uppercase">Total DFU</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {section.items.filter(f => f.count > 0).map((item, i) => (
+                                <tr key={i} className="border-b last:border-0">
+                                  <td className="py-1 px-2 font-bold">{item.type}</td>
+                                  <td className="py-1 px-2 text-right font-mono">{item.count}</td>
+                                  <td className="py-1 px-2 text-right font-mono">{item.dfu}</td>
+                                  <td className="py-1 px-2 text-right font-mono font-bold">{item.count * item.dfu}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+
+                {/* Total DFU */}
+                {takeoff.takeoff.total_dfu > 0 && (
+                  <div className="bg-green-50 dark:bg-green-900/20 border-2 border-green-500 rounded-sm p-4 text-center">
+                    <p className="text-sm font-bold uppercase text-muted-foreground">Total Drainage Fixture Units</p>
+                    <p className="text-3xl font-bold font-mono text-green-600">{takeoff.takeoff.total_dfu} DFU</p>
+                  </div>
+                )}
+
+                {/* Notes */}
+                {takeoff.takeoff.notes && takeoff.takeoff.notes.length > 0 && (
+                  <div className="bg-muted p-4 rounded-sm">
+                    <p className="text-xs font-bold uppercase mb-2">AI Notes:</p>
+                    <ul className="text-sm text-muted-foreground space-y-1">
+                      {takeoff.takeoff.notes.map((n, i) => <li key={i}>- {n}</li>)}
+                    </ul>
+                  </div>
+                )}
+              </>
+            )}
+          </CardContent>
+        </Card>
       )}
     </div>
   );

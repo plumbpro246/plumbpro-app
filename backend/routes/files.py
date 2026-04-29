@@ -1,6 +1,8 @@
 """Blueprints, Photos, Plumbing Code, Export, Sync routes."""
 from fastapi import APIRouter, Depends, UploadFile, File, Request, HTTPException
 from typing import Optional
+import os
+import logging
 from routes.deps import (
     db, uuid, datetime, timezone, base64, List,
     get_current_user
@@ -8,6 +10,7 @@ from routes.deps import (
 from plumbing_codes import PLUMBING_CODES, get_plumbing_code
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 # ==================== BLUEPRINTS ====================
@@ -39,6 +42,156 @@ async def delete_blueprint(blueprint_id: str, user: dict = Depends(get_current_u
     result = await db.blueprints.delete_one({"id": blueprint_id, "user_id": user["id"]})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Blueprint not found")
+    return {"status": "deleted"}
+
+
+@router.post("/blueprints/{blueprint_id}/takeoff", summary="AI Blueprint Pipe & Fitting Takeoff")
+async def analyze_blueprint_takeoff(blueprint_id: str, user: dict = Depends(get_current_user)):
+    """Analyze a blueprint PDF using AI to generate pipe & fitting takeoff broken into sections."""
+    blueprint = await db.blueprints.find_one({"id": blueprint_id, "user_id": user["id"]}, {"_id": 0})
+    if not blueprint:
+        raise HTTPException(status_code=404, detail="Blueprint not found")
+
+    # Check for existing takeoff
+    existing = await db.blueprint_takeoffs.find_one({"blueprint_id": blueprint_id}, {"_id": 0})
+    if existing:
+        return existing
+
+    # Convert PDF to images
+    import tempfile
+    from pdf2image import convert_from_bytes
+
+    pdf_bytes = base64.b64decode(blueprint["file_data"])
+    try:
+        images = convert_from_bytes(pdf_bytes, dpi=200, first_page=1, last_page=4)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to process PDF: {str(e)}")
+
+    # Convert images to base64 for GPT-4o
+    import io
+    image_b64_list = []
+    for img in images:
+        buf = io.BytesIO()
+        img.save(buf, format="PNG")
+        image_b64_list.append(base64.b64encode(buf.getvalue()).decode())
+
+    # Send to GPT-4o for analysis
+    from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
+
+    EMERGENT_KEY = os.environ.get("EMERGENT_LLM_KEY")
+    if not EMERGENT_KEY:
+        raise HTTPException(status_code=500, detail="AI service not configured")
+
+    chat = LlmChat(
+        api_key=EMERGENT_KEY,
+        session_id=f"takeoff-{blueprint_id}",
+        system_message="""You are an expert plumbing estimator analyzing blueprints. 
+When given a plumbing blueprint/drawing, provide a detailed pipe and fitting takeoff.
+
+RESPOND ONLY IN VALID JSON with this exact structure:
+{
+  "project_name": "Name from title block or 'Untitled'",
+  "sections": {
+    "dwv_ground_rough": {
+      "label": "DWV - Ground Rough (Underground)",
+      "pipes": [{"size": "4\"", "material": "PVC SCH40", "length_ft": 0, "notes": ""}],
+      "fittings": [{"size": "4\"", "type": "90° Elbow", "material": "PVC", "qty": 0}]
+    },
+    "dwv_rough_in": {
+      "label": "DWV - Rough-In (Above Ground)",
+      "pipes": [{"size": "2\"", "material": "PVC SCH40", "length_ft": 0, "notes": ""}],
+      "fittings": [{"size": "2\"", "type": "Sanitary Tee", "material": "PVC", "qty": 0}]
+    },
+    "dwv_top_out": {
+      "label": "DWV - Top Out (Venting)",
+      "pipes": [{"size": "2\"", "material": "PVC SCH40", "length_ft": 0, "notes": ""}],
+      "fittings": [{"size": "2\"", "type": "Vent Tee", "material": "PVC", "qty": 0}]
+    },
+    "water_ground_rough": {
+      "label": "Water - Ground Rough (Underground)",
+      "pipes": [{"size": "1\"", "material": "Copper Type L", "length_ft": 0, "notes": ""}],
+      "fittings": [{"size": "1\"", "type": "90° Elbow", "material": "Copper", "qty": 0}]
+    },
+    "water_rough_in": {
+      "label": "Water - Rough-In",
+      "pipes": [{"size": "3/4\"", "material": "Copper Type L", "length_ft": 0, "notes": ""}],
+      "fittings": [{"size": "3/4\"", "type": "Tee", "material": "Copper", "qty": 0}]
+    },
+    "fixtures": {
+      "label": "Fixture Count",
+      "items": [{"type": "Water Closet", "count": 0, "dfu": 0}]
+    }
+  },
+  "total_dfu": 0,
+  "notes": ["Any important observations about the drawing"]
+}
+
+Rules:
+- Separate DWV (drain/waste/vent) from Water (hot/cold supply) piping
+- Break DWV into: Ground Rough (underground), Rough-In (above ground in walls), Top Out (vent through roof)
+- Break Water into: Ground Rough (underground service), Rough-In (distribution to fixtures)
+- Include ALL pipe sizes found. Estimate linear feet from scale if shown.
+- Count ALL fittings: elbows (90°, 45°, 22.5°), tees, wyes, couplings, reducers, cleanouts
+- For fixtures: count each type and assign DFU per UPC Table 702.1
+- If you cannot determine something from the drawing, provide your best estimate and note it.
+- If the image is not a plumbing blueprint, say so in notes and provide empty sections."""
+    ).with_model("openai", "gpt-4o")
+
+    # Build message with images
+    file_contents = [ImageContent(image_base64=img_b64) for img_b64 in image_b64_list]
+
+    try:
+        response = await chat.send_message(UserMessage(
+            text="Analyze this plumbing blueprint and provide a complete pipe and fitting takeoff. Break down by DWV ground rough, DWV rough-in, DWV top out, Water ground rough, Water rough-in, and fixture count with DFUs. Respond ONLY in the JSON format specified.",
+            file_contents=file_contents
+        ))
+    except Exception as e:
+        logger.error(f"Blueprint AI analysis failed: {e}")
+        raise HTTPException(status_code=500, detail="AI analysis failed. Please try again.")
+
+    # Parse the JSON response
+    import json as json_module
+    try:
+        # Strip markdown code fences if present
+        text = response.strip()
+        if text.startswith("```"):
+            text = text.split("\n", 1)[1] if "\n" in text else text[3:]
+            if text.endswith("```"):
+                text = text[:-3]
+            if text.startswith("json"):
+                text = text[4:]
+        takeoff_data = json_module.loads(text.strip())
+    except Exception:
+        # If JSON parsing fails, store raw response
+        takeoff_data = {"raw_response": response, "parse_error": True, "sections": {}, "notes": ["AI response could not be parsed into structured format"]}
+
+    # Save takeoff to DB
+    takeoff_doc = {
+        "id": str(uuid.uuid4()),
+        "blueprint_id": blueprint_id,
+        "user_id": user["id"],
+        "blueprint_name": blueprint.get("name", ""),
+        "takeoff": takeoff_data,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.blueprint_takeoffs.insert_one(takeoff_doc)
+    del takeoff_doc["_id"]
+    return takeoff_doc
+
+
+@router.get("/blueprints/{blueprint_id}/takeoff")
+async def get_blueprint_takeoff(blueprint_id: str, user: dict = Depends(get_current_user)):
+    """Get existing takeoff analysis for a blueprint."""
+    takeoff = await db.blueprint_takeoffs.find_one({"blueprint_id": blueprint_id, "user_id": user["id"]}, {"_id": 0})
+    if not takeoff:
+        raise HTTPException(status_code=404, detail="No takeoff found. Run analysis first.")
+    return takeoff
+
+
+@router.delete("/blueprints/{blueprint_id}/takeoff")
+async def delete_blueprint_takeoff(blueprint_id: str, user: dict = Depends(get_current_user)):
+    """Delete takeoff to allow re-analysis."""
+    await db.blueprint_takeoffs.delete_one({"blueprint_id": blueprint_id, "user_id": user["id"]})
     return {"status": "deleted"}
 
 
