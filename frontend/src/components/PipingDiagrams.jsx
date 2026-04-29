@@ -1,280 +1,316 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
-const BLUE = "#003366";
-const ORANGE = "#FF5F00";
-const RED = "#E53E3E";
-const COLD_BLUE = "#3B82F6";
-const HOT_RED = "#EF4444";
-const PIPE_GRAY = "#64748B";
-const GAS_YELLOW = "#EAB308";
+/**
+ * Professional technical drawing style piping diagrams
+ * Black/white with leader lines, standard plumbing symbols, figure numbers
+ */
 
-function ArrowHead({ x, y, dir = "right", color = PIPE_GRAY }) {
-  const paths = {
-    right: `M ${x-6} ${y-4} L ${x} ${y} L ${x-6} ${y+4}`,
-    left: `M ${x+6} ${y-4} L ${x} ${y} L ${x+6} ${y+4}`,
-    down: `M ${x-4} ${y-6} L ${x} ${y} L ${x+4} ${y-6}`,
-    up: `M ${x-4} ${y+6} L ${x} ${y} L ${x+4} ${y+6}`,
-  };
-  return <path d={paths[dir]} fill="none" stroke={color} strokeWidth="2" />;
-}
-
-function Label({ x, y, text, size = 9, color = "#334155", anchor = "middle", bold = false }) {
-  return <text x={x} y={y} fill={color} fontSize={size} fontWeight={bold ? "bold" : "normal"} textAnchor={anchor} style={{ fontFamily: "system-ui, sans-serif" }}>{text}</text>;
-}
-
-function ComponentBox({ x, y, w, h, label, color = BLUE, textColor = "#fff", sublabel }) {
-  return (
-    <g>
-      <rect x={x} y={y} width={w} height={h} rx="3" fill={color} />
-      <Label x={x + w/2} y={y + h/2 + (sublabel ? -2 : 3)} text={label} size={sublabel ? 8 : 9} color={textColor} bold />
-      {sublabel && <Label x={x + w/2} y={y + h/2 + 10} text={sublabel} size={7} color={textColor} />}
-    </g>
-  );
-}
-
-function Valve({ x, y, label }) {
-  return (
-    <g>
-      <polygon points={`${x-6},${y-6} ${x+6},${y} ${x-6},${y+6}`} fill={ORANGE} />
-      <polygon points={`${x+6},${y-6} ${x-6},${y} ${x+6},${y+6}`} fill={ORANGE} />
-      {label && <Label x={x} y={y - 10} text={label} size={7} color="#666" />}
-    </g>
-  );
-}
+const STROKE = "#1a1a1a";
+const LIGHT = "#666";
+const DASH = "5,3";
 
 // ==================== WATER HEATER DIAGRAMS ====================
 
 export function SingleWaterHeaterDiagram() {
   return (
-    <svg viewBox="0 0 500 400" className="w-full" style={{ fontFamily: "system-ui, sans-serif" }}>
+    <svg viewBox="0 0 600 520" className="w-full bg-white" style={{ fontFamily: "'Courier New', monospace" }}>
+      {/* Title Block */}
+      <text x="300" y="505" textAnchor="middle" fontSize="11" fontWeight="bold" fill={STROKE}>FIGURE 1 — SINGLE WATER HEATER INSTALLATION (TYPICAL)</text>
+
       {/* Water Heater Tank */}
-      <rect x="180" y="100" width="100" height="160" rx="8" fill={BLUE} stroke={BLUE} strokeWidth="2" />
-      <Label x="230" y="170" text="WATER" color="white" size={11} bold />
-      <Label x="230" y="185" text="HEATER" color="white" size={11} bold />
-      
-      {/* T&P Valve */}
-      <rect x="280" y="130" width="50" height="20" rx="3" fill={RED} />
-      <Label x="305" y="144" text="T&P" color="white" size={8} bold />
-      <line x1="305" y1="150" x2="305" y2="320" stroke={RED} strokeWidth="2" />
-      <Label x="320" y="240" text="T&P Discharge" size={7} color="#666" anchor="start" />
-      <Label x="320" y="252" text="(6&quot; from floor)" size={7} color="#666" anchor="start" />
+      <rect x="260" y="140" width="100" height="200" fill="none" stroke={STROKE} strokeWidth="2" />
+      <text x="310" y="245" textAnchor="middle" fontSize="12" fill={STROKE} fontWeight="bold">Heater</text>
 
-      {/* Cold water inlet (right side) */}
-      <line x1="390" y1="120" x2="280" y2="120" stroke={COLD_BLUE} strokeWidth="3" />
-      <ArrowHead x={285} y={120} dir="left" color={COLD_BLUE} />
-      <Label x="350" y="112" text="COLD IN" size={8} color={COLD_BLUE} bold />
+      {/* Vent/Draft Hood on top */}
+      <line x1="290" y1="140" x2="290" y2="90" stroke={STROKE} strokeWidth="1.5" />
+      <line x1="330" y1="140" x2="330" y2="90" stroke={STROKE} strokeWidth="1.5" />
+      <line x1="280" y1="90" x2="340" y2="90" stroke={STROKE} strokeWidth="1.5" />
+      <line x1="280" y1="90" x2="310" y2="55" stroke={STROKE} strokeWidth="1.5" />
+      <line x1="340" y1="90" x2="310" y2="55" stroke={STROKE} strokeWidth="1.5" />
+      {/* Vent pipe going up */}
+      <line x1="300" y1="55" x2="300" y2="20" stroke={STROKE} strokeWidth="1.5" />
+      <line x1="320" y1="55" x2="320" y2="20" stroke={STROKE} strokeWidth="1.5" />
+      <line x1="295" y1="20" x2="325" y2="20" stroke={STROKE} strokeWidth="1.5" />
+      {/* Leader: Vent */}
+      <line x1="330" y1="40" x2="400" y2="40" stroke={LIGHT} strokeWidth="0.5" />
+      <text x="405" y="44" fontSize="9" fill={LIGHT}>Vent to Chimney</text>
+      <text x="405" y="56" fontSize="8" fill={LIGHT}>(slope 1/4"/ft up)</text>
 
-      {/* Expansion Tank on cold line */}
-      <rect x="340" y="70" width="50" height="35" rx="4" fill="#7C3AED" />
-      <Label x="365" y="90" text="EXP" color="white" size={8} bold />
-      <Label x="365" y="100" text="TANK" color="white" size={7} />
-      <line x1="365" y1="105" x2="365" y2="120" stroke="#7C3AED" strokeWidth="2" />
+      {/* T&P Relief Valve (right side) */}
+      <rect x="360" y="170" width="25" height="15" fill="none" stroke={STROKE} strokeWidth="1.5" />
+      <line x1="372" y1="185" x2="372" y2="340" stroke={STROKE} strokeWidth="1.5" />
+      <line x1="372" y1="340" x2="372" y2="400" stroke={STROKE} strokeWidth="1.5" />
+      {/* Gap near floor */}
+      <line x1="365" y1="400" x2="380" y2="400" stroke={STROKE} strokeWidth="1" />
+      {/* Leader: T&P */}
+      <line x1="385" y1="178" x2="440" y2="178" stroke={LIGHT} strokeWidth="0.5" />
+      <text x="445" y="175" fontSize="9" fill={LIGHT}>T & P Safety</text>
+      <text x="445" y="187" fontSize="9" fill={LIGHT}>Relief Valve</text>
+      {/* Leader: Discharge */}
+      <line x1="380" y1="320" x2="420" y2="320" stroke={LIGHT} strokeWidth="0.5" />
+      <text x="425" y="314" fontSize="9" fill={LIGHT} transform="rotate(90, 425, 314)">Discharge Line</text>
+      {/* 6" from floor note */}
+      <line x1="358" y1="400" x2="358" y2="420" stroke={LIGHT} strokeWidth="0.5" strokeDasharray={DASH} />
+      <text x="340" y="435" fontSize="8" fill={LIGHT}>(6" from floor)</text>
 
-      {/* Shutoff valve on cold */}
-      <Valve x={390} y={120} label="Shutoff" />
+      {/* Cold Water Supply (right side, entering top) */}
+      <line x1="500" y1="150" x2="360" y2="150" stroke={STROKE} strokeWidth="1.5" />
+      {/* Arrow */}
+      <polygon points="365,147 365,153 358,150" fill={STROKE} />
+      {/* Shutoff valve symbol */}
+      <polygon points="440,145 450,150 440,155" fill="none" stroke={STROKE} strokeWidth="1" />
+      <polygon points="460,145 450,150 460,155" fill="none" stroke={STROKE} strokeWidth="1" />
+      <line x1="450" y1="142" x2="450" y2="158" stroke={STROKE} strokeWidth="1" />
+      {/* Leader: Cold */}
+      <line x1="500" y1="150" x2="530" y2="130" stroke={LIGHT} strokeWidth="0.5" />
+      <text x="535" y="128" fontSize="9" fill={LIGHT}>Water</text>
+      <text x="535" y="140" fontSize="9" fill={LIGHT}>Supply</text>
+      {/* Leader: Shutoff */}
+      <line x1="450" y1="160" x2="450" y2="175" stroke={LIGHT} strokeWidth="0.5" />
+      <text x="435" y="187" fontSize="8" fill={LIGHT}>Shutoff</text>
 
-      {/* Cold supply from main */}
-      <line x1="470" y1="120" x2="396" y2="120" stroke={COLD_BLUE} strokeWidth="3" />
-      <Label x="450" y="112" text="COLD" size={7} color={COLD_BLUE} />
-      <Label x="450" y="135" text="SUPPLY" size={7} color={COLD_BLUE} />
+      {/* Expansion Tank (on cold line, above) */}
+      <line x1="480" y1="150" x2="480" y2="90" stroke={STROKE} strokeWidth="1.5" />
+      <ellipse cx="480" cy="70" rx="20" ry="25" fill="none" stroke={STROKE} strokeWidth="1.5" />
+      <line x1="460" y1="70" x2="500" y2="70" stroke={STROKE} strokeWidth="0.8" strokeDasharray="3,2" />
+      {/* Leader: Expansion Tank */}
+      <line x1="502" y1="60" x2="540" y2="50" stroke={LIGHT} strokeWidth="0.5" />
+      <text x="545" y="48" fontSize="9" fill={LIGHT}>Expansion</text>
+      <text x="545" y="60" fontSize="9" fill={LIGHT}>Tank</text>
 
-      {/* Hot water outlet (left side) */}
-      <line x1="180" y1="120" x2="80" y2="120" stroke={HOT_RED} strokeWidth="3" />
-      <ArrowHead x={85} y={120} dir="left" color={HOT_RED} />
-      <Label x="130" y="112" text="HOT OUT" size={8} color={HOT_RED} bold />
-      <Label x="50" y="124" text="To" size={7} color="#666" />
-      <Label x="50" y="135" text="Fixtures" size={7} color="#666" />
+      {/* Dielectric Union symbols on cold */}
+      <rect x="395" y="146" width="10" height="8" fill="none" stroke={STROKE} strokeWidth="1" />
+      <text x="395" y="140" fontSize="7" fill={LIGHT}>DU</text>
 
-      {/* Dielectric unions */}
-      <circle cx="300" cy="120" r="4" fill="none" stroke={ORANGE} strokeWidth="2" />
-      <Label x="300" y="105" text="DU" size={6} color={ORANGE} />
-      <circle cx="160" cy="120" r="4" fill="none" stroke={ORANGE} strokeWidth="2" />
-      <Label x="160" y="105" text="DU" size={6} color={ORANGE} />
+      {/* Hot Water Out (left side, exiting top) */}
+      <line x1="260" y1="150" x2="60" y2="150" stroke={STROKE} strokeWidth="1.5" />
+      {/* Arrow going left */}
+      <polygon points="65,147 65,153 58,150" fill={STROKE} />
+      {/* Dielectric Union on hot */}
+      <rect x="220" y="146" width="10" height="8" fill="none" stroke={STROKE} strokeWidth="1" />
+      <text x="220" y="140" fontSize="7" fill={LIGHT}>DU</text>
+      {/* Leader: Hot Out */}
+      <line x1="60" y1="150" x2="40" y2="130" stroke={LIGHT} strokeWidth="0.5" />
+      <text x="15" y="125" fontSize="9" fill={LIGHT}>To System</text>
+      <text x="15" y="137" fontSize="9" fill={LIGHT}>(Hot)</text>
 
-      {/* Gas line (if gas) */}
-      <line x1="180" y1="230" x2="80" y2="230" stroke={GAS_YELLOW} strokeWidth="3" strokeDasharray="8,4" />
-      <ArrowHead x={185} y={230} dir="right" color={GAS_YELLOW} />
-      <Label x="120" y="222" text="GAS SUPPLY" size={8} color={GAS_YELLOW} bold />
-      <Valve x={120} y={230} />
-      <rect x="60" y="222" width="35" height="16" rx="2" fill={GAS_YELLOW} />
-      <Label x="77" y="233" text="DRIP" size={6} color={BLUE} bold />
-      <Label x="77" y="248" text="LEG" size={6} color="#666" />
+      {/* Gas Supply (bottom left) */}
+      <line x1="30" y1="380" x2="260" y2="380" stroke={STROKE} strokeWidth="1.5" />
+      {/* Arrow */}
+      <polygon points="255,377 255,383 262,380" fill={STROKE} />
+      {/* Gas shutoff valve */}
+      <polygon points="100,375 110,380 100,385" fill="none" stroke={STROKE} strokeWidth="1" />
+      <polygon points="120,375 110,380 120,385" fill="none" stroke={STROKE} strokeWidth="1" />
+      <line x1="110" y1="372" x2="110" y2="388" stroke={STROKE} strokeWidth="1" />
+      {/* Drip leg (vertical down) */}
+      <line x1="150" y1="380" x2="150" y2="430" stroke={STROKE} strokeWidth="1.5" />
+      <line x1="145" y1="430" x2="155" y2="430" stroke={STROKE} strokeWidth="1.5" />
+      <line x1="145" y1="435" x2="155" y2="435" stroke={STROKE} strokeWidth="1" />
+      {/* Leader: Gas */}
+      <line x1="30" y1="380" x2="15" y2="365" stroke={LIGHT} strokeWidth="0.5" />
+      <text x="10" y="360" fontSize="9" fill={LIGHT}>Gas</text>
+      <text x="10" y="372" fontSize="9" fill={LIGHT}>Supply</text>
+      {/* Leader: Drip leg */}
+      <line x1="157" y1="430" x2="185" y2="440" stroke={LIGHT} strokeWidth="0.5" />
+      <text x="190" y="438" fontSize="8" fill={LIGHT}>Sediment Trap</text>
+      <text x="190" y="449" fontSize="8" fill={LIGHT}>(Drip Leg)</text>
 
-      {/* Vent (gas) */}
-      <line x1="230" y1="100" x2="230" y2="40" stroke={PIPE_GRAY} strokeWidth="3" />
-      <ArrowHead x={230} y={45} dir="up" color={PIPE_GRAY} />
-      <Label x="230" y="30" text="VENT TO CHIMNEY" size={8} color={PIPE_GRAY} bold />
-      <Label x="230" y="60" text="(slope 1/4&quot;/ft up)" size={7} color="#888" />
+      {/* Drain Pan */}
+      <path d="M 240 340 L 240 355 L 380 355 L 380 340" fill="none" stroke={STROKE} strokeWidth="1" strokeDasharray={DASH} />
+      {/* Drain line from pan */}
+      <line x1="380" y1="350" x2="420" y2="350" stroke={STROKE} strokeWidth="1" strokeDasharray={DASH} />
+      <line x1="420" y1="350" x2="420" y2="400" stroke={STROKE} strokeWidth="1" strokeDasharray={DASH} />
+      {/* Leader: Drain Pan */}
+      <line x1="310" y1="358" x2="310" y2="380" stroke={LIGHT} strokeWidth="0.5" />
+      <text x="280" y="393" fontSize="8" fill={LIGHT}>Drain Pan</text>
 
-      {/* Drain pan */}
-      <rect x="160" y="270" width="140" height="12" rx="2" fill="#94A3B8" opacity="0.4" />
-      <Label x="230" y="295" text="DRAIN PAN" size={7} color="#666" />
-      <line x1="300" y1="276" x2="350" y2="320" stroke="#94A3B8" strokeWidth="1.5" />
-      <Label x="365" y="325" text="To drain" size={7} color="#888" />
+      {/* Floor Drain */}
+      <ellipse cx="420" cy="415" rx="12" ry="6" fill="none" stroke={STROKE} strokeWidth="1" />
+      <line x1="412" y1="418" x2="428" y2="418" stroke={STROKE} strokeWidth="0.5" />
+      <text x="398" y="440" fontSize="8" fill={LIGHT}>Floor Drain</text>
 
-      {/* Drain valve */}
-      <Valve x={230} y={265} label="Drain Valve" />
+      {/* Backflow Preventer on cold supply */}
+      <circle cx="470" cy="150" r="6" fill="none" stroke={STROKE} strokeWidth="1" />
+      <line x1="467" y1="147" x2="473" y2="153" stroke={STROKE} strokeWidth="1" />
+      {/* Leader */}
+      <line x1="470" y1="158" x2="470" y2="175" stroke={LIGHT} strokeWidth="0.5" />
+      <text x="448" y="187" fontSize="8" fill={LIGHT}>Check Valve /</text>
+      <text x="448" y="198" fontSize="8" fill={LIGHT}>Backflow Prev.</text>
 
-      {/* Legend */}
-      <rect x="10" y="340" width="480" height="50" rx="4" fill="#F8FAFC" stroke="#E2E8F0" />
-      <line x1="20" y1="365" x2="45" y2="365" stroke={COLD_BLUE} strokeWidth="3" />
-      <Label x="50" y="368" text="Cold" size={7} color="#333" anchor="start" />
-      <line x1="80" y1="365" x2="105" y2="365" stroke={HOT_RED} strokeWidth="3" />
-      <Label x="110" y="368" text="Hot" size={7} color="#333" anchor="start" />
-      <line x1="140" y1="365" x2="165" y2="365" stroke={GAS_YELLOW} strokeWidth="3" strokeDasharray="6,3" />
-      <Label x="170" y="368" text="Gas" size={7} color="#333" anchor="start" />
-      <circle cx="215" cy="365" r="4" fill="none" stroke={ORANGE} strokeWidth="2" />
-      <Label x="225" y="368" text="Dielectric Union" size={7} color="#333" anchor="start" />
-      <Label x="330" y="368" text="DU = Dielectric Union  |  T&P = Temperature & Pressure" size={7} color="#888" anchor="start" />
+      {/* Notes */}
+      <text x="30" y="475" fontSize="8" fill={LIGHT}>DU = Dielectric Union (required at dissimilar metal connections)</text>
+      <text x="30" y="488" fontSize="8" fill={LIGHT}>Dashed lines indicate optional or code-required where applicable</text>
     </svg>
   );
 }
 
 export function SeriesWaterHeaterDiagram() {
   return (
-    <svg viewBox="0 0 520 280" className="w-full" style={{ fontFamily: "system-ui, sans-serif" }}>
-      {/* Cold supply */}
-      <line x1="20" y1="100" x2="100" y2="100" stroke={COLD_BLUE} strokeWidth="3" />
-      <ArrowHead x={95} y={100} dir="right" color={COLD_BLUE} />
-      <Label x="50" y="90" text="COLD IN" size={9} color={COLD_BLUE} bold />
+    <svg viewBox="0 0 600 320" className="w-full bg-white" style={{ fontFamily: "'Courier New', monospace" }}>
+      <text x="300" y="305" textAnchor="middle" fontSize="11" fontWeight="bold" fill={STROKE}>FIGURE 2 — SERIES PIPING (TWO WATER HEATERS)</text>
 
       {/* WH 1 */}
-      <ComponentBox x={100} y={70} w={100} h={60} label="WATER HEATER" sublabel="#1" />
-
-      {/* Pipe between WH1 and WH2 */}
-      <line x1="200" y1="100" x2="300" y2="100" stroke={HOT_RED} strokeWidth="3" />
-      <ArrowHead x={295} y={100} dir="right" color={HOT_RED} />
-      <Label x="250" y="90" text="Pre-heated" size={7} color="#888" />
+      <rect x="130" y="80" width="80" height="140" fill="none" stroke={STROKE} strokeWidth="2" />
+      <text x="170" y="155" textAnchor="middle" fontSize="10" fill={STROKE}>Heater</text>
+      <text x="170" y="170" textAnchor="middle" fontSize="10" fill={STROKE}>#1</text>
 
       {/* WH 2 */}
-      <ComponentBox x={300} y={70} w={100} h={60} label="WATER HEATER" sublabel="#2 (Boost)" />
+      <rect x="370" y="80" width="80" height="140" fill="none" stroke={STROKE} strokeWidth="2" />
+      <text x="410" y="155" textAnchor="middle" fontSize="10" fill={STROKE}>Heater</text>
+      <text x="410" y="170" textAnchor="middle" fontSize="10" fill={STROKE}>#2</text>
 
-      {/* Hot out */}
-      <line x1="400" y1="100" x2="500" y2="100" stroke={HOT_RED} strokeWidth="3" />
-      <ArrowHead x={495} y={100} dir="right" color={HOT_RED} />
-      <Label x="455" y="90" text="HOT OUT" size={9} color={HOT_RED} bold />
+      {/* Cold supply into WH1 */}
+      <line x1="30" y1="100" x2="130" y2="100" stroke={STROKE} strokeWidth="1.5" />
+      <polygon points="125,97 125,103 132,100" fill={STROKE} />
+      {/* Valve */}
+      <polygon points="60,95 70,100 60,105" fill="none" stroke={STROKE} strokeWidth="1" />
+      <polygon points="80,95 70,100 80,105" fill="none" stroke={STROKE} strokeWidth="1" />
+      <text x="30" y="90" fontSize="9" fill={LIGHT}>Cold Supply</text>
 
-      {/* Valves */}
-      <Valve x={80} y={100} />
-      <Valve x={420} y={100} />
+      {/* Hot out of WH1 to WH2 */}
+      <line x1="210" y1="100" x2="370" y2="100" stroke={STROKE} strokeWidth="1.5" />
+      <polygon points="365,97 365,103 372,100" fill={STROKE} />
+      {/* Leader */}
+      <line x1="290" y1="100" x2="290" y2="65" stroke={LIGHT} strokeWidth="0.5" />
+      <text x="255" y="58" fontSize="8" fill={LIGHT}>Pre-heated water</text>
+      <text x="255" y="70" fontSize="8" fill={LIGHT}>flows to 2nd heater</text>
 
-      {/* Notes */}
-      <rect x="20" y="160" width="480" height="100" rx="4" fill="#FFF7ED" stroke="#FDBA74" />
-      <Label x="30" y="180" text="SERIES PIPING" size={10} color={BLUE} bold anchor="start" />
-      <Label x="30" y="198" text="- Water flows through WH #1 first, then #2 boosts to final temperature" size={8} color="#555" anchor="start" />
-      <Label x="30" y="213" text="- WH #1 does the heavy lifting (set lower temp), WH #2 finishes (set final temp)" size={8} color="#555" anchor="start" />
-      <Label x="30" y="228" text="- Simple piping, fewer fittings" size={8} color="#555" anchor="start" />
-      <Label x="30" y="243" text="- Downside: Uneven wear — WH #1 works harder and will fail sooner" size={8} color={RED} anchor="start" />
+      {/* Hot out of WH2 to system */}
+      <line x1="450" y1="100" x2="570" y2="100" stroke={STROKE} strokeWidth="1.5" />
+      <polygon points="565,97 565,103 572,100" fill={STROKE} />
+      {/* Valve */}
+      <polygon points="500,95 510,100 500,105" fill="none" stroke={STROKE} strokeWidth="1" />
+      <polygon points="520,95 510,100 520,105" fill="none" stroke={STROKE} strokeWidth="1" />
+      <text x="540" y="90" fontSize="9" fill={LIGHT}>To System</text>
+
+      {/* Notes box */}
+      <rect x="30" y="240" width="540" height="50" fill="none" stroke={LIGHT} strokeWidth="0.5" />
+      <text x="40" y="255" fontSize="8" fill={LIGHT}>NOTES:</text>
+      <text x="40" y="268" fontSize="8" fill={LIGHT}>1. WH #1 pre-heats water; WH #2 boosts to final temperature</text>
+      <text x="40" y="281" fontSize="8" fill={LIGHT}>2. Set WH #1 lower (100°F), WH #2 at final desired temp (120°F)</text>
+      <text x="40" y="294" fontSize="8" fill={LIGHT}>3. WH #1 bears heavier load — expect earlier replacement</text>
     </svg>
   );
 }
 
 export function ParallelWaterHeaterDiagram() {
   return (
-    <svg viewBox="0 0 520 320" className="w-full" style={{ fontFamily: "system-ui, sans-serif" }}>
-      {/* Cold supply header */}
-      <line x1="20" y1="140" x2="120" y2="140" stroke={COLD_BLUE} strokeWidth="3" />
-      <ArrowHead x={115} y={140} dir="right" color={COLD_BLUE} />
-      <Label x="60" y="130" text="COLD IN" size={9} color={COLD_BLUE} bold />
-      
-      {/* Cold tee */}
-      <circle cx="130" cy="140" r="5" fill={COLD_BLUE} />
-      
+    <svg viewBox="0 0 600 380" className="w-full bg-white" style={{ fontFamily: "'Courier New', monospace" }}>
+      <text x="300" y="370" textAnchor="middle" fontSize="11" fontWeight="bold" fill={STROKE}>FIGURE 3 — PARALLEL PIPING WITH HEADER</text>
+
+      {/* Cold supply header (horizontal) */}
+      <line x1="30" y1="180" x2="150" y2="180" stroke={STROKE} strokeWidth="2" />
+      <polygon points="35,177 35,183 28,180" fill={STROKE} />
+      <text x="15" y="170" fontSize="9" fill={LIGHT}>Cold</text>
+      <text x="15" y="195" fontSize="9" fill={LIGHT}>Supply</text>
+
+      {/* Vertical cold header */}
+      <line x1="150" y1="90" x2="150" y2="270" stroke={STROKE} strokeWidth="2" />
+
       {/* Branch to WH1 (top) */}
-      <line x1="130" y1="140" x2="130" y2="70" stroke={COLD_BLUE} strokeWidth="3" />
-      <line x1="130" y1="70" x2="200" y2="70" stroke={COLD_BLUE} strokeWidth="3" />
-      <ArrowHead x={195} y={70} dir="right" color={COLD_BLUE} />
-      <Valve x={165} y={70} />
+      <line x1="150" y1="100" x2="230" y2="100" stroke={STROKE} strokeWidth="1.5" />
+      <polygon points="225,97 225,103 232,100" fill={STROKE} />
+      {/* Valve */}
+      <polygon points="175,95 185,100 175,105" fill="none" stroke={STROKE} strokeWidth="1" />
+      <polygon points="195,95 185,100 195,105" fill="none" stroke={STROKE} strokeWidth="1" />
 
       {/* Branch to WH2 (bottom) */}
-      <line x1="130" y1="140" x2="130" y2="210" stroke={COLD_BLUE} strokeWidth="3" />
-      <line x1="130" y1="210" x2="200" y2="210" stroke={COLD_BLUE} strokeWidth="3" />
-      <ArrowHead x={195} y={210} dir="right" color={COLD_BLUE} />
-      <Valve x={165} y={210} />
+      <line x1="150" y1="260" x2="230" y2="260" stroke={STROKE} strokeWidth="1.5" />
+      <polygon points="225,257 225,263 232,260" fill={STROKE} />
+      {/* Valve */}
+      <polygon points="175,255 185,260 175,265" fill="none" stroke={STROKE} strokeWidth="1" />
+      <polygon points="195,255 185,260 195,265" fill="none" stroke={STROKE} strokeWidth="1" />
 
       {/* WH 1 */}
-      <ComponentBox x={200} y={45} w={100} h={50} label="WATER HEATER" sublabel="#1" />
-      
+      <rect x="230" y="60" width="80" height="80" fill="none" stroke={STROKE} strokeWidth="2" />
+      <text x="270" y="100" textAnchor="middle" fontSize="10" fill={STROKE}>Heater #1</text>
+
       {/* WH 2 */}
-      <ComponentBox x={200} y={185} w={100} h={50} label="WATER HEATER" sublabel="#2" />
+      <rect x="230" y="220" width="80" height="80" fill="none" stroke={STROKE} strokeWidth="2" />
+      <text x="270" y="260" textAnchor="middle" fontSize="10" fill={STROKE}>Heater #2</text>
 
       {/* Hot from WH1 */}
-      <line x1="300" y1="70" x2="380" y2="70" stroke={HOT_RED} strokeWidth="3" />
-      <ArrowHead x={375} y={70} dir="right" color={HOT_RED} />
-      <Valve x={340} y={70} />
+      <line x1="310" y1="100" x2="410" y2="100" stroke={STROKE} strokeWidth="1.5" />
+      <polygon points="405,97 405,103 412,100" fill={STROKE} />
+      {/* Valve */}
+      <polygon points="350,95 360,100 350,105" fill="none" stroke={STROKE} strokeWidth="1" />
+      <polygon points="370,95 360,100 370,105" fill="none" stroke={STROKE} strokeWidth="1" />
+      {/* Balancing valve label */}
+      <text x="345" y="85" fontSize="7" fill={LIGHT}>Balancing</text>
+      <text x="348" y="118" fontSize="7" fill={LIGHT}>Valve</text>
 
       {/* Hot from WH2 */}
-      <line x1="300" y1="210" x2="380" y2="210" stroke={HOT_RED} strokeWidth="3" />
-      <ArrowHead x={375} y={210} dir="right" color={HOT_RED} />
-      <Valve x={340} y={210} />
+      <line x1="310" y1="260" x2="410" y2="260" stroke={STROKE} strokeWidth="1.5" />
+      <polygon points="405,257 405,263 412,260" fill={STROKE} />
+      {/* Valve */}
+      <polygon points="350,255 360,260 350,265" fill="none" stroke={STROKE} strokeWidth="1" />
+      <polygon points="370,255 360,260 370,265" fill="none" stroke={STROKE} strokeWidth="1" />
 
-      {/* Hot tee */}
-      <circle cx="380" cy="140" r="5" fill={HOT_RED} />
-      <line x1="380" y1="70" x2="380" y2="210" stroke={HOT_RED} strokeWidth="3" />
+      {/* Vertical hot header */}
+      <line x1="410" y1="90" x2="410" y2="270" stroke={STROKE} strokeWidth="2" />
 
-      {/* Hot out */}
-      <line x1="380" y1="140" x2="500" y2="140" stroke={HOT_RED} strokeWidth="3" />
-      <ArrowHead x={495} y={140} dir="right" color={HOT_RED} />
-      <Label x="450" y="130" text="HOT OUT" size={9} color={HOT_RED} bold />
-
-      {/* Balancing valves label */}
-      <Label x="340" y="55" text="Ball Valve" size={7} color="#888" />
-      <Label x="340" y="225" text="Ball Valve" size={7} color="#888" />
+      {/* Hot out to system */}
+      <line x1="410" y1="180" x2="570" y2="180" stroke={STROKE} strokeWidth="2" />
+      <polygon points="565,177 565,183 572,180" fill={STROKE} />
+      <text x="530" y="170" fontSize="9" fill={LIGHT}>To System</text>
 
       {/* Notes */}
-      <rect x="20" y="245" width="480" height="65" rx="4" fill="#FFF7ED" stroke="#FDBA74" />
-      <Label x="30" y="263" text="PARALLEL PIPING" size={10} color={BLUE} bold anchor="start" />
-      <Label x="30" y="278" text="- Both heaters share the load equally via common headers" size={8} color="#555" anchor="start" />
-      <Label x="30" y="293" text="- Install balancing valves for equal flow  |  Provides redundancy if one unit fails" size={8} color="#555" anchor="start" />
+      <rect x="30" y="310" width="540" height="45" fill="none" stroke={LIGHT} strokeWidth="0.5" />
+      <text x="40" y="325" fontSize="8" fill={LIGHT}>NOTES:</text>
+      <text x="40" y="338" fontSize="8" fill={LIGHT}>1. Install balancing valves on each branch for equal flow distribution</text>
+      <text x="40" y="351" fontSize="8" fill={LIGHT}>2. System provides redundancy — one heater can be isolated for service while other operates</text>
     </svg>
   );
 }
 
 export function ReverseReturnWHDiagram() {
   return (
-    <svg viewBox="0 0 520 320" className="w-full" style={{ fontFamily: "system-ui, sans-serif" }}>
-      {/* Cold supply (top) */}
-      <line x1="20" y1="60" x2="460" y2="60" stroke={COLD_BLUE} strokeWidth="3" />
-      <ArrowHead x={455} y={60} dir="right" color={COLD_BLUE} />
-      <Label x="30" y="50" text="COLD SUPPLY HEADER" size={8} color={COLD_BLUE} bold anchor="start" />
+    <svg viewBox="0 0 600 340" className="w-full bg-white" style={{ fontFamily: "'Courier New', monospace" }}>
+      <text x="300" y="330" textAnchor="middle" fontSize="11" fontWeight="bold" fill={STROKE}>FIGURE 4 — REVERSE RETURN PIPING</text>
 
-      {/* Drop to WH1 */}
-      <line x1="120" y1="60" x2="120" y2="110" stroke={COLD_BLUE} strokeWidth="2" />
-      <circle cx="120" cy="60" r="4" fill={COLD_BLUE} />
-      <ComponentBox x={80} y={110} w={80} h={45} label="WH #1" />
+      {/* Cold supply header (top, L to R) */}
+      <line x1="30" y1="70" x2="520" y2="70" stroke={STROKE} strokeWidth="2" />
+      <polygon points="515,67 515,73 522,70" fill={STROKE} />
+      <text x="30" y="58" fontSize="9" fill={LIGHT}>Cold Supply Header</text>
 
-      {/* Drop to WH2 */}
-      <line x1="260" y1="60" x2="260" y2="110" stroke={COLD_BLUE} strokeWidth="2" />
-      <circle cx="260" cy="60" r="4" fill={COLD_BLUE} />
-      <ComponentBox x={220} y={110} w={80} h={45} label="WH #2" />
+      {/* Drop to each heater */}
+      <line x1="130" y1="70" x2="130" y2="110" stroke={STROKE} strokeWidth="1.5" />
+      <circle cx="130" cy="70" r="3" fill={STROKE} />
+      <rect x="90" y="110" width="80" height="70" fill="none" stroke={STROKE} strokeWidth="1.5" />
+      <text x="130" y="148" textAnchor="middle" fontSize="9" fill={STROKE}>Heater #1</text>
 
-      {/* Drop to WH3 */}
-      <line x1="400" y1="60" x2="400" y2="110" stroke={COLD_BLUE} strokeWidth="2" />
-      <circle cx="400" cy="60" r="4" fill={COLD_BLUE} />
-      <ComponentBox x={360} y={110} w={80} h={45} label="WH #3" />
+      <line x1="300" y1="70" x2="300" y2="110" stroke={STROKE} strokeWidth="1.5" />
+      <circle cx="300" cy="70" r="3" fill={STROKE} />
+      <rect x="260" y="110" width="80" height="70" fill="none" stroke={STROKE} strokeWidth="1.5" />
+      <text x="300" y="148" textAnchor="middle" fontSize="9" fill={STROKE}>Heater #2</text>
 
-      {/* Hot return (bottom - REVERSE direction) */}
-      <line x1="120" y1="155" x2="120" y2="210" stroke={HOT_RED} strokeWidth="2" />
-      <line x1="260" y1="155" x2="260" y2="210" stroke={HOT_RED} strokeWidth="2" />
-      <line x1="400" y1="155" x2="400" y2="210" stroke={HOT_RED} strokeWidth="2" />
+      <line x1="470" y1="70" x2="470" y2="110" stroke={STROKE} strokeWidth="1.5" />
+      <circle cx="470" cy="70" r="3" fill={STROKE} />
+      <rect x="430" y="110" width="80" height="70" fill="none" stroke={STROKE} strokeWidth="1.5" />
+      <text x="470" y="148" textAnchor="middle" fontSize="9" fill={STROKE}>Heater #3</text>
 
-      <line x1="60" y1="210" x2="400" y2="210" stroke={HOT_RED} strokeWidth="3" />
-      <ArrowHead x={65} y={210} dir="left" color={HOT_RED} />
-      <circle cx="120" cy="210" r="4" fill={HOT_RED} />
-      <circle cx="260" cy="210" r="4" fill={HOT_RED} />
-      <circle cx="400" cy="210" r="4" fill={HOT_RED} />
+      {/* Hot return header (bottom, R to L — REVERSE) */}
+      <line x1="130" y1="180" x2="130" y2="230" stroke={STROKE} strokeWidth="1.5" />
+      <line x1="300" y1="180" x2="300" y2="230" stroke={STROKE} strokeWidth="1.5" />
+      <line x1="470" y1="180" x2="470" y2="230" stroke={STROKE} strokeWidth="1.5" />
 
-      <Label x="30" y="200" text="HOT" size={8} color={HOT_RED} bold />
-      <Label x="30" y="215" text="OUT" size={8} color={HOT_RED} bold />
-      <Label x="240" y="230" text="HOT RETURN HEADER (reverse direction)" size={8} color={HOT_RED} anchor="middle" />
+      <line x1="80" y1="230" x2="470" y2="230" stroke={STROKE} strokeWidth="2" />
+      <polygon points="85,227 85,233 78,230" fill={STROKE} />
+      <circle cx="130" cy="230" r="3" fill={STROKE} />
+      <circle cx="300" cy="230" r="3" fill={STROKE} />
+      <circle cx="470" cy="230" r="3" fill={STROKE} />
+      <text x="50" y="225" fontSize="9" fill={LIGHT}>To</text>
+      <text x="50" y="238" fontSize="9" fill={LIGHT}>System</text>
+      <text x="260" y="248" fontSize="8" fill={LIGHT}>Hot Return Header (flows RIGHT to LEFT)</text>
 
-      {/* Key concept arrows */}
-      <Label x="120" y="250" text="FIRST in cold" size={7} color={COLD_BLUE} bold />
-      <Label x="120" y="262" text="= LAST in hot" size={7} color={HOT_RED} bold />
+      {/* Key concept annotation */}
+      <line x1="130" y1="265" x2="130" y2="280" stroke={LIGHT} strokeWidth="0.5" strokeDasharray="3,2" />
+      <text x="90" y="293" fontSize="8" fill={LIGHT}>FIRST on supply</text>
+      <text x="90" y="304" fontSize="8" fill={LIGHT}>= LAST on return</text>
 
-      {/* Notes */}
-      <rect x="20" y="275" width="480" height="40" rx="4" fill="#FFF7ED" stroke="#FDBA74" />
-      <Label x="30" y="292" text="REVERSE RETURN — Self-balancing: equal pipe length for each unit = equal flow without balancing valves" size={8} color="#555" anchor="start" />
+      <line x1="470" y1="265" x2="470" y2="280" stroke={LIGHT} strokeWidth="0.5" strokeDasharray="3,2" />
+      <text x="430" y="293" fontSize="8" fill={LIGHT}>LAST on supply</text>
+      <text x="430" y="304" fontSize="8" fill={LIGHT}>= FIRST on return</text>
     </svg>
   );
 }
@@ -283,245 +319,275 @@ export function ReverseReturnWHDiagram() {
 
 export function SingleBoilerDiagram() {
   return (
-    <svg viewBox="0 0 520 420" className="w-full" style={{ fontFamily: "system-ui, sans-serif" }}>
-      {/* Boiler */}
-      <rect x="60" y="180" width="120" height="80" rx="6" fill={BLUE} stroke={BLUE} strokeWidth="2" />
-      <Label x="120" y="215" text="BOILER" color="white" size={12} bold />
-      <Label x="120" y="232" text="(Mod-Con)" color="#93C5FD" size={8} />
+    <svg viewBox="0 0 600 520" className="w-full bg-white" style={{ fontFamily: "'Courier New', monospace" }}>
+      <text x="300" y="510" textAnchor="middle" fontSize="11" fontWeight="bold" fill={STROKE}>FIGURE 5 — SINGLE BOILER NEAR-BOILER PIPING</text>
 
-      {/* Supply out (top) */}
-      <line x1="120" y1="180" x2="120" y2="130" stroke={HOT_RED} strokeWidth="3" />
-      <ArrowHead x={120} y={135} dir="up" color={HOT_RED} />
-      <Label x="100" y="158" text="SUPPLY" size={7} color={HOT_RED} anchor="end" />
+      {/* Boiler */}
+      <rect x="80" y="240" width="120" height="100" fill="none" stroke={STROKE} strokeWidth="2" />
+      <text x="140" y="290" textAnchor="middle" fontSize="11" fill={STROKE} fontWeight="bold">BOILER</text>
+      <text x="140" y="310" textAnchor="middle" fontSize="8" fill={LIGHT}>(Mod-Con)</text>
+
+      {/* Supply out (top of boiler, going up) */}
+      <line x1="140" y1="240" x2="140" y2="170" stroke={STROKE} strokeWidth="1.5" />
+      <polygon points="137,175 143,175 140,168" fill={STROKE} />
 
       {/* Air Separator */}
-      <circle cx="120" cy="110" r="18" fill="#F1F5F9" stroke={PIPE_GRAY} strokeWidth="2" />
-      <Label x="120" y="113" text="AIR" size={7} color={PIPE_GRAY} bold />
-      <line x1="120" y1="92" x2="120" y2="75" stroke={PIPE_GRAY} strokeWidth="1.5" />
-      <Label x="120" y="70" text="Air Vent" size={6} color="#888" />
+      <circle cx="140" cy="145" r="20" fill="none" stroke={STROKE} strokeWidth="1.5" />
+      <line x1="125" y1="145" x2="155" y2="145" stroke={STROKE} strokeWidth="0.8" strokeDasharray="2,2" />
+      {/* Air vent on top */}
+      <line x1="140" y1="125" x2="140" y2="108" stroke={STROKE} strokeWidth="1" />
+      <rect x="133" y="100" width="14" height="10" fill="none" stroke={STROKE} strokeWidth="1" />
+      <text x="140" y="95" textAnchor="middle" fontSize="7" fill={LIGHT}>Air Vent</text>
+      {/* Leader */}
+      <line x1="162" y1="135" x2="195" y2="125" stroke={LIGHT} strokeWidth="0.5" />
+      <text x="200" y="123" fontSize="8" fill={LIGHT}>Air Separator</text>
 
       {/* Supply header going right */}
-      <line x1="138" y1="110" x2="400" y2="110" stroke={HOT_RED} strokeWidth="3" />
-      <ArrowHead x={395} y={110} dir="right" color={HOT_RED} />
-      <Label x="300" y="100" text="SUPPLY TO ZONES" size={8} color={HOT_RED} bold />
+      <line x1="160" y1="145" x2="480" y2="145" stroke={STROKE} strokeWidth="2" />
+      <polygon points="475,142 475,148 482,145" fill={STROKE} />
+      <text x="400" y="135" fontSize="9" fill={LIGHT}>Supply to Zones</text>
 
-      {/* Circulator pump on supply */}
-      <rect x="200" y="98" width="40" height="24" rx="12" fill={ORANGE} />
-      <Label x="220" y="114" text="PUMP" color="white" size={7} bold />
+      {/* Circulator Pump (on supply) */}
+      <circle cx="250" cy="145" r="12" fill="none" stroke={STROKE} strokeWidth="1.5" />
+      <polygon points="244,140 256,145 244,150" fill={STROKE} />
+      <line x1="250" y1="157" x2="250" y2="170" stroke={LIGHT} strokeWidth="0.5" />
+      <text x="230" y="180" fontSize="8" fill={LIGHT}>Circulator</text>
+      <text x="237" y="191" fontSize="8" fill={LIGHT}>Pump</text>
 
-      {/* Zone valves */}
-      <line x1="400" y1="110" x2="400" y2="60" stroke={HOT_RED} strokeWidth="2" />
-      <ComponentBox x={370} y={30} w={60} h={25} label="ZONE 1" color="#7C3AED" />
-      <Valve x={400} y={80} label="ZV" />
+      {/* Zone Valves */}
+      <line x1="400" y1="145" x2="400" y2="80" stroke={STROKE} strokeWidth="1.5" />
+      <polygon points="397,85 403,85 400,78" fill={STROKE} />
+      <circle cx="400" cy="80" r="3" fill={STROKE} />
+      <rect x="385" y="55" width="30" height="15" fill="none" stroke={STROKE} strokeWidth="1" />
+      <text x="400" y="66" textAnchor="middle" fontSize="7" fill={STROKE}>ZV</text>
+      <text x="400" y="45" textAnchor="middle" fontSize="8" fill={LIGHT}>Zone 1</text>
 
-      <line x1="450" y1="110" x2="450" y2="60" stroke={HOT_RED} strokeWidth="2" />
-      <ComponentBox x={420} y={30} w={60} h={25} label="ZONE 2" color="#7C3AED" />
-      <Valve x={450} y={80} label="ZV" />
-      <circle cx="450" cy="110" r="4" fill={HOT_RED} />
+      <line x1="460" y1="145" x2="460" y2="80" stroke={STROKE} strokeWidth="1.5" />
+      <polygon points="457,85 463,85 460,78" fill={STROKE} />
+      <circle cx="460" cy="145" r="3" fill={STROKE} />
+      <rect x="445" y="55" width="30" height="15" fill="none" stroke={STROKE} strokeWidth="1" />
+      <text x="460" y="66" textAnchor="middle" fontSize="7" fill={STROKE}>ZV</text>
+      <text x="460" y="45" textAnchor="middle" fontSize="8" fill={LIGHT}>Zone 2</text>
+
+      {/* Zone returns (dashed coming back) */}
+      <line x1="400" y1="55" x2="400" y2="30" stroke={STROKE} strokeWidth="1" strokeDasharray={DASH} />
+      <line x1="400" y1="30" x2="400" y2="420" stroke={STROKE} strokeWidth="1" strokeDasharray={DASH} />
+      <line x1="460" y1="55" x2="460" y2="30" stroke={STROKE} strokeWidth="1" strokeDasharray={DASH} />
+      <line x1="460" y1="30" x2="460" y2="420" stroke={STROKE} strokeWidth="1" strokeDasharray={DASH} />
+      <text x="425" y="25" fontSize="7" fill={LIGHT}>(to/from radiation)</text>
 
       {/* Return header */}
-      <line x1="400" y1="310" x2="138" y2="310" stroke={COLD_BLUE} strokeWidth="3" />
-      <ArrowHead x={143} y={310} dir="left" color={COLD_BLUE} />
-      <Label x="300" y="330" text="RETURN FROM ZONES" size={8} color={COLD_BLUE} bold />
+      <line x1="480" y1="420" x2="160" y2="420" stroke={STROKE} strokeWidth="2" />
+      <polygon points="165,417 165,423 158,420" fill={STROKE} />
+      <circle cx="400" cy="420" r="3" fill={STROKE} />
+      <circle cx="460" cy="420" r="3" fill={STROKE} />
+      <text x="350" y="440" fontSize="9" fill={LIGHT}>Return from Zones</text>
 
-      {/* Zone returns */}
-      <line x1="400" y1="55" x2="400" y2="310" stroke={COLD_BLUE} strokeWidth="1.5" strokeDasharray="4,3" />
-      <line x1="450" y1="55" x2="450" y2="310" stroke={COLD_BLUE} strokeWidth="1.5" strokeDasharray="4,3" />
-      <circle cx="400" cy="310" r="4" fill={COLD_BLUE} />
-      <circle cx="450" cy="310" r="4" fill={COLD_BLUE} />
+      {/* Return into boiler */}
+      <line x1="140" y1="420" x2="140" y2="340" stroke={STROKE} strokeWidth="1.5" />
+      <polygon points="137,345 143,345 140,338" fill={STROKE} />
 
-      {/* Return to boiler */}
-      <line x1="120" y1="310" x2="120" y2="260" stroke={COLD_BLUE} strokeWidth="3" />
-      <ArrowHead x={120} y={265} dir="up" color={COLD_BLUE} />
-      <Label x="100" y="290" text="RETURN" size={7} color={COLD_BLUE} anchor="end" />
+      {/* Expansion Tank (on return) */}
+      <ellipse cx="80" cy="400" rx="18" ry="25" fill="none" stroke={STROKE} strokeWidth="1.5" />
+      <line x1="60" y1="400" x2="100" y2="400" stroke={STROKE} strokeWidth="0.8" strokeDasharray="2,2" />
+      <line x1="98" y1="420" x2="140" y2="420" stroke={STROKE} strokeWidth="1.5" />
+      <text x="55" y="370" fontSize="8" fill={LIGHT}>Expansion</text>
+      <text x="67" y="382" fontSize="8" fill={LIGHT}>Tank</text>
 
-      {/* Expansion tank on return */}
-      <rect x="30" y="290" width="50" height="35" rx="4" fill="#7C3AED" />
-      <Label x="55" y="308" text="EXP" color="white" size={8} bold />
-      <Label x="55" y="319" text="TANK" color="white" size={7} />
-      <line x1="80" y1="310" x2="120" y2="310" stroke="#7C3AED" strokeWidth="2" />
+      {/* Gas Supply */}
+      <line x1="30" y1="300" x2="80" y2="300" stroke={STROKE} strokeWidth="1.5" />
+      <polygon points="75,297 75,303 82,300" fill={STROKE} />
+      <polygon points="45,295 55,300 45,305" fill="none" stroke={STROKE} strokeWidth="1" />
+      <polygon points="65,295 55,300 65,305" fill="none" stroke={STROKE} strokeWidth="1" />
+      <text x="15" y="295" fontSize="8" fill={LIGHT}>Gas</text>
 
-      {/* Gas line */}
-      <line x1="60" y1="240" x2="20" y2="240" stroke={GAS_YELLOW} strokeWidth="3" strokeDasharray="8,4" />
-      <Label x="15" y="233" text="GAS" size={7} color={GAS_YELLOW} anchor="end" bold />
-
-      {/* Condensate */}
-      <line x1="120" y1="260" x2="120" y2="370" stroke="#06B6D4" strokeWidth="1.5" strokeDasharray="3,3" />
-      <rect x="95" y="370" width="50" height="20" rx="3" fill="#06B6D4" />
-      <Label x="120" y="383" text="NEUT" color="white" size={7} bold />
-      <Label x="120" y="402" text="Condensate" size={7} color="#888" />
-      <Label x="120" y="413" text="Neutralizer" size={7} color="#888" />
+      {/* Condensate drain */}
+      <line x1="140" y1="340" x2="140" y2="460" stroke={STROKE} strokeWidth="1" strokeDasharray="3,3" />
+      <rect x="120" y="460" width="40" height="20" fill="none" stroke={STROKE} strokeWidth="1" />
+      <text x="140" y="473" textAnchor="middle" fontSize="7" fill={STROKE}>NEUT</text>
+      <text x="140" y="495" textAnchor="middle" fontSize="7" fill={LIGHT}>Condensate</text>
+      <text x="140" y="504" textAnchor="middle" fontSize="7" fill={LIGHT}>Neutralizer</text>
 
       {/* Vent */}
-      <line x1="180" y1="200" x2="220" y2="200" stroke={PIPE_GRAY} strokeWidth="2" />
-      <line x1="220" y1="200" x2="220" y2="30" stroke={PIPE_GRAY} strokeWidth="2" />
-      <ArrowHead x={220} y={35} dir="up" color={PIPE_GRAY} />
-      <Label x="230" y="20" text="PVC VENT" size={7} color={PIPE_GRAY} anchor="start" />
+      <line x1="200" y1="270" x2="250" y2="270" stroke={STROKE} strokeWidth="1.5" />
+      <line x1="250" y1="270" x2="250" y2="20" stroke={STROKE} strokeWidth="1.5" />
+      <polygon points="247,25 253,25 250,18" fill={STROKE} />
+      <text x="260" y="20" fontSize="8" fill={LIGHT}>PVC Vent</text>
 
       {/* Legend */}
-      <rect x="250" y="350" width="250" height="60" rx="4" fill="#F8FAFC" stroke="#E2E8F0" />
-      <Label x="260" y="367" text="ZV = Zone Valve" size={7} color="#555" anchor="start" />
-      <Label x="260" y="382" text="EXP = Expansion Tank" size={7} color="#555" anchor="start" />
-      <Label x="260" y="397" text="NEUT = Condensate Neutralizer" size={7} color="#555" anchor="start" />
-      <Label x="400" y="367" text="Red = Supply (hot)" size={7} color={HOT_RED} anchor="start" />
-      <Label x="400" y="382" text="Blue = Return (cool)" size={7} color={COLD_BLUE} anchor="start" />
+      <text x="250" y="475" fontSize="7" fill={LIGHT}>ZV = Zone Valve | NEUT = Condensate Neutralizer</text>
+      <text x="250" y="488" fontSize="7" fill={LIGHT}>Dashed lines = return piping / condensate</text>
     </svg>
   );
 }
 
 export function PrimarySecondaryDiagram() {
   return (
-    <svg viewBox="0 0 520 300" className="w-full" style={{ fontFamily: "system-ui, sans-serif" }}>
-      {/* Primary Loop */}
-      <rect x="60" y="90" width="400" height="120" rx="0" fill="none" stroke={PIPE_GRAY} strokeWidth="3" />
-      <Label x="260" y="80" text="PRIMARY LOOP" size={10} color={PIPE_GRAY} bold />
+    <svg viewBox="0 0 600 340" className="w-full bg-white" style={{ fontFamily: "'Courier New', monospace" }}>
+      <text x="300" y="330" textAnchor="middle" fontSize="11" fontWeight="bold" fill={STROKE}>FIGURE 6 — PRIMARY / SECONDARY PIPING</text>
 
-      {/* Flow arrows on primary loop */}
-      <ArrowHead x={260} y={90} dir="right" color={PIPE_GRAY} />
-      <ArrowHead x={460} y={150} dir="down" color={PIPE_GRAY} />
-      <ArrowHead x={260} y={210} dir="left" color={PIPE_GRAY} />
-      <ArrowHead x={60} y={150} dir="up" color={PIPE_GRAY} />
+      {/* Primary Loop (rectangle) */}
+      <rect x="80" y="100" width="440" height="130" fill="none" stroke={STROKE} strokeWidth="2.5" />
+      <text x="300" y="90" textAnchor="middle" fontSize="10" fill={LIGHT} fontWeight="bold">PRIMARY LOOP</text>
+
+      {/* Flow arrows on primary */}
+      <polygon points="300,97 296,103 304,103" fill={STROKE} />
+      <polygon points="525,165 519,161 519,169" fill={STROKE} />
+      <polygon points="300,233 304,227 296,227" fill={STROKE} />
+      <polygon points="75,165 81,161 81,169" fill={STROKE} />
 
       {/* Primary pump */}
-      <rect x="160" y="78" width="40" height="24" rx="12" fill={ORANGE} />
-      <Label x="180" y="94" text="P1" color="white" size={8} bold />
+      <circle cx="200" cy="100" r="10" fill="none" stroke={STROKE} strokeWidth="1.5" />
+      <polygon points="195,96 205,100 195,104" fill={STROKE} />
+      <text x="200" y="85" textAnchor="middle" fontSize="7" fill={LIGHT}>P-1</text>
 
-      {/* Boiler on left (closely-spaced tees) */}
-      <circle cx="80" cy="130" r="4" fill={HOT_RED} />
-      <circle cx="80" cy="170" r="4" fill={COLD_BLUE} />
-      <line x1="80" y1="130" x2="20" y2="130" stroke={HOT_RED} strokeWidth="2" />
-      <line x1="20" y1="130" x2="20" y2="170" stroke={PIPE_GRAY} strokeWidth="2" />
-      <line x1="20" y1="170" x2="80" y2="170" stroke={COLD_BLUE} strokeWidth="2" />
-      <ComponentBox x={0} y={135} w={40} h={25} label="BOILER" color={BLUE} />
-      <Label x="50" y="123" text="CST" size={6} color="#888" />
-      <Label x="50" y="183" text="CST" size={6} color="#888" />
+      {/* Boiler connection (closely-spaced tees on left) */}
+      <circle cx="100" cy="140" r="3" fill={STROKE} />
+      <circle cx="100" cy="190" r="3" fill={STROKE} />
+      <line x1="100" y1="140" x2="40" y2="140" stroke={STROKE} strokeWidth="1.5" />
+      <line x1="40" y1="140" x2="40" y2="190" stroke={STROKE} strokeWidth="1.5" />
+      <line x1="40" y1="190" x2="100" y2="190" stroke={STROKE} strokeWidth="1.5" />
+      <rect x="20" y="150" width="40" height="30" fill="none" stroke={STROKE} strokeWidth="1.5" />
+      <text x="40" y="168" textAnchor="middle" fontSize="8" fill={STROKE}>BOILER</text>
+      {/* Label closely spaced tees */}
+      <line x1="100" y1="140" x2="100" y2="130" stroke={LIGHT} strokeWidth="0.5" strokeDasharray="2,2" />
+      <line x1="100" y1="190" x2="100" y2="200" stroke={LIGHT} strokeWidth="0.5" strokeDasharray="2,2" />
+      <text x="60" y="220" fontSize="7" fill={LIGHT}>Closely-Spaced Tees</text>
+      <text x="60" y="230" fontSize="7" fill={LIGHT}>(max 4 pipe dia. apart)</text>
 
-      {/* Zone 1 (closely-spaced tees on right side) */}
-      <circle cx="350" cy="90" r="4" fill={HOT_RED} />
-      <circle cx="380" cy="90" r="4" fill={COLD_BLUE} />
-      <line x1="350" y1="90" x2="350" y2="40" stroke={HOT_RED} strokeWidth="2" />
-      <line x1="380" y1="90" x2="380" y2="40" stroke={COLD_BLUE} strokeWidth="2" />
-      <ComponentBox x={330} y={10} w={70} h={25} label="ZONE 1" color="#7C3AED" />
-      <rect x="395" y="44" width="30" height="16" rx="8" fill={ORANGE} />
-      <Label x="410" y="55" text="P2" color="white" size={7} bold />
+      {/* Zone 1 connection (closely-spaced tees on top right) */}
+      <circle cx="380" cy="100" r="3" fill={STROKE} />
+      <circle cx="410" cy="100" r="3" fill={STROKE} />
+      <line x1="380" y1="100" x2="380" y2="50" stroke={STROKE} strokeWidth="1.5" />
+      <line x1="410" y1="100" x2="410" y2="50" stroke={STROKE} strokeWidth="1.5" />
+      <rect x="365" y="25" width="60" height="25" fill="none" stroke={STROKE} strokeWidth="1" />
+      <text x="395" y="41" textAnchor="middle" fontSize="8" fill={STROKE}>ZONE 1</text>
+      {/* Zone pump */}
+      <circle cx="430" cy="70" r="8" fill="none" stroke={STROKE} strokeWidth="1" />
+      <polygon points="426,67 434,70 426,73" fill={STROKE} />
+      <text x="445" y="73" fontSize="7" fill={LIGHT}>P-2</text>
 
-      {/* Zone 2 */}
-      <circle cx="350" cy="210" r="4" fill={HOT_RED} />
-      <circle cx="380" cy="210" r="4" fill={COLD_BLUE} />
-      <line x1="350" y1="210" x2="350" y2="260" stroke={HOT_RED} strokeWidth="2" />
-      <line x1="380" y1="210" x2="380" y2="260" stroke={COLD_BLUE} strokeWidth="2" />
-      <ComponentBox x={330} y={260} w={70} h={25} label="ZONE 2" color="#7C3AED" />
-      <rect x="395" y="255" width="30" height="16" rx="8" fill={ORANGE} />
-      <Label x="410" y="266" text="P3" color="white" size={7} bold />
+      {/* Zone 2 connection (closely-spaced tees on bottom right) */}
+      <circle cx="380" cy="230" r="3" fill={STROKE} />
+      <circle cx="410" cy="230" r="3" fill={STROKE} />
+      <line x1="380" y1="230" x2="380" y2="280" stroke={STROKE} strokeWidth="1.5" />
+      <line x1="410" y1="230" x2="410" y2="280" stroke={STROKE} strokeWidth="1.5" />
+      <rect x="365" y="280" width="60" height="25" fill="none" stroke={STROKE} strokeWidth="1" />
+      <text x="395" y="296" textAnchor="middle" fontSize="8" fill={STROKE}>ZONE 2</text>
+      {/* Zone pump */}
+      <circle cx="430" cy="260" r="8" fill="none" stroke={STROKE} strokeWidth="1" />
+      <polygon points="426,257 434,260 426,263" fill={STROKE} />
+      <text x="445" y="263" fontSize="7" fill={LIGHT}>P-3</text>
 
       {/* Notes */}
-      <Label x="140" y="245" text="CST = Closely-Spaced Tees (max 4 pipe diameters apart)" size={7} color="#888" anchor="start" />
-      <Label x="140" y="260" text="Each circuit has its own pump — hydraulically independent" size={7} color="#888" anchor="start" />
-      <Label x="140" y="275" text="Essential for modulating-condensing boilers" size={7} color={RED} anchor="start" />
+      <text x="180" y="265" fontSize="7" fill={LIGHT}>Each circuit has its own pump — hydraulically independent</text>
+      <text x="180" y="278" fontSize="7" fill={LIGHT}>Essential for modulating/condensing boilers</text>
     </svg>
   );
 }
 
 export function ParallelBoilerDiagram() {
   return (
-    <svg viewBox="0 0 520 300" className="w-full" style={{ fontFamily: "system-ui, sans-serif" }}>
+    <svg viewBox="0 0 600 320" className="w-full bg-white" style={{ fontFamily: "'Courier New', monospace" }}>
+      <text x="300" y="310" textAnchor="middle" fontSize="11" fontWeight="bold" fill={STROKE}>FIGURE 7 — PARALLEL HEADER (CASCADE)</text>
+
       {/* Supply header */}
-      <line x1="40" y1="60" x2="480" y2="60" stroke={HOT_RED} strokeWidth="4" />
-      <Label x="260" y="45" text="SUPPLY HEADER" size={9} color={HOT_RED} bold />
-      <ArrowHead x={475} y={60} dir="right" color={HOT_RED} />
-      <Label x="485" y="65" text="To Zones" size={7} color="#888" anchor="start" />
+      <line x1="50" y1="60" x2="550" y2="60" stroke={STROKE} strokeWidth="2.5" />
+      <polygon points="545,57 545,63 552,60" fill={STROKE} />
+      <text x="300" y="45" textAnchor="middle" fontSize="9" fill={LIGHT}>SUPPLY HEADER</text>
+      <text x="560" y="64" fontSize="8" fill={LIGHT}>To Zones</text>
 
       {/* Return header */}
-      <line x1="40" y1="220" x2="480" y2="220" stroke={COLD_BLUE} strokeWidth="4" />
-      <Label x="260" y="245" text="RETURN HEADER" size={9} color={COLD_BLUE} bold />
-      <ArrowHead x={45} y={220} dir="left" color={COLD_BLUE} />
+      <line x1="50" y1="240" x2="550" y2="240" stroke={STROKE} strokeWidth="2.5" />
+      <polygon points="55,237 55,243 48,240" fill={STROKE} />
+      <text x="300" y="260" textAnchor="middle" fontSize="9" fill={LIGHT}>RETURN HEADER</text>
 
       {/* Boiler 1 */}
-      <line x1="120" y1="60" x2="120" y2="100" stroke={HOT_RED} strokeWidth="2" />
-      <circle cx="120" cy="60" r="4" fill={HOT_RED} />
-      <ComponentBox x={80} y={100} w={80} h={50} label="BOILER #1" />
-      <Valve x={120} y={80} />
-      <line x1="120" y1="150" x2="120" y2="220" stroke={COLD_BLUE} strokeWidth="2" />
-      <circle cx="120" cy="220" r="4" fill={COLD_BLUE} />
-      <Valve x={120} y={190} />
+      <line x1="150" y1="60" x2="150" y2="90" stroke={STROKE} strokeWidth="1.5" />
+      <circle cx="150" cy="60" r="3" fill={STROKE} />
+      <rect x="110" y="110" width="80" height="60" fill="none" stroke={STROKE} strokeWidth="1.5" />
+      <text x="150" y="144" textAnchor="middle" fontSize="9" fill={STROKE}>Boiler #1</text>
+      {/* Valves */}
+      <polygon points="145,85 155,90 145,95" fill="none" stroke={STROKE} strokeWidth="1" />
+      <polygon points="155,85 145,90 155,95" fill="none" stroke={STROKE} strokeWidth="1" />
+      <line x1="150" y1="170" x2="150" y2="240" stroke={STROKE} strokeWidth="1.5" />
+      <circle cx="150" cy="240" r="3" fill={STROKE} />
+      <polygon points="145,205 155,210 145,215" fill="none" stroke={STROKE} strokeWidth="1" />
+      <polygon points="155,205 145,210 155,215" fill="none" stroke={STROKE} strokeWidth="1" />
 
       {/* Boiler 2 */}
-      <line x1="260" y1="60" x2="260" y2="100" stroke={HOT_RED} strokeWidth="2" />
-      <circle cx="260" cy="60" r="4" fill={HOT_RED} />
-      <ComponentBox x={220} y={100} w={80} h={50} label="BOILER #2" />
-      <Valve x={260} y={80} />
-      <line x1="260" y1="150" x2="260" y2="220" stroke={COLD_BLUE} strokeWidth="2" />
-      <circle cx="260" cy="220" r="4" fill={COLD_BLUE} />
-      <Valve x={260} y={190} />
+      <line x1="300" y1="60" x2="300" y2="90" stroke={STROKE} strokeWidth="1.5" />
+      <circle cx="300" cy="60" r="3" fill={STROKE} />
+      <rect x="260" y="110" width="80" height="60" fill="none" stroke={STROKE} strokeWidth="1.5" />
+      <text x="300" y="144" textAnchor="middle" fontSize="9" fill={STROKE}>Boiler #2</text>
+      <polygon points="295,85 305,90 295,95" fill="none" stroke={STROKE} strokeWidth="1" />
+      <polygon points="305,85 295,90 305,95" fill="none" stroke={STROKE} strokeWidth="1" />
+      <line x1="300" y1="170" x2="300" y2="240" stroke={STROKE} strokeWidth="1.5" />
+      <circle cx="300" cy="240" r="3" fill={STROKE} />
+      <polygon points="295,205 305,210 295,215" fill="none" stroke={STROKE} strokeWidth="1" />
+      <polygon points="305,205 295,210 305,215" fill="none" stroke={STROKE} strokeWidth="1" />
 
       {/* Boiler 3 */}
-      <line x1="400" y1="60" x2="400" y2="100" stroke={HOT_RED} strokeWidth="2" />
-      <circle cx="400" cy="60" r="4" fill={HOT_RED} />
-      <ComponentBox x={360} y={100} w={80} h={50} label="BOILER #3" />
-      <Valve x={400} y={80} />
-      <line x1="400" y1="150" x2="400" y2="220" stroke={COLD_BLUE} strokeWidth="2" />
-      <circle cx="400" cy="220" r="4" fill={COLD_BLUE} />
-      <Valve x={400} y={190} />
+      <line x1="450" y1="60" x2="450" y2="90" stroke={STROKE} strokeWidth="1.5" />
+      <circle cx="450" cy="60" r="3" fill={STROKE} />
+      <rect x="410" y="110" width="80" height="60" fill="none" stroke={STROKE} strokeWidth="1.5" />
+      <text x="450" y="144" textAnchor="middle" fontSize="9" fill={STROKE}>Boiler #3</text>
+      <polygon points="445,85 455,90 445,95" fill="none" stroke={STROKE} strokeWidth="1" />
+      <polygon points="455,85 445,90 455,95" fill="none" stroke={STROKE} strokeWidth="1" />
+      <line x1="450" y1="170" x2="450" y2="240" stroke={STROKE} strokeWidth="1.5" />
+      <circle cx="450" cy="240" r="3" fill={STROKE} />
+      <polygon points="445,205 455,210 445,215" fill="none" stroke={STROKE} strokeWidth="1" />
+      <polygon points="455,205 445,210 455,215" fill="none" stroke={STROKE} strokeWidth="1" />
 
       {/* Notes */}
-      <Label x="260" y="270" text="CASCADE — Controller fires boilers in sequence based on demand" size={8} color="#555" />
-      <Label x="260" y="285" text="Each boiler has isolation valves for independent service" size={8} color="#888" />
+      <text x="300" y="280" textAnchor="middle" fontSize="8" fill={LIGHT}>Cascade controller fires boilers in sequence based on demand</text>
+      <text x="300" y="293" textAnchor="middle" fontSize="8" fill={LIGHT}>Each boiler has isolation valves for independent service</text>
     </svg>
   );
 }
 
 export function ReverseReturnBoilerDiagram() {
   return (
-    <svg viewBox="0 0 520 280" className="w-full" style={{ fontFamily: "system-ui, sans-serif" }}>
-      {/* Supply (top, left to right) */}
-      <line x1="20" y1="60" x2="460" y2="60" stroke={HOT_RED} strokeWidth="3" />
-      <ArrowHead x={455} y={60} dir="right" color={HOT_RED} />
-      <Label x="240" y="45" text="SUPPLY (left to right)" size={8} color={HOT_RED} bold />
+    <svg viewBox="0 0 600 300" className="w-full bg-white" style={{ fontFamily: "'Courier New', monospace" }}>
+      <text x="300" y="290" textAnchor="middle" fontSize="11" fontWeight="bold" fill={STROKE}>FIGURE 8 — REVERSE RETURN (BOILERS)</text>
+
+      {/* Supply (top, L to R) */}
+      <line x1="30" y1="60" x2="520" y2="60" stroke={STROKE} strokeWidth="2" />
+      <polygon points="515,57 515,63 522,60" fill={STROKE} />
+      <text x="275" y="45" textAnchor="middle" fontSize="9" fill={LIGHT}>SUPPLY (Left to Right)</text>
 
       {/* Boilers */}
-      <line x1="120" y1="60" x2="120" y2="100" stroke={HOT_RED} strokeWidth="2" />
-      <circle cx="120" cy="60" r="4" fill={HOT_RED} />
-      <ComponentBox x={80} y={100} w={80} h={40} label="BOILER #1" />
+      <line x1="130" y1="60" x2="130" y2="95" stroke={STROKE} strokeWidth="1.5" />
+      <circle cx="130" cy="60" r="3" fill={STROKE} />
+      <rect x="95" y="95" width="70" height="50" fill="none" stroke={STROKE} strokeWidth="1.5" />
+      <text x="130" y="123" textAnchor="middle" fontSize="9" fill={STROKE}>Boiler #1</text>
 
-      <line x1="280" y1="60" x2="280" y2="100" stroke={HOT_RED} strokeWidth="2" />
-      <circle cx="280" cy="60" r="4" fill={HOT_RED} />
-      <ComponentBox x={240} y={100} w={80} h={40} label="BOILER #2" />
+      <line x1="300" y1="60" x2="300" y2="95" stroke={STROKE} strokeWidth="1.5" />
+      <circle cx="300" cy="60" r="3" fill={STROKE} />
+      <rect x="265" y="95" width="70" height="50" fill="none" stroke={STROKE} strokeWidth="1.5" />
+      <text x="300" y="123" textAnchor="middle" fontSize="9" fill={STROKE}>Boiler #2</text>
 
-      <line x1="440" y1="60" x2="440" y2="100" stroke={HOT_RED} strokeWidth="2" />
-      <circle cx="440" cy="60" r="4" fill={HOT_RED} />
-      <ComponentBox x={400} y={100} w={80} h={40} label="BOILER #3" />
+      <line x1="470" y1="60" x2="470" y2="95" stroke={STROKE} strokeWidth="1.5" />
+      <circle cx="470" cy="60" r="3" fill={STROKE} />
+      <rect x="435" y="95" width="70" height="50" fill="none" stroke={STROKE} strokeWidth="1.5" />
+      <text x="470" y="123" textAnchor="middle" fontSize="9" fill={STROKE}>Boiler #3</text>
 
-      {/* Return (bottom, right to left — REVERSE) */}
-      <line x1="120" y1="140" x2="120" y2="180" stroke={COLD_BLUE} strokeWidth="2" />
-      <line x1="280" y1="140" x2="280" y2="180" stroke={COLD_BLUE} strokeWidth="2" />
-      <line x1="440" y1="140" x2="440" y2="180" stroke={COLD_BLUE} strokeWidth="2" />
+      {/* Return (bottom, R to L) */}
+      <line x1="130" y1="145" x2="130" y2="200" stroke={STROKE} strokeWidth="1.5" />
+      <line x1="300" y1="145" x2="300" y2="200" stroke={STROKE} strokeWidth="1.5" />
+      <line x1="470" y1="145" x2="470" y2="200" stroke={STROKE} strokeWidth="1.5" />
 
-      <line x1="60" y1="180" x2="440" y2="180" stroke={COLD_BLUE} strokeWidth="3" />
-      <ArrowHead x={65} y={180} dir="left" color={COLD_BLUE} />
-      <circle cx="120" cy="180" r="4" fill={COLD_BLUE} />
-      <circle cx="280" cy="180" r="4" fill={COLD_BLUE} />
-      <circle cx="440" cy="180" r="4" fill={COLD_BLUE} />
-      <Label x="240" y="200" text="RETURN (right to left — REVERSE)" size={8} color={COLD_BLUE} bold />
+      <line x1="80" y1="200" x2="470" y2="200" stroke={STROKE} strokeWidth="2" />
+      <polygon points="85,197 85,203 78,200" fill={STROKE} />
+      <circle cx="130" cy="200" r="3" fill={STROKE} />
+      <circle cx="300" cy="200" r="3" fill={STROKE} />
+      <circle cx="470" cy="200" r="3" fill={STROKE} />
+      <text x="275" y="218" textAnchor="middle" fontSize="9" fill={LIGHT}>RETURN (Right to Left — REVERSE)</text>
 
       {/* Key concept */}
-      <rect x="40" y="220" width="440" height="50" rx="4" fill="#FFF7ED" stroke="#FDBA74" />
-      <Label x="260" y="240" text="First connected to SUPPLY = Last connected to RETURN" size={9} color={BLUE} bold />
-      <Label x="260" y="258" text="Equal total pipe length per boiler = self-balancing flow without balancing valves" size={8} color="#555" />
+      <rect x="80" y="235" width="440" height="40" fill="none" stroke={LIGHT} strokeWidth="0.5" />
+      <text x="300" y="253" textAnchor="middle" fontSize="8" fill={LIGHT}>FIRST connected to Supply = LAST connected to Return</text>
+      <text x="300" y="266" textAnchor="middle" fontSize="8" fill={LIGHT}>Equal total pipe length per boiler = self-balancing flow (no balancing valves needed)</text>
     </svg>
   );
 }
-
-// Export all as named object for easy import
-export const WaterHeaterDiagrams = {
-  SingleWaterHeaterDiagram,
-  SeriesWaterHeaterDiagram,
-  ParallelWaterHeaterDiagram,
-  ReverseReturnWHDiagram,
-};
-
-export const BoilerDiagrams = {
-  SingleBoilerDiagram,
-  PrimarySecondaryDiagram,
-  ParallelBoilerDiagram,
-  ReverseReturnBoilerDiagram,
-};
