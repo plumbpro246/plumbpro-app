@@ -316,3 +316,14 @@ credentials.json
 *.pem
 *.key
 .credentials
+
+# Test reports (contain credentials/tokens)
+test_reports/
+backend_test.py
+
+# Memory files with credentials
+memory/DEPLOYMENT_GUIDE.md
+memory/test_credentials.md
+
+# Backend test files (contain test credentials)
+backend/tests/
