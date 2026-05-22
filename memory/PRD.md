@@ -9,7 +9,7 @@ Build an app with different tier monthly costs for plumbers to use in the field 
 - **AI**: OpenAI via Emergent LLM key (standard openai SDK + proxy base_url)
 - **Payments**: Stripe (web) + Google Play Billing (Android)
 - **Mobile**: Capacitor (Android & iOS) + PWA
-- **Deployment**: Vercel (frontend) + Railway (backend) + MongoDB Atlas
+- **Deployment**: Vercel (frontend) + Render.com (backend) + MongoDB Atlas — **🟢 LIVE as of May 22, 2026**
 
 ## Subscription Pricing
 - Free: $0/mo (Calculator, Formulas, Safety Talks, Calendar, Plumbing Code)
