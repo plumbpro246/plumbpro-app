@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth, API } from "@/App";
 import axios from "axios";
 import { toast } from "sonner";
@@ -9,64 +9,157 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, DollarSign, Trash2, Send, Check, X, Download, Share2 } from "lucide-react";
+import { Plus, DollarSign, Trash2, Send, Check, X, Download, Share2, Star, ListPlus } from "lucide-react";
 import { exportBidPDF } from "@/services/pdfExportService";
 import { shareBid } from "@/services/shareService";
+
+const blankMaterial = () => ({ name: "", quantity: 1, unit_price: 0 });
+
+const blankForm = () => ({
+  job_name: "",
+  client_name: "",
+  client_contact: "",
+  description: "",
+  labor_hours: 0,
+  hourly_rate: 85,
+  materials: [blankMaterial()],
+  markup_percent: 15,
+  notes: ""
+});
 
 export default function BiddingPage() {
   const { token } = useAuth();
   const [bids, setBids] = useState([]);
+  const [commonMaterials, setCommonMaterials] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [commonPickerOpen, setCommonPickerOpen] = useState(false);
   const [selectedBid, setSelectedBid] = useState(null);
-  const [formData, setFormData] = useState({
-    job_name: "",
-    client_name: "",
-    client_contact: "",
-    description: "",
-    labor_hours: 0,
-    hourly_rate: 85,
-    material_cost: 0,
-    markup_percent: 15,
-    notes: ""
-  });
+  const [formData, setFormData] = useState(blankForm());
 
   const headers = { Authorization: `Bearer ${token}` };
 
-  const fetchBids = async () => {
+  const fetchBids = useCallback(async () => {
     try {
       const response = await axios.get(`${API}/bids`, { headers });
       setBids(response.data);
-    } catch (error) {
+    } catch {
       toast.error("Failed to load bids");
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const fetchCommonMaterials = useCallback(async () => {
+    try {
+      const response = await axios.get(`${API}/common-materials`, { headers });
+      setCommonMaterials(response.data);
+    } catch {
+      // silent — non-critical
+    }
+  }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     fetchBids();
-  }, []);
+    fetchCommonMaterials();
+  }, [fetchBids, fetchCommonMaterials]);
 
+  // ---------- Material line item handlers ----------
+  const updateMaterial = (index, field, value) => {
+    setFormData((prev) => {
+      const next = [...prev.materials];
+      next[index] = { ...next[index], [field]: value };
+      return { ...prev, materials: next };
+    });
+  };
+
+  const addMaterialRow = () => {
+    setFormData((prev) => ({ ...prev, materials: [...prev.materials, blankMaterial()] }));
+  };
+
+  const removeMaterialRow = (index) => {
+    setFormData((prev) => {
+      const next = prev.materials.filter((_, i) => i !== index);
+      return { ...prev, materials: next.length ? next : [blankMaterial()] };
+    });
+  };
+
+  const saveToCommon = async (mat) => {
+    if (!mat.name.trim()) {
+      toast.error("Add a material name first");
+      return;
+    }
+    try {
+      await axios.post(
+        `${API}/common-materials`,
+        { name: mat.name.trim(), unit_price: parseFloat(mat.unit_price) || 0 },
+        { headers }
+      );
+      toast.success(`Saved "${mat.name}" to favorites`);
+      fetchCommonMaterials();
+    } catch {
+      toast.error("Failed to save");
+    }
+  };
+
+  const addFromCommon = (item) => {
+    setFormData((prev) => {
+      const lastEmptyIdx = prev.materials.findIndex((m) => !m.name.trim());
+      const newItem = { name: item.name, quantity: 1, unit_price: item.unit_price };
+      const next = [...prev.materials];
+      if (lastEmptyIdx >= 0) {
+        next[lastEmptyIdx] = newItem;
+      } else {
+        next.push(newItem);
+      }
+      return { ...prev, materials: next };
+    });
+    setCommonPickerOpen(false);
+  };
+
+  const deleteCommon = async (id, e) => {
+    e.stopPropagation();
+    try {
+      await axios.delete(`${API}/common-materials/${id}`, { headers });
+      fetchCommonMaterials();
+    } catch {
+      toast.error("Failed to delete");
+    }
+  };
+
+  // ---------- Bid submit / status / delete ----------
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const cleanMaterials = formData.materials
+      .filter((m) => m.name.trim())
+      .map((m) => ({
+        name: m.name.trim(),
+        quantity: parseFloat(m.quantity) || 0,
+        unit_price: parseFloat(m.unit_price) || 0
+      }));
+    const materialTotal = cleanMaterials.reduce((s, m) => s + m.quantity * m.unit_price, 0);
     try {
-      await axios.post(`${API}/bids`, formData, { headers });
+      await axios.post(
+        `${API}/bids`,
+        {
+          job_name: formData.job_name,
+          client_name: formData.client_name,
+          client_contact: formData.client_contact,
+          description: formData.description,
+          labor_hours: parseFloat(formData.labor_hours) || 0,
+          hourly_rate: parseFloat(formData.hourly_rate) || 0,
+          material_cost: materialTotal,
+          materials: cleanMaterials,
+          markup_percent: parseFloat(formData.markup_percent) || 0,
+          notes: formData.notes
+        },
+        { headers }
+      );
       toast.success("Bid created");
       setDialogOpen(false);
-      setFormData({
-        job_name: "",
-        client_name: "",
-        client_contact: "",
-        description: "",
-        labor_hours: 0,
-        hourly_rate: 85,
-        material_cost: 0,
-        markup_percent: 15,
-        notes: ""
-      });
+      setFormData(blankForm());
       fetchBids();
-    } catch (error) {
+    } catch {
       toast.error("Failed to save bid");
     }
   };
@@ -76,7 +169,7 @@ export default function BiddingPage() {
       await axios.put(`${API}/bids/${bidId}/status?status=${status}`, {}, { headers });
       toast.success(`Bid marked as ${status}`);
       fetchBids();
-    } catch (error) {
+    } catch {
       toast.error("Failed to update status");
     }
   };
@@ -88,7 +181,7 @@ export default function BiddingPage() {
       toast.success("Bid deleted");
       setSelectedBid(null);
       fetchBids();
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete");
     }
   };
@@ -98,7 +191,7 @@ export default function BiddingPage() {
       const response = await axios.get(`${API}/export/bids/${bidId}`, { headers });
       exportBidPDF(response.data);
       toast.success("Bid PDF exported");
-    } catch (error) {
+    } catch {
       toast.error("Failed to export bid");
     }
   };
@@ -107,16 +200,21 @@ export default function BiddingPage() {
     try {
       const result = await shareBid(bid);
       if (result.success) {
-        toast.success(result.method === 'mailto' ? "Email client opened" : "Shared successfully");
+        toast.success(result.method === "mailto" ? "Email client opened" : "Shared successfully");
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to share bid");
     }
   };
 
-  const laborCost = formData.labor_hours * formData.hourly_rate;
-  const subtotal = laborCost + formData.material_cost;
-  const markup = subtotal * (formData.markup_percent / 100);
+  // ---------- Live totals ----------
+  const laborCost = (parseFloat(formData.labor_hours) || 0) * (parseFloat(formData.hourly_rate) || 0);
+  const materialTotal = formData.materials.reduce(
+    (s, m) => s + (parseFloat(m.quantity) || 0) * (parseFloat(m.unit_price) || 0),
+    0
+  );
+  const subtotal = laborCost + materialTotal;
+  const markup = subtotal * ((parseFloat(formData.markup_percent) || 0) / 100);
   const total = subtotal + markup;
 
   const statusColors = {
@@ -136,7 +234,7 @@ export default function BiddingPage() {
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button 
+            <Button
               className="bg-[#FF5F00] hover:bg-[#FF5F00]/90 text-white font-bold uppercase"
               data-testid="new-bid-btn"
             >
@@ -196,6 +294,7 @@ export default function BiddingPage() {
                 />
               </div>
 
+              {/* LABOR */}
               <div className="bg-muted p-4 rounded-sm space-y-4">
                 <h3 className="font-bold uppercase text-sm">Labor</h3>
                 <div className="grid grid-cols-2 gap-4">
@@ -205,7 +304,7 @@ export default function BiddingPage() {
                       type="number"
                       step="0.5"
                       value={formData.labor_hours}
-                      onChange={(e) => setFormData({ ...formData, labor_hours: parseFloat(e.target.value) || 0 })}
+                      onChange={(e) => setFormData({ ...formData, labor_hours: e.target.value })}
                       className="h-12"
                       data-testid="bid-labor-hours"
                     />
@@ -216,7 +315,7 @@ export default function BiddingPage() {
                       type="number"
                       step="0.01"
                       value={formData.hourly_rate}
-                      onChange={(e) => setFormData({ ...formData, hourly_rate: parseFloat(e.target.value) || 0 })}
+                      onChange={(e) => setFormData({ ...formData, hourly_rate: e.target.value })}
                       className="h-12"
                       data-testid="bid-hourly-rate"
                     />
@@ -227,32 +326,174 @@ export default function BiddingPage() {
                 </div>
               </div>
 
-              <div className="bg-muted p-4 rounded-sm space-y-4">
-                <h3 className="font-bold uppercase text-sm">Materials & Markup</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-sm font-bold uppercase tracking-wide">Material Cost ($)</Label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={formData.material_cost}
-                      onChange={(e) => setFormData({ ...formData, material_cost: parseFloat(e.target.value) || 0 })}
-                      className="h-12"
-                      data-testid="bid-material-cost"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-sm font-bold uppercase tracking-wide">Markup (%)</Label>
-                    <Input
-                      type="number"
-                      step="1"
-                      value={formData.markup_percent}
-                      onChange={(e) => setFormData({ ...formData, markup_percent: parseFloat(e.target.value) || 0 })}
-                      className="h-12"
-                      data-testid="bid-markup"
-                    />
+              {/* MATERIALS (line items) */}
+              <div className="bg-muted p-4 rounded-sm space-y-3">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <h3 className="font-bold uppercase text-sm">Materials</h3>
+                  <div className="flex gap-2">
+                    <Dialog open={commonPickerOpen} onOpenChange={setCommonPickerOpen}>
+                      <DialogTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-8"
+                          disabled={commonMaterials.length === 0}
+                          data-testid="quick-add-common-btn"
+                        >
+                          <ListPlus className="w-4 h-4 mr-1" /> Quick Add
+                          {commonMaterials.length > 0 && (
+                            <span className="ml-1 text-xs opacity-70">({commonMaterials.length})</span>
+                          )}
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-md max-h-[70vh] overflow-y-auto">
+                        <DialogHeader>
+                          <DialogTitle className="font-heading uppercase">Common Materials</DialogTitle>
+                        </DialogHeader>
+                        {commonMaterials.length === 0 ? (
+                          <p className="text-sm text-muted-foreground py-4 text-center">
+                            No saved materials yet. Tap the ⭐ on a line item to save it.
+                          </p>
+                        ) : (
+                          <div className="space-y-2">
+                            {commonMaterials.map((cm) => (
+                              <div
+                                key={cm.id}
+                                className="flex items-center justify-between p-3 border rounded-sm hover:border-[#FF5F00] cursor-pointer"
+                                onClick={() => addFromCommon(cm)}
+                                data-testid={`common-mat-${cm.id}`}
+                              >
+                                <div>
+                                  <p className="font-medium text-sm">{cm.name}</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    ${cm.unit_price.toFixed(2)} / unit
+                                  </p>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-red-500 hover:text-red-700"
+                                  onClick={(e) => deleteCommon(cm.id, e)}
+                                  data-testid={`delete-common-${cm.id}`}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </DialogContent>
+                    </Dialog>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-8"
+                      onClick={addMaterialRow}
+                      data-testid="add-material-row-btn"
+                    >
+                      <Plus className="w-4 h-4 mr-1" /> Add
+                    </Button>
                   </div>
                 </div>
+
+                <div className="space-y-2">
+                  {formData.materials.map((m, idx) => {
+                    const lineTotal = (parseFloat(m.quantity) || 0) * (parseFloat(m.unit_price) || 0);
+                    return (
+                      <div
+                        key={idx}
+                        className="grid grid-cols-12 gap-2 items-end p-2 bg-background rounded-sm border"
+                        data-testid={`material-row-${idx}`}
+                      >
+                        <div className="col-span-12 md:col-span-5">
+                          <Label className="text-[10px] uppercase text-muted-foreground">Item</Label>
+                          <Input
+                            value={m.name}
+                            onChange={(e) => updateMaterial(idx, "name", e.target.value)}
+                            placeholder='e.g., 3" PVC pipe'
+                            className="h-10"
+                            data-testid={`material-name-${idx}`}
+                          />
+                        </div>
+                        <div className="col-span-3 md:col-span-2">
+                          <Label className="text-[10px] uppercase text-muted-foreground">Qty</Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={m.quantity}
+                            onChange={(e) => updateMaterial(idx, "quantity", e.target.value)}
+                            className="h-10"
+                            data-testid={`material-qty-${idx}`}
+                          />
+                        </div>
+                        <div className="col-span-4 md:col-span-2">
+                          <Label className="text-[10px] uppercase text-muted-foreground">Unit $</Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={m.unit_price}
+                            onChange={(e) => updateMaterial(idx, "unit_price", e.target.value)}
+                            className="h-10"
+                            data-testid={`material-unit-${idx}`}
+                          />
+                        </div>
+                        <div className="col-span-3 md:col-span-2 text-right">
+                          <Label className="text-[10px] uppercase text-muted-foreground">Total</Label>
+                          <p className="h-10 flex items-center justify-end font-bold text-sm">
+                            ${lineTotal.toFixed(2)}
+                          </p>
+                        </div>
+                        <div className="col-span-2 md:col-span-1 flex gap-1 justify-end">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-9 w-9 text-amber-500 hover:text-amber-600"
+                            onClick={() => saveToCommon(m)}
+                            title="Save to favorites"
+                            data-testid={`save-common-${idx}`}
+                          >
+                            <Star className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-9 w-9 text-red-500 hover:text-red-700"
+                            onClick={() => removeMaterialRow(idx)}
+                            title="Remove row"
+                            data-testid={`remove-material-${idx}`}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="flex justify-between items-center pt-2 border-t">
+                  <span className="text-sm font-bold uppercase">Materials Total</span>
+                  <span className="text-lg font-bold text-[#003366]" data-testid="materials-total">
+                    ${materialTotal.toFixed(2)}
+                  </span>
+                </div>
+              </div>
+
+              {/* MARKUP */}
+              <div className="bg-muted p-4 rounded-sm">
+                <Label className="text-sm font-bold uppercase tracking-wide">Markup (%)</Label>
+                <Input
+                  type="number"
+                  step="1"
+                  value={formData.markup_percent}
+                  onChange={(e) => setFormData({ ...formData, markup_percent: e.target.value })}
+                  className="h-12"
+                  data-testid="bid-markup"
+                />
               </div>
 
               <div>
@@ -271,7 +512,7 @@ export default function BiddingPage() {
                   <span>Labor:</span><span>${laborCost.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm mb-1">
-                  <span>Materials:</span><span>${formData.material_cost.toFixed(2)}</span>
+                  <span>Materials:</span><span>${materialTotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm mb-1">
                   <span>Subtotal:</span><span>${subtotal.toFixed(2)}</span>
@@ -284,8 +525,8 @@ export default function BiddingPage() {
                 </div>
               </div>
 
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="w-full h-12 bg-[#FF5F00] hover:bg-[#FF5F00]/90 font-bold uppercase"
                 data-testid="save-bid-btn"
               >
@@ -306,20 +547,20 @@ export default function BiddingPage() {
         </Card>
         <Card className="bg-card border">
           <CardContent className="p-4 text-center">
-            <p className="text-2xl font-bold text-blue-500">{bids.filter(b => b.status === "sent").length}</p>
+            <p className="text-2xl font-bold text-blue-500">{bids.filter((b) => b.status === "sent").length}</p>
             <p className="text-xs text-muted-foreground uppercase">Pending</p>
           </CardContent>
         </Card>
         <Card className="bg-card border">
           <CardContent className="p-4 text-center">
-            <p className="text-2xl font-bold text-green-500">{bids.filter(b => b.status === "accepted").length}</p>
+            <p className="text-2xl font-bold text-green-500">{bids.filter((b) => b.status === "accepted").length}</p>
             <p className="text-xs text-muted-foreground uppercase">Won</p>
           </CardContent>
         </Card>
         <Card className="bg-card border">
           <CardContent className="p-4 text-center">
             <p className="text-2xl font-bold text-[#FF5F00]">
-              ${bids.filter(b => b.status === "accepted").reduce((s, b) => s + b.total_bid, 0).toFixed(0)}
+              ${bids.filter((b) => b.status === "accepted").reduce((s, b) => s + b.total_bid, 0).toFixed(0)}
             </p>
             <p className="text-xs text-muted-foreground uppercase">Won Value</p>
           </CardContent>
@@ -341,8 +582,8 @@ export default function BiddingPage() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {bids.map((bid) => (
-            <Card 
-              key={bid.id} 
+            <Card
+              key={bid.id}
               className={`cursor-pointer transition-all ${
                 selectedBid?.id === bid.id ? "border-[#FF5F00]" : "hover:border-primary/50"
               }`}
@@ -395,7 +636,7 @@ export default function BiddingPage() {
           </CardHeader>
           <CardContent className="p-6 space-y-4">
             <p className="text-muted-foreground">{selectedBid.description}</p>
-            
+
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-muted-foreground">Labor ({selectedBid.labor_hours}h × ${selectedBid.hourly_rate})</p>
@@ -415,30 +656,49 @@ export default function BiddingPage() {
               </div>
             </div>
 
+            {selectedBid.materials && selectedBid.materials.length > 0 && (
+              <div className="pt-2 border-t">
+                <p className="text-xs uppercase font-bold mb-2 text-muted-foreground">Material Breakdown</p>
+                <div className="space-y-1 text-sm">
+                  {selectedBid.materials.map((m, i) => (
+                    <div key={i} className="flex justify-between" data-testid={`detail-material-${i}`}>
+                      <span>
+                        {m.name}{" "}
+                        <span className="text-muted-foreground">
+                          ({m.quantity} × ${m.unit_price.toFixed(2)})
+                        </span>
+                      </span>
+                      <span className="font-medium">${(m.quantity * m.unit_price).toFixed(2)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="flex flex-wrap gap-2 pt-4 border-t">
-              <Button 
+              <Button
                 variant="outline"
                 onClick={() => handleExportBidPDF(selectedBid.id)}
                 data-testid="export-bid"
               >
                 <Download className="w-4 h-4 mr-2" /> Export PDF
               </Button>
-              <Button 
+              <Button
                 variant="outline"
                 onClick={() => handleShareBid(selectedBid)}
                 data-testid="share-bid"
               >
                 <Share2 className="w-4 h-4 mr-2" /> Email to Client
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => handleStatusChange(selectedBid.id, "sent")}
                 disabled={selectedBid.status !== "draft"}
                 data-testid="send-bid"
               >
                 <Send className="w-4 h-4 mr-2" /> Mark Sent
               </Button>
-              <Button 
+              <Button
                 variant="outline"
                 className="text-green-600 border-green-600 hover:bg-green-50"
                 onClick={() => handleStatusChange(selectedBid.id, "accepted")}
@@ -446,7 +706,7 @@ export default function BiddingPage() {
               >
                 <Check className="w-4 h-4 mr-2" /> Won
               </Button>
-              <Button 
+              <Button
                 variant="outline"
                 className="text-red-600 border-red-600 hover:bg-red-50"
                 onClick={() => handleStatusChange(selectedBid.id, "rejected")}

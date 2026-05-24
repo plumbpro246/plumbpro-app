@@ -215,6 +215,11 @@ class MaterialListResponse(BaseModel):
     updated_at: str
 
 # Job Bidding Models
+class BidMaterialItem(BaseModel):
+    name: str
+    quantity: float = 1
+    unit_price: float = 0
+
 class BidCreate(BaseModel):
     job_name: str
     client_name: str
@@ -223,6 +228,7 @@ class BidCreate(BaseModel):
     labor_hours: float
     hourly_rate: float
     material_cost: float
+    materials: Optional[List[BidMaterialItem]] = None
     markup_percent: float = 15.0
     notes: Optional[str] = None
 
@@ -237,11 +243,24 @@ class BidResponse(BaseModel):
     hourly_rate: float
     labor_cost: float
     material_cost: float
+    materials: Optional[List[BidMaterialItem]] = None
     markup_percent: float
     markup_amount: float
     total_bid: float
     status: str
     notes: Optional[str] = None
+    created_at: str
+
+# Common Materials (saved favorites for quick re-add in bids)
+class CommonMaterialCreate(BaseModel):
+    name: str
+    unit_price: float = 0
+
+class CommonMaterialResponse(BaseModel):
+    id: str
+    user_id: str
+    name: str
+    unit_price: float
     created_at: str
 
 # Blueprint Models

@@ -6,6 +6,7 @@ from routes.deps import (
     TimesheetEntry, TimesheetResponse,
     MaterialListCreate, MaterialListResponse,
     BidCreate, BidResponse,
+    CommonMaterialCreate, CommonMaterialResponse,
     CalendarEvent, CalendarEventResponse,
     get_current_user
 )
@@ -93,11 +94,18 @@ async def delete_material_list(material_id: str, user: dict = Depends(get_curren
 @router.post("/bids", response_model=BidResponse)
 async def create_bid(bid: BidCreate, user: dict = Depends(get_current_user)):
     labor_cost = bid.labor_hours * bid.hourly_rate
-    subtotal = labor_cost + bid.material_cost
+    # If materials list provided, compute total from items; otherwise use scalar material_cost
+    if bid.materials:
+        material_total = sum(m.quantity * m.unit_price for m in bid.materials)
+        materials_dump = [m.model_dump() for m in bid.materials]
+    else:
+        material_total = bid.material_cost
+        materials_dump = None
+    subtotal = labor_cost + material_total
     markup_amount = subtotal * (bid.markup_percent / 100)
     total_bid = subtotal + markup_amount
     now = datetime.now(timezone.utc).isoformat()
-    bid_doc = {"id": str(uuid.uuid4()), "user_id": user["id"], "job_name": bid.job_name, "client_name": bid.client_name, "client_contact": bid.client_contact, "description": bid.description, "labor_hours": bid.labor_hours, "hourly_rate": bid.hourly_rate, "labor_cost": round(labor_cost, 2), "material_cost": bid.material_cost, "markup_percent": bid.markup_percent, "markup_amount": round(markup_amount, 2), "total_bid": round(total_bid, 2), "status": "draft", "notes": bid.notes, "created_at": now}
+    bid_doc = {"id": str(uuid.uuid4()), "user_id": user["id"], "job_name": bid.job_name, "client_name": bid.client_name, "client_contact": bid.client_contact, "description": bid.description, "labor_hours": bid.labor_hours, "hourly_rate": bid.hourly_rate, "labor_cost": round(labor_cost, 2), "material_cost": round(material_total, 2), "materials": materials_dump, "markup_percent": bid.markup_percent, "markup_amount": round(markup_amount, 2), "total_bid": round(total_bid, 2), "status": "draft", "notes": bid.notes, "created_at": now}
     await db.bids.insert_one(bid_doc)
     return BidResponse(**bid_doc)
 
@@ -119,6 +127,37 @@ async def delete_bid(bid_id: str, user: dict = Depends(get_current_user)):
     result = await db.bids.delete_one({"id": bid_id, "user_id": user["id"]})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Bid not found")
+    return {"status": "deleted"}
+
+
+# ==================== COMMON MATERIALS (saved favorites for bids) ====================
+@router.get("/common-materials", response_model=List[CommonMaterialResponse])
+async def get_common_materials(user: dict = Depends(get_current_user)):
+    return await db.common_materials.find({"user_id": user["id"]}, {"_id": 0}).sort("name", 1).to_list(500)
+
+@router.post("/common-materials", response_model=CommonMaterialResponse)
+async def create_common_material(item: CommonMaterialCreate, user: dict = Depends(get_current_user)):
+    name_clean = item.name.strip()
+    if not name_clean:
+        raise HTTPException(status_code=400, detail="Material name required")
+    existing = await db.common_materials.find_one({"user_id": user["id"], "name": name_clean})
+    now = datetime.now(timezone.utc).isoformat()
+    if existing:
+        await db.common_materials.update_one(
+            {"id": existing["id"]},
+            {"$set": {"unit_price": item.unit_price}}
+        )
+        existing["unit_price"] = item.unit_price
+        return CommonMaterialResponse(**{k: v for k, v in existing.items() if k != "_id"})
+    doc = {"id": str(uuid.uuid4()), "user_id": user["id"], "name": name_clean, "unit_price": item.unit_price, "created_at": now}
+    await db.common_materials.insert_one(doc)
+    return CommonMaterialResponse(**{k: v for k, v in doc.items() if k != "_id"})
+
+@router.delete("/common-materials/{item_id}")
+async def delete_common_material(item_id: str, user: dict = Depends(get_current_user)):
+    result = await db.common_materials.delete_one({"id": item_id, "user_id": user["id"]})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Material not found")
     return {"status": "deleted"}
 
 

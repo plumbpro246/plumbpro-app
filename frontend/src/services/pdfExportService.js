@@ -258,6 +258,38 @@ export const exportBidPDF = (data) => {
     },
     margin: { left: 14, right: 14 }
   });
+
+  // Itemized materials breakdown (when present)
+  if (Array.isArray(data.bid.materials) && data.bid.materials.length > 0) {
+    const matStartY = doc.lastAutoTable.finalY + 6;
+    autoTable(doc, {
+      startY: matStartY,
+      head: [['Material', 'Qty', 'Unit $', 'Line Total']],
+      body: data.bid.materials.map((m) => [
+        m.name,
+        String(m.quantity),
+        `$${Number(m.unit_price).toFixed(2)}`,
+        `$${(Number(m.quantity) * Number(m.unit_price)).toFixed(2)}`
+      ]),
+      headStyles: {
+        fillColor: COLORS.accent || [0, 51, 102],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        fontSize: 9
+      },
+      bodyStyles: {
+        textColor: COLORS.text,
+        fontSize: 9
+      },
+      columnStyles: {
+        0: { cellWidth: 90 },
+        1: { cellWidth: 25, halign: 'right' },
+        2: { cellWidth: 30, halign: 'right' },
+        3: { cellWidth: 25, halign: 'right' }
+      },
+      margin: { left: 14, right: 14 }
+    });
+  }
   
   // Total box
   const finalY = doc.lastAutoTable.finalY + 5;
