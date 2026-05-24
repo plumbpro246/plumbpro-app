@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Shield, MousePointer2, Settings as SettingsIcon, X, ChevronRight, Sparkles } from "lucide-react";
 
@@ -126,19 +125,14 @@ export default function WelcomeTour() {
             Skip tour
           </button>
           {isLast ? (
-            <Link
-              to="/settings"
+            <Button
+              type="button"
               onClick={finish}
-              className="inline-flex items-center gap-1.5"
-              data-testid="welcome-tour-finish-link"
+              className="bg-[#FF5F00] hover:bg-[#FF5F00]/90 text-white font-bold uppercase"
+              data-testid="welcome-tour-finish-btn"
             >
-              <Button
-                className="bg-[#FF5F00] hover:bg-[#FF5F00]/90 text-white font-bold uppercase"
-                data-testid="welcome-tour-finish-btn"
-              >
-                {step.cta} <ChevronRight className="w-4 h-4 ml-1" />
-              </Button>
-            </Link>
+              {step.cta} <ChevronRight className="w-4 h-4 ml-1" />
+            </Button>
           ) : (
             <Button
               type="button"

@@ -45,9 +45,9 @@ export default function SettingsPage() {
     const loadSettings = async () => {
       const authHeaders = { Authorization: `Bearer ${token}` };
       try {
-        // Load from server if online, otherwise from cache
+        // Load from server if online, otherwise from cache (10s timeout per call)
         if (navigator.onLine) {
-          const response = await axios.get(`${API}/notifications/settings`, { headers: authHeaders });
+          const response = await axios.get(`${API}/notifications/settings`, { headers: authHeaders, timeout: 10000 });
           setSettings(response.data);
           await offlineService.saveNotificationSettings(response.data);
         } else {
@@ -76,7 +76,9 @@ export default function SettingsPage() {
       }
     };
 
-    loadSettings();
+    // Safety net: never let the spinner show longer than 12 seconds
+    const safetyTimer = setTimeout(() => setLoading(false), 12000);
+    loadSettings().finally(() => clearTimeout(safetyTimer));
 
     // Online/offline listeners
     const handleOnline = () => setIsOnline(true);
@@ -222,7 +224,7 @@ export default function SettingsPage() {
     }
   };
 
-  const customizableItems = navItems.filter((i) => !ALWAYS_VISIBLE_PATHS.includes(i.path));
+  const customizableItems = (navItems || []).filter((i) => !(ALWAYS_VISIBLE_PATHS || []).includes(i.path));
 
   if (loading) {
     return (
