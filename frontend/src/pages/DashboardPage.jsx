@@ -8,7 +8,7 @@ import {
   DollarSign, Calendar, AlertTriangle, FileSpreadsheet,
   Cpu, Map, Crown, ChevronRight, BookOpen, Mic, Cloud, Store,
   Sun, CloudRain, Snowflake, CloudLightning, Wind, Droplets, Eye, ThermometerSun, MapPin,
-  Ruler, Table2, Wrench
+  Ruler, Table2, Wrench, Settings as SettingsIcon, X
 } from "lucide-react";
 
 const quickLinks = [
@@ -57,6 +57,14 @@ export default function DashboardPage() {
   const [todaySafetyTalk, setTodaySafetyTalk] = useState(null);
   const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showCustomizeTip, setShowCustomizeTip] = useState(
+    () => localStorage.getItem("customize-tip-dismissed") !== "true"
+  );
+
+  const dismissCustomizeTip = () => {
+    localStorage.setItem("customize-tip-dismissed", "true");
+    setShowCustomizeTip(false);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -137,6 +145,40 @@ export default function DashboardPage() {
           {user?.subscription_tier === "free" ? "Upgrade Plan" : user?.subscription_tier}
         </Link>
       </div>
+
+      {/* Customize Menu Onboarding Tip */}
+      {showCustomizeTip && (
+        <div
+          className="flex items-center gap-3 bg-gradient-to-r from-[#003366] to-[#004080] text-white p-3 rounded-sm shadow-sm border border-[#FF5F00]/30 animate-in fade-in slide-in-from-top-2 duration-500"
+          data-testid="customize-tip-banner"
+        >
+          <div className="bg-[#FF5F00] rounded-sm p-2 flex-shrink-0">
+            <SettingsIcon className="w-4 h-4 text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium leading-snug">
+              👋 Make it yours —{" "}
+              <Link
+                to="/settings"
+                className="underline font-bold hover:text-[#FF5F00] transition-colors"
+                data-testid="customize-tip-link"
+              >
+                hide tools you don't use
+              </Link>{" "}
+              in Settings.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={dismissCustomizeTip}
+            className="p-1.5 rounded-sm hover:bg-white/10 transition-colors flex-shrink-0"
+            aria-label="Dismiss tip"
+            data-testid="dismiss-customize-tip"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
