@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuth, API } from "@/App";
 import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import WelcomeTour from "@/components/WelcomeTour";
 import { 
   FileText, Calculator, Shield, Clock, Package, 
   DollarSign, Calendar, AlertTriangle, FileSpreadsheet,
@@ -124,6 +125,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6" data-testid="dashboard-page">
+      <WelcomeTour />
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
