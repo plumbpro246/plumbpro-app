@@ -131,16 +131,45 @@ async def delete_bid(bid_id: str, user: dict = Depends(get_current_user)):
 
 
 # ==================== COMMON MATERIALS (saved favorites for bids) ====================
+async def _get_user_team(user_id: str):
+    """Return the team document the user belongs to (as owner or member), or None."""
+    return await db.teams.find_one(
+        {"$or": [{"owner_id": user_id}, {"members.user_id": user_id}]},
+        {"_id": 0}
+    )
+
 @router.get("/common-materials", response_model=List[CommonMaterialResponse])
 async def get_common_materials(user: dict = Depends(get_current_user)):
-    return await db.common_materials.find({"user_id": user["id"]}, {"_id": 0}).sort("name", 1).to_list(500)
+    team = await _get_user_team(user["id"])
+    if team:
+        query = {"$or": [{"user_id": user["id"]}, {"team_id": team["id"]}]}
+    else:
+        query = {"user_id": user["id"]}
+    return await db.common_materials.find(query, {"_id": 0}).sort("name", 1).to_list(500)
 
 @router.post("/common-materials", response_model=CommonMaterialResponse)
 async def create_common_material(item: CommonMaterialCreate, user: dict = Depends(get_current_user)):
     name_clean = item.name.strip()
     if not name_clean:
         raise HTTPException(status_code=400, detail="Material name required")
-    existing = await db.common_materials.find_one({"user_id": user["id"], "name": name_clean})
+
+    team_id = None
+    shared_by_name = None
+    if item.shared:
+        team = await _get_user_team(user["id"])
+        if not team:
+            raise HTTPException(status_code=400, detail="Create or join a team first to share materials")
+        team_id = team["id"]
+        shared_by_name = user.get("full_name") or user.get("email")
+
+    # Avoid duplicates within same scope
+    duplicate_query = {"name": name_clean}
+    if team_id:
+        duplicate_query["team_id"] = team_id
+    else:
+        duplicate_query["user_id"] = user["id"]
+        duplicate_query["team_id"] = None
+    existing = await db.common_materials.find_one(duplicate_query)
     now = datetime.now(timezone.utc).isoformat()
     if existing:
         await db.common_materials.update_one(
@@ -149,15 +178,33 @@ async def create_common_material(item: CommonMaterialCreate, user: dict = Depend
         )
         existing["unit_price"] = item.unit_price
         return CommonMaterialResponse(**{k: v for k, v in existing.items() if k != "_id"})
-    doc = {"id": str(uuid.uuid4()), "user_id": user["id"], "name": name_clean, "unit_price": item.unit_price, "created_at": now}
+
+    doc = {
+        "id": str(uuid.uuid4()),
+        "user_id": user["id"],
+        "name": name_clean,
+        "unit_price": item.unit_price,
+        "team_id": team_id,
+        "shared_by_name": shared_by_name,
+        "created_at": now,
+    }
     await db.common_materials.insert_one(doc)
     return CommonMaterialResponse(**{k: v for k, v in doc.items() if k != "_id"})
 
 @router.delete("/common-materials/{item_id}")
 async def delete_common_material(item_id: str, user: dict = Depends(get_current_user)):
-    result = await db.common_materials.delete_one({"id": item_id, "user_id": user["id"]})
-    if result.deleted_count == 0:
+    mat = await db.common_materials.find_one({"id": item_id}, {"_id": 0})
+    if not mat:
         raise HTTPException(status_code=404, detail="Material not found")
+    # User can delete their own; team owner can delete team-shared
+    is_owner = mat.get("user_id") == user["id"]
+    is_team_owner = False
+    if mat.get("team_id"):
+        team = await db.teams.find_one({"id": mat["team_id"], "owner_id": user["id"]})
+        is_team_owner = team is not None
+    if not (is_owner or is_team_owner):
+        raise HTTPException(status_code=403, detail="Not allowed to delete this material")
+    await db.common_materials.delete_one({"id": item_id})
     return {"status": "deleted"}
 
 

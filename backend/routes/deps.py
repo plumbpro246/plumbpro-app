@@ -255,12 +255,15 @@ class BidResponse(BaseModel):
 class CommonMaterialCreate(BaseModel):
     name: str
     unit_price: float = 0
+    shared: bool = False  # if True, share with user's team
 
 class CommonMaterialResponse(BaseModel):
     id: str
     user_id: str
     name: str
     unit_price: float
+    team_id: Optional[str] = None
+    shared_by_name: Optional[str] = None
     created_at: str
 
 # Blueprint Models
