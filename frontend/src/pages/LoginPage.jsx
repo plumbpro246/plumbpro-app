@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/App";
 import { toast } from "sonner";
@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Wrench, Shield, Clock, Calculator } from "lucide-react";
+import { Wrench, Shield, Clock, Calculator, Gift } from "lucide-react";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -16,8 +16,19 @@ export default function LoginPage() {
 
   const [loginData, setLoginData] = useState({ email: "", password: "" });
   const [registerData, setRegisterData] = useState({ 
-    email: "", password: "", full_name: "", company: "" 
+    email: "", password: "", full_name: "", company: "", referral_code: ""
   });
+  const [activeTab, setActiveTab] = useState("login");
+
+  // Pre-fill referral code from URL ?ref=XXXXXX and auto-switch to register tab
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get("ref");
+    if (ref) {
+      setRegisterData((prev) => ({ ...prev, referral_code: ref.toUpperCase() }));
+      setActiveTab("register");
+    }
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -41,7 +52,8 @@ export default function LoginPage() {
         registerData.email, 
         registerData.password, 
         registerData.full_name, 
-        registerData.company
+        registerData.company,
+        registerData.referral_code || null
       );
       toast.success("Account created! Choose your plan to get started.");
       navigate("/subscription");
@@ -104,7 +116,7 @@ export default function LoginPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="login" className="w-full">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-2 bg-slate-700">
                 <TabsTrigger value="login" data-testid="login-tab">Sign In</TabsTrigger>
                 <TabsTrigger value="register" data-testid="register-tab">Register</TabsTrigger>
@@ -213,6 +225,27 @@ export default function LoginPage() {
                       required
                       data-testid="register-password"
                     />
+                  </div>
+                  <div>
+                    <Label htmlFor="register-referral" className="text-slate-300 text-sm font-bold uppercase tracking-wide flex items-center gap-1.5">
+                      <Gift className="w-3.5 h-3.5 text-[#FF5F00]" />
+                      Referral Code (Optional)
+                    </Label>
+                    <Input
+                      id="register-referral"
+                      type="text"
+                      placeholder="e.g., ABC123 — gets you a free month"
+                      value={registerData.referral_code}
+                      onChange={(e) => setRegisterData({ ...registerData, referral_code: e.target.value.toUpperCase() })}
+                      className="h-12 bg-slate-700 border-slate-600 text-white placeholder:text-slate-500 uppercase tracking-wider"
+                      maxLength={6}
+                      data-testid="register-referral-code"
+                    />
+                    {registerData.referral_code && (
+                      <p className="text-xs text-[#FF5F00] mt-1 italic">
+                        🎁 You'll get an extra 30 days free when you subscribe!
+                      </p>
+                    )}
                   </div>
                   <Button 
                     type="submit" 

@@ -112,6 +112,9 @@ async def get_checkout_status(session_id: str, request: Request, user: dict = De
         if transaction and transaction.get("payment_status") != "completed":
             await db.payment_transactions.update_one({"session_id": session_id}, {"$set": {"payment_status": "completed", "completed_at": datetime.now(timezone.utc).isoformat()}})
             await db.users.update_one({"id": user["id"]}, {"$set": {"subscription_tier": transaction["tier"], "subscription_status": "active", "subscription_updated_at": datetime.now(timezone.utc).isoformat()}})
+            # Apply referral reward (one-time)
+            from routes.referrals import apply_referral_reward
+            await apply_referral_reward(user["id"])
     
     return {"status": session.status, "payment_status": session.payment_status, "amount_total": session.amount_total, "currency": session.currency}
 
@@ -132,6 +135,9 @@ async def stripe_webhook(request: Request):
             if user_id and tier:
                 await db.users.update_one({"id": user_id}, {"$set": {"subscription_tier": tier, "subscription_status": "active", "subscription_updated_at": datetime.now(timezone.utc).isoformat()}})
                 await db.payment_transactions.update_one({"session_id": session.get("id")}, {"$set": {"payment_status": "completed"}})
+                # Apply referral reward (one-time)
+                from routes.referrals import apply_referral_reward
+                await apply_referral_reward(user_id)
         return {"status": "success"}
     except Exception as e:
         logger.error(f"Webhook error: {e}")
@@ -157,6 +163,9 @@ async def verify_google_play_purchase(req: GooglePlayVerifyRequest, user: dict =
     }
     await db.google_play_purchases.update_one({"purchase_token": req.purchase_token}, {"$set": purchase_doc}, upsert=True)
     await db.users.update_one({"id": user["id"]}, {"$set": {"subscription_tier": tier, "subscription_status": "active", "subscription_platform": "google_play", "google_play_product_id": req.product_id, "google_play_purchase_token": req.purchase_token, "subscription_updated_at": now.isoformat()}})
+    # Apply referral reward (one-time)
+    from routes.referrals import apply_referral_reward
+    await apply_referral_reward(user["id"])
     return {"status": "verified", "tier": tier, "message": f"Subscription activated: {SUBSCRIPTION_TIERS[tier]['name']}"}
 
 

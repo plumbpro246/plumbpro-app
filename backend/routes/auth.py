@@ -25,7 +25,8 @@ async def get_promo_status():
 
 @router.post("/auth/register", response_model=TokenResponse, summary="Register a new user")
 async def register(user_data: UserCreate):
-    """Create a new account. Returns JWT token + user info. Early-bird status auto-assigned."""
+    """Create a new account. Returns JWT token + user info. Early-bird status auto-assigned.
+    Optional referral_code links new user to a referrer for 'Refer a Plumber' rewards."""
     existing = await db.users.find_one({"email": user_data.email})
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -34,7 +35,25 @@ async def register(user_data: UserCreate):
     now = datetime.now(timezone.utc).isoformat()
     total_users = await db.users.count_documents({})
     is_early_bird = total_users < 300
-    
+
+    # Process referral code if provided
+    referred_by = None
+    if user_data.referral_code:
+        code_clean = user_data.referral_code.strip().upper()
+        if code_clean:
+            referrer = await db.users.find_one({"referral_code": code_clean}, {"_id": 0})
+            if referrer:
+                referred_by = code_clean
+
+    # Auto-generate a unique referral code for this new user
+    from routes.referrals import generate_referral_code
+    my_code = None
+    for _ in range(10):
+        candidate = generate_referral_code()
+        if not await db.users.find_one({"referral_code": candidate}):
+            my_code = candidate
+            break
+
     user_doc = {
         "id": user_id,
         "email": user_data.email,
@@ -45,16 +64,36 @@ async def register(user_data: UserCreate):
         "subscription_status": "inactive",
         "is_early_bird": is_early_bird,
         "user_number": total_users + 1,
+        "referral_code": my_code,
+        "referred_by": referred_by,
+        "referral_credits_days": 0,
         "created_at": now,
         "updated_at": now
     }
     await db.users.insert_one(user_doc)
+
+    # Log pending referral if applicable
+    if referred_by:
+        referrer = await db.users.find_one({"referral_code": referred_by}, {"_id": 0})
+        if referrer:
+            await db.referrals.insert_one({
+                "referrer_id": referrer["id"],
+                "referrer_code": referred_by,
+                "referrer_email": referrer.get("email"),
+                "referee_id": user_id,
+                "referee_email": user_data.email,
+                "status": "pending",
+                "created_at": now,
+            })
     
     token = create_token(user_id, user_data.email)
     user_response = UserResponse(
         id=user_id, email=user_data.email, full_name=user_data.full_name,
         company=user_data.company, subscription_tier="free",
-        subscription_status="inactive", created_at=now
+        subscription_status="inactive",
+        referral_code=my_code,
+        referral_credits_days=0,
+        created_at=now
     )
     return TokenResponse(access_token=token, user=user_response)
 
@@ -75,6 +114,8 @@ async def login(login_data: UserLogin):
         subscription_tier=user.get("subscription_tier", "free"),
         subscription_status=user.get("subscription_status", "inactive"),
         hidden_pages=user.get("hidden_pages", []),
+        referral_code=user.get("referral_code"),
+        referral_credits_days=user.get("referral_credits_days", 0),
         created_at=user["created_at"]
     )
     return TokenResponse(access_token=token, user=user_response)
@@ -103,6 +144,8 @@ async def get_me(user: dict = Depends(get_current_user)):
         trial_ends_at=user.get("trial_ends_at"),
         trial_started=user.get("trial_started", False),
         hidden_pages=user.get("hidden_pages", []),
+        referral_code=user.get("referral_code"),
+        referral_credits_days=user.get("referral_credits_days", 0),
         created_at=user["created_at"]
     )
 
@@ -125,5 +168,7 @@ async def update_hidden_pages(payload: dict, user: dict = Depends(get_current_us
         trial_ends_at=user.get("trial_ends_at"),
         trial_started=user.get("trial_started", False),
         hidden_pages=cleaned,
+        referral_code=user.get("referral_code"),
+        referral_credits_days=user.get("referral_credits_days", 0),
         created_at=user["created_at"]
     )

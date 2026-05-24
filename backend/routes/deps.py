@@ -83,6 +83,7 @@ class UserCreate(BaseModel):
     password: str
     full_name: str
     company: Optional[str] = None
+    referral_code: Optional[str] = None
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -98,6 +99,8 @@ class UserResponse(BaseModel):
     trial_ends_at: Optional[str] = None
     trial_started: bool = False
     hidden_pages: List[str] = []
+    referral_code: Optional[str] = None
+    referral_credits_days: int = 0
     created_at: str
 
 class TokenResponse(BaseModel):

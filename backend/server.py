@@ -39,6 +39,7 @@ from routes.crud import router as crud_router
 from routes.reference import router as reference_router
 from routes.files import router as files_router
 from routes.services import router as services_router
+from routes.referrals import router as referrals_router
 
 # Register all routers
 api_router.include_router(auth_router, tags=["Auth & Promo"])
@@ -47,6 +48,7 @@ api_router.include_router(crud_router, tags=["Field Tools (CRUD)"])
 api_router.include_router(reference_router, tags=["Reference & AI"])
 api_router.include_router(files_router, tags=["Files, Codes & Sync"])
 api_router.include_router(services_router, tags=["Services"])
+api_router.include_router(referrals_router, tags=["Referrals"])
 
 # Health check
 @api_router.get("/", tags=["System"], summary="API root")

@@ -37,6 +37,7 @@ import FixturesPage from "@/pages/FixturesPage";
 import LandingPage from "@/pages/LandingPage";
 import PrivacyPolicyPage from "@/pages/PrivacyPolicyPage";
 import TermsOfServicePage from "@/pages/TermsOfServicePage";
+import ReferralPage from "@/pages/ReferralPage";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 export const API = `${BACKEND_URL}/api`;
@@ -81,9 +82,9 @@ export const AuthProvider = ({ children }) => {
     return userData;
   };
 
-  const register = async (email, password, full_name, company) => {
+  const register = async (email, password, full_name, company, referral_code = null) => {
     const response = await axios.post(`${API}/auth/register`, { 
-      email, password, full_name, company 
+      email, password, full_name, company, referral_code
     });
     const { access_token, user: userData } = response.data;
     localStorage.setItem("token", access_token);
@@ -164,16 +165,16 @@ import {
   Home, FileText, Calculator, Shield, Clock, Package, 
   DollarSign, Calendar, AlertTriangle, FileSpreadsheet, 
   Cpu, Map, LogOut, Menu, X, User, Crown, Settings, BookOpen, Lock, LifeBuoy, Users,
-  Mic, Cloud, Store, Ruler, Table2, Droplets, ThermometerSun, Wrench
+  Mic, Cloud, Store, Ruler, Table2, Droplets, ThermometerSun, Wrench, Gift
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
-// Free tier gets: Dashboard, Formulas, Safety Talks, Calendar, Calculator, Settings, Subscription, Plumbing Code, Support
-const FREE_TIER_PATHS = ["/dashboard", "/formulas", "/safety-talks", "/calendar", "/calculator", "/offset-calc", "/fitting-takeoffs", "/settings", "/subscription", "/subscription/success", "/plumbing-code", "/support", "/weather", "/suppliers"];
+// Free tier gets: Dashboard, Formulas, Safety Talks, Calendar, Calculator, Settings, Subscription, Plumbing Code, Support, Referrals
+const FREE_TIER_PATHS = ["/dashboard", "/formulas", "/safety-talks", "/calendar", "/calculator", "/offset-calc", "/fitting-takeoffs", "/settings", "/subscription", "/subscription/success", "/plumbing-code", "/support", "/weather", "/suppliers", "/refer"];
 
 // Paths that can NEVER be hidden (core navigation)
-export const ALWAYS_VISIBLE_PATHS = ["/dashboard", "/settings", "/subscription", "/support"];
+export const ALWAYS_VISIBLE_PATHS = ["/dashboard", "/settings", "/subscription", "/support", "/refer"];
 
 export const navItems = [
   { path: "/dashboard", label: "Dashboard", icon: Home, free: true },
@@ -199,6 +200,7 @@ export const navItems = [
   { path: "/weather", label: "Weather", icon: Cloud, free: true },
   { path: "/suppliers", label: "Suppliers", icon: Store, free: true },
   { path: "/team", label: "Team", icon: Users },
+  { path: "/refer", label: "Refer & Earn", icon: Gift, free: true },
   { path: "/support", label: "Support", icon: LifeBuoy, free: true },
   { path: "/settings", label: "Settings", icon: Settings, free: true },
 ];
@@ -400,6 +402,7 @@ function App() {
           <Route path="/suppliers" element={<ProtectedRoute><MainLayout><SupplierPage /></MainLayout></ProtectedRoute>} />
           <Route path="/team" element={<ProtectedRoute><TierGatedRoute><MainLayout><TeamPage /></MainLayout></TierGatedRoute></ProtectedRoute>} />
           <Route path="/support" element={<ProtectedRoute><MainLayout><SupportPage /></MainLayout></ProtectedRoute>} />
+          <Route path="/refer" element={<ProtectedRoute><MainLayout><ReferralPage /></MainLayout></ProtectedRoute>} />
           <Route path="/subscription" element={<ProtectedRoute><MainLayout><SubscriptionPage /></MainLayout></ProtectedRoute>} />
           <Route path="/subscription/success" element={<ProtectedRoute><MainLayout><SubscriptionSuccessPage /></MainLayout></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><MainLayout><SettingsPage /></MainLayout></ProtectedRoute>} />
