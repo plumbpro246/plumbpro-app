@@ -172,7 +172,10 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 // Free tier gets: Dashboard, Formulas, Safety Talks, Calendar, Calculator, Settings, Subscription, Plumbing Code, Support
 const FREE_TIER_PATHS = ["/dashboard", "/formulas", "/safety-talks", "/calendar", "/calculator", "/offset-calc", "/fitting-takeoffs", "/settings", "/subscription", "/subscription/success", "/plumbing-code", "/support", "/weather", "/suppliers"];
 
-const navItems = [
+// Paths that can NEVER be hidden (core navigation)
+export const ALWAYS_VISIBLE_PATHS = ["/dashboard", "/settings", "/subscription", "/support"];
+
+export const navItems = [
   { path: "/dashboard", label: "Dashboard", icon: Home, free: true },
   { path: "/notes", label: "Notes", icon: FileText },
   { path: "/formulas", label: "Formulas", icon: Calculator, free: true },
@@ -205,6 +208,11 @@ const MainLayout = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const hiddenPaths = user?.hidden_pages || [];
+  const visibleNavItems = navItems.filter(
+    (item) => ALWAYS_VISIBLE_PATHS.includes(item.path) || !hiddenPaths.includes(item.path)
+  );
 
   const handleLogout = () => {
     logout();
@@ -264,7 +272,7 @@ const MainLayout = ({ children }) => {
         </div>
         
         <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-1">
-          {navItems.map((item) => (
+          {visibleNavItems.map((item) => (
             <NavLink key={item.path} item={item} />
           ))}
         </nav>
@@ -315,7 +323,7 @@ const MainLayout = ({ children }) => {
               </h1>
             </div>
             <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-1">
-              {navItems.map((item) => (
+              {visibleNavItems.map((item) => (
                 <NavLink key={item.path} item={item} mobile />
               ))}
             </nav>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useAuth, API } from "@/App";
+import { useAuth, API, navItems, ALWAYS_VISIBLE_PATHS } from "@/App";
 import axios from "axios";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { 
-  Settings, Bell, Cloud, RefreshCw, CloudOff, CheckCircle2, 
-  AlertCircle, Wifi, WifiOff, Loader2, BellRing
+  Settings, Bell, Cloud, RefreshCw, CheckCircle2, 
+  AlertCircle, Wifi, WifiOff, Loader2, BellRing, Eye, EyeOff
 } from "lucide-react";
 import offlineService from "@/services/offlineService";
 import { 
@@ -20,7 +20,7 @@ import {
 import { subscribeToPush, unsubscribeFromPush, isPushSubscribed, sendTestPush } from "@/services/pushService";
 
 export default function SettingsPage() {
-  const { token, user } = useAuth();
+  const { token, user, refreshUser } = useAuth();
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -29,6 +29,8 @@ export default function SettingsPage() {
   const [notificationPermission, setNotificationPermission] = useState('default');
   const [pushEnabled, setPushEnabled] = useState(false);
   const [pushLoading, setPushLoading] = useState(false);
+  const [hiddenPages, setHiddenPages] = useState(user?.hidden_pages || []);
+  const [savingMenu, setSavingMenu] = useState(false);
   const [settings, setSettings] = useState({
     calendar_reminders: true,
     reminder_minutes_before: 30,
@@ -180,6 +182,47 @@ export default function SettingsPage() {
     if (sent) toast.success("Test push sent! Check your notifications.");
     else toast.error("Failed to send test push");
   };
+
+  // Sync hiddenPages local state with user object whenever it changes
+  useEffect(() => {
+    setHiddenPages(user?.hidden_pages || []);
+  }, [user]);
+
+  const toggleHidden = (path) => {
+    setHiddenPages((prev) =>
+      prev.includes(path) ? prev.filter((p) => p !== path) : [...prev, path]
+    );
+  };
+
+  const handleSaveMenu = async () => {
+    setSavingMenu(true);
+    try {
+      await axios.put(
+        `${API}/auth/hidden-pages`,
+        { hidden_pages: hiddenPages },
+        { headers }
+      );
+      await refreshUser();
+      toast.success("Menu preferences saved");
+    } catch {
+      toast.error("Failed to save menu preferences");
+    } finally {
+      setSavingMenu(false);
+    }
+  };
+
+  const resetMenu = async () => {
+    setHiddenPages([]);
+    try {
+      await axios.put(`${API}/auth/hidden-pages`, { hidden_pages: [] }, { headers });
+      await refreshUser();
+      toast.success("All menu items restored");
+    } catch {
+      toast.error("Failed to reset");
+    }
+  };
+
+  const customizableItems = navItems.filter((i) => !ALWAYS_VISIBLE_PATHS.includes(i.path));
 
   if (loading) {
     return (
@@ -384,6 +427,82 @@ export default function SettingsPage() {
           >
             Save Settings
           </Button>
+        </CardContent>
+      </Card>
+
+      {/* Customize Menu */}
+      <Card data-testid="customize-menu-card">
+        <CardHeader>
+          <CardTitle className="font-heading uppercase flex items-center gap-2">
+            <Eye className="w-5 h-5" />
+            Customize Menu
+          </CardTitle>
+          <CardDescription>
+            Hide pages you don't use from the sidebar. You can bring them back anytime.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {customizableItems.map((item) => {
+              const isHidden = hiddenPages.includes(item.path);
+              const Icon = item.icon;
+              return (
+                <button
+                  type="button"
+                  key={item.path}
+                  onClick={() => toggleHidden(item.path)}
+                  className={`flex items-center justify-between p-3 rounded-sm border transition-all text-left ${
+                    isHidden
+                      ? "bg-muted border-dashed opacity-60"
+                      : "bg-background border-input hover:border-[#FF5F00]"
+                  }`}
+                  data-testid={`toggle-page-${item.path.slice(1)}`}
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Icon className="w-4 h-4 flex-shrink-0" />
+                    <span className="text-sm font-medium truncate">{item.label}</span>
+                  </div>
+                  {isHidden ? (
+                    <EyeOff className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                  ) : (
+                    <Eye className="w-4 h-4 text-green-500 flex-shrink-0" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="text-xs text-muted-foreground pt-2 border-t">
+            {hiddenPages.length === 0
+              ? "All pages visible"
+              : `${hiddenPages.length} page${hiddenPages.length > 1 ? "s" : ""} hidden`}
+            <span className="block mt-1 italic">
+              Dashboard, Settings, Support &amp; Subscription always stay visible.
+            </span>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button
+              onClick={handleSaveMenu}
+              disabled={savingMenu}
+              className="flex-1 h-11 bg-[#FF5F00] hover:bg-[#FF5F00]/90 font-bold uppercase"
+              data-testid="save-menu-btn"
+            >
+              {savingMenu ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+              Save Menu Preferences
+            </Button>
+            {hiddenPages.length > 0 && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={resetMenu}
+                className="h-11"
+                data-testid="reset-menu-btn"
+              >
+                Show All
+              </Button>
+            )}
+          </div>
         </CardContent>
       </Card>
 

@@ -97,6 +97,7 @@ class UserResponse(BaseModel):
     subscription_status: str = "inactive"
     trial_ends_at: Optional[str] = None
     trial_started: bool = False
+    hidden_pages: List[str] = []
     created_at: str
 
 class TokenResponse(BaseModel):

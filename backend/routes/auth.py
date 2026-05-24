@@ -74,6 +74,7 @@ async def login(login_data: UserLogin):
         company=user.get("company"),
         subscription_tier=user.get("subscription_tier", "free"),
         subscription_status=user.get("subscription_status", "inactive"),
+        hidden_pages=user.get("hidden_pages", []),
         created_at=user["created_at"]
     )
     return TokenResponse(access_token=token, user=user_response)
@@ -101,5 +102,28 @@ async def get_me(user: dict = Depends(get_current_user)):
         subscription_status=subscription_status,
         trial_ends_at=user.get("trial_ends_at"),
         trial_started=user.get("trial_started", False),
+        hidden_pages=user.get("hidden_pages", []),
+        created_at=user["created_at"]
+    )
+
+
+@router.put("/auth/hidden-pages", response_model=UserResponse, summary="Update hidden navigation pages")
+async def update_hidden_pages(payload: dict, user: dict = Depends(get_current_user)):
+    """Set the list of nav paths the user wants hidden from the sidebar."""
+    hidden = payload.get("hidden_pages", [])
+    if not isinstance(hidden, list):
+        raise HTTPException(status_code=400, detail="hidden_pages must be a list")
+    # Sanitize: keep only strings starting with '/'
+    cleaned = [p for p in hidden if isinstance(p, str) and p.startswith("/")]
+    await db.users.update_one({"id": user["id"]}, {"$set": {"hidden_pages": cleaned}})
+    user["hidden_pages"] = cleaned
+    return UserResponse(
+        id=user["id"], email=user["email"], full_name=user["full_name"],
+        company=user.get("company"),
+        subscription_tier=user.get("subscription_tier", "free"),
+        subscription_status=user.get("subscription_status", "inactive"),
+        trial_ends_at=user.get("trial_ends_at"),
+        trial_started=user.get("trial_started", False),
+        hidden_pages=cleaned,
         created_at=user["created_at"]
     )
