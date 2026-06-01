@@ -208,6 +208,99 @@ async def delete_common_material(item_id: str, user: dict = Depends(get_current_
     return {"status": "deleted"}
 
 
+@router.post("/common-materials/seed", summary="Seed user's library with 50 starter materials")
+async def seed_starter_materials(user: dict = Depends(get_current_user)):
+    """One-tap import of 50 common plumbing materials (PVC, copper, PEX, valves, fixtures, etc.)
+    Skips items the user already has by name."""
+    from plumbing_materials_seed import STARTER_MATERIALS
+    existing_names = {
+        m["name"].lower()
+        for m in await db.common_materials.find(
+            {"user_id": user["id"], "team_id": None}, {"_id": 0, "name": 1}
+        ).to_list(1000)
+    }
+    now = datetime.now(timezone.utc).isoformat()
+    docs = []
+    for item in STARTER_MATERIALS:
+        if item["name"].lower() in existing_names:
+            continue
+        docs.append({
+            "id": str(uuid.uuid4()),
+            "user_id": user["id"],
+            "name": item["name"],
+            "unit_price": float(item["unit_price"]),
+            "team_id": None,
+            "shared_by_name": None,
+            "created_at": now,
+        })
+    if docs:
+        await db.common_materials.insert_many(docs)
+    return {"status": "ok", "added": len(docs), "skipped": len(STARTER_MATERIALS) - len(docs)}
+
+
+@router.post("/common-materials/import", summary="Bulk import common materials from CSV text")
+async def import_common_materials(payload: dict, user: dict = Depends(get_current_user)):
+    """Accepts JSON: {"csv": "name,unit_price\\n3\\" PVC,4.50\\n..."}
+    First row is treated as header if it contains 'name'. Skips duplicates by name."""
+    csv_text = payload.get("csv", "")
+    if not isinstance(csv_text, str) or not csv_text.strip():
+        raise HTTPException(status_code=400, detail="csv field is required")
+
+    import csv as csv_lib
+    from io import StringIO
+
+    reader = csv_lib.reader(StringIO(csv_text))
+    rows = list(reader)
+    if not rows:
+        raise HTTPException(status_code=400, detail="CSV is empty")
+
+    # Detect & skip header row
+    start_idx = 0
+    if rows[0] and any("name" in (c or "").lower() for c in rows[0]):
+        start_idx = 1
+
+    existing_names = {
+        m["name"].lower()
+        for m in await db.common_materials.find(
+            {"user_id": user["id"], "team_id": None}, {"_id": 0, "name": 1}
+        ).to_list(1000)
+    }
+
+    now = datetime.now(timezone.utc).isoformat()
+    docs = []
+    skipped = 0
+    invalid = 0
+    for row in rows[start_idx:]:
+        if not row or not any(c.strip() for c in row):
+            continue
+        name = (row[0] or "").strip()
+        if not name:
+            invalid += 1
+            continue
+        try:
+            unit_price = float((row[1] if len(row) > 1 else "0").strip() or 0)
+        except ValueError:
+            invalid += 1
+            continue
+        if name.lower() in existing_names:
+            skipped += 1
+            continue
+        existing_names.add(name.lower())  # don't dupe within same import
+        docs.append({
+            "id": str(uuid.uuid4()),
+            "user_id": user["id"],
+            "name": name,
+            "unit_price": unit_price,
+            "team_id": None,
+            "shared_by_name": None,
+            "created_at": now,
+        })
+
+    if docs:
+        await db.common_materials.insert_many(docs)
+    return {"status": "ok", "added": len(docs), "skipped": skipped, "invalid": invalid}
+
+
 # ==================== CALENDAR ====================
 @router.post("/calendar", response_model=CalendarEventResponse)
 async def create_event(event: CalendarEvent, user: dict = Depends(get_current_user)):

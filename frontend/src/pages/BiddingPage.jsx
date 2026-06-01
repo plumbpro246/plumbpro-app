@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, DollarSign, Trash2, Send, Check, X, Download, Share2, Star, ListPlus, Users } from "lucide-react";
+import { Plus, DollarSign, Trash2, Send, Check, X, Download, Share2, Star, ListPlus, Users, Sparkles, Upload } from "lucide-react";
 import { exportBidPDF } from "@/services/pdfExportService";
 import { shareBid } from "@/services/shareService";
 
@@ -131,6 +131,47 @@ export default function BiddingPage() {
       fetchCommonMaterials();
     } catch {
       toast.error("Failed to delete");
+    }
+  };
+
+  const [seedLoading, setSeedLoading] = useState(false);
+
+  const seedLibrary = async () => {
+    setSeedLoading(true);
+    try {
+      const res = await axios.post(`${API}/common-materials/seed`, {}, { headers });
+      const { added, skipped } = res.data;
+      toast.success(
+        added > 0
+          ? `Added ${added} starter materials!${skipped ? ` (${skipped} already existed)` : ""}`
+          : "All starter materials are already in your library"
+      );
+      fetchCommonMaterials();
+    } catch {
+      toast.error("Failed to seed library");
+    } finally {
+      setSeedLoading(false);
+    }
+  };
+
+  const importCSV = async (file) => {
+    if (!file) return;
+    if (file.size > 1024 * 1024) {
+      toast.error("CSV too large — max 1MB");
+      return;
+    }
+    try {
+      const text = await file.text();
+      const res = await axios.post(`${API}/common-materials/import`, { csv: text }, { headers });
+      const { added, skipped, invalid } = res.data;
+      toast.success(
+        `Imported ${added} materials` +
+          (skipped ? ` • ${skipped} duplicates skipped` : "") +
+          (invalid ? ` • ${invalid} invalid rows` : "")
+      );
+      fetchCommonMaterials();
+    } catch (err) {
+      toast.error(err?.response?.data?.detail || "CSV import failed");
     }
   };
 
@@ -345,7 +386,6 @@ export default function BiddingPage() {
                           variant="outline"
                           size="sm"
                           className="h-8"
-                          disabled={commonMaterials.length === 0}
                           data-testid="quick-add-common-btn"
                         >
                           <ListPlus className="w-4 h-4 mr-1" /> Quick Add
@@ -354,14 +394,66 @@ export default function BiddingPage() {
                           )}
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="sm:max-w-md max-h-[70vh] overflow-y-auto">
+                      <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
                         <DialogHeader>
                           <DialogTitle className="font-heading uppercase">Common Materials</DialogTitle>
                         </DialogHeader>
+
+                        {/* Quick action buttons */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pb-3 border-b">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={seedLibrary}
+                            disabled={seedLoading}
+                            className="h-10 border-[#FF5F00]/40"
+                            data-testid="seed-library-btn"
+                          >
+                            <Sparkles className="w-4 h-4 mr-1.5 text-[#FF5F00]" />
+                            {seedLoading ? "Adding..." : "Add 50 Starters"}
+                          </Button>
+                          <label
+                            htmlFor="csv-import-input"
+                            className="cursor-pointer"
+                            data-testid="csv-import-label"
+                          >
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="h-10 w-full pointer-events-none"
+                              asChild
+                            >
+                              <span>
+                                <Upload className="w-4 h-4 mr-1.5" />
+                                Import CSV
+                              </span>
+                            </Button>
+                            <input
+                              id="csv-import-input"
+                              type="file"
+                              accept=".csv,text/csv"
+                              className="hidden"
+                              onChange={(e) => {
+                                importCSV(e.target.files?.[0]);
+                                e.target.value = "";
+                              }}
+                              data-testid="csv-import-input"
+                            />
+                          </label>
+                        </div>
+
                         {commonMaterials.length === 0 ? (
-                          <p className="text-sm text-muted-foreground py-4 text-center">
-                            No saved materials yet. Tap the ⭐ on a line item to save it.
-                          </p>
+                          <div className="space-y-2 py-4 text-center">
+                            <p className="text-sm text-muted-foreground">
+                              No saved materials yet.
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Tap <Sparkles className="w-3 h-3 inline text-[#FF5F00]" /> <b>Add 50 Starters</b> above to get going,
+                              or upload a CSV (<code className="text-[10px]">name,unit_price</code>).
+                            </p>
+                          </div>
                         ) : (
                           <div className="space-y-2">
                             {commonMaterials.map((cm) => (
