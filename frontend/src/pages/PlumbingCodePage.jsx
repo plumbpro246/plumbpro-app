@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BookOpen, Search, FileText, Droplets, Flame, Wind, ShieldAlert, Ruler, Bookmark, BookmarkCheck, Star, X } from "lucide-react";
+import { BookOpen, Search, FileText, Droplets, Flame, Wind, ShieldAlert, Ruler, Bookmark, BookmarkCheck, Star, X, ExternalLink } from "lucide-react";
 
 const chapterIcons = {
   2: BookOpen, 3: Ruler, 4: Droplets, 5: Flame, 6: Droplets,
@@ -157,25 +157,53 @@ export default function PlumbingCodePage() {
             {currentCode?.full} - Quick Field Reference
           </p>
         </div>
-        <div className="flex items-center gap-2 self-start">
-          <Button
-            variant={showBookmarks ? "default" : "outline"}
-            size="sm"
-            className={showBookmarks ? "bg-amber-500 hover:bg-amber-600 text-white border-amber-500" : ""}
-            onClick={() => setShowBookmarks(!showBookmarks)}
-            data-testid="bookmarks-toggle"
-          >
-            <Star className={`w-4 h-4 mr-1.5 ${showBookmarks ? "fill-white" : ""}`} />
-            Bookmarks
-            {bookmarkCount > 0 && (
-              <Badge className="ml-1.5 bg-white/20 text-inherit text-xs px-1.5 py-0" data-testid="bookmark-count">
-                {bookmarkCount}
-              </Badge>
-            )}
-          </Button>
-          <Badge className="bg-[#003366] text-white text-xs px-3 py-1" data-testid="code-edition-badge">
-            {currentCode?.label} {edition} ({currentCode?.publisher})
-          </Badge>
+        <div className="flex flex-col sm:items-end gap-2 self-start">
+          {/* Official Code Book Links */}
+          <div className="flex items-center gap-2">
+            <a
+              href="https://codes.iccsafe.org/content/IPC2024P1"
+              target="_blank"
+              rel="noopener noreferrer"
+              data-testid="ipc-official-link"
+            >
+              <Button variant="outline" size="sm" className="border-blue-500/40 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30">
+                <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
+                IPC Online
+              </Button>
+            </a>
+            <a
+              href="https://epubs.iapmo.org/2024/UPC/"
+              target="_blank"
+              rel="noopener noreferrer"
+              data-testid="upc-official-link"
+            >
+              <Button variant="outline" size="sm" className="border-[#FF5F00]/40 text-[#FF5F00] hover:bg-orange-50 dark:hover:bg-orange-950/20">
+                <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
+                UPC Online
+              </Button>
+            </a>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant={showBookmarks ? "default" : "outline"}
+              size="sm"
+              className={showBookmarks ? "bg-amber-500 hover:bg-amber-600 text-white border-amber-500" : ""}
+              onClick={() => setShowBookmarks(!showBookmarks)}
+              data-testid="bookmarks-toggle"
+            >
+              <Star className={`w-4 h-4 mr-1.5 ${showBookmarks ? "fill-white" : ""}`} />
+              Bookmarks
+              {bookmarkCount > 0 && (
+                <Badge className="ml-1.5 bg-white/20 text-inherit text-xs px-1.5 py-0" data-testid="bookmark-count">
+                  {bookmarkCount}
+                </Badge>
+              )}
+            </Button>
+            <Badge className="bg-[#003366] text-white text-xs px-3 py-1" data-testid="code-edition-badge">
+              {currentCode?.label} {edition} ({currentCode?.publisher})
+            </Badge>
+          </div>
         </div>
       </div>
 
