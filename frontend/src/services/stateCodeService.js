@@ -94,7 +94,12 @@ export async function detectStateCode() {
     const mapping = STATE_CODE_MAP[stateCode];
     if (!mapping) return null;
 
-    const result = { state: stateCode, code: mapping.code, name: mapping.name };
+    const result = {
+      state: stateCode,
+      code: mapping.code,
+      name: mapping.name,
+      city: j.city || null,
+    };
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ data: result, timestamp: Date.now() }));
     return result;
   } catch {

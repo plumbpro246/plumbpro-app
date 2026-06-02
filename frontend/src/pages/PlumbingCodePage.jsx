@@ -8,8 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BookOpen, Search, FileText, Droplets, Flame, Wind, ShieldAlert, Ruler, Bookmark, BookmarkCheck, Star, X, ExternalLink, MapPin } from "lucide-react";
+import { BookOpen, Search, FileText, Droplets, Flame, Wind, ShieldAlert, Ruler, Bookmark, BookmarkCheck, Star, X, ExternalLink, MapPin, AlertCircle } from "lucide-react";
 import { detectStateCode } from "@/services/stateCodeService";
+import { findCityAmendment } from "@/services/cityAmendments";
 
 const chapterIcons = {
   2: BookOpen, 3: Ruler, 4: Droplets, 5: Flame, 6: Droplets,
@@ -41,6 +42,8 @@ export default function PlumbingCodePage() {
   const [bookmarks, setBookmarks] = useState([]);
   const [showBookmarks, setShowBookmarks] = useState(false);
   const [detectedState, setDetectedState] = useState(null);
+  const [cityAmendment, setCityAmendment] = useState(null);
+  const [amendmentDismissed, setAmendmentDismissed] = useState(false);
   const { token } = useAuth();
 
   const headers = { Authorization: `Bearer ${token}` };
@@ -84,6 +87,20 @@ export default function PlumbingCodePage() {
       const result = await detectStateCode();
       if (cancelled || !result) return;
       setDetectedState(result);
+
+      // Lookup city-specific amendments
+      if (result.city) {
+        const amend = findCityAmendment(result.city);
+        if (amend) {
+          setCityAmendment(amend);
+          // honor previously-dismissed amendment for this city
+          const dismissedKey = `amendment-dismissed-${amend.city}`;
+          if (localStorage.getItem(dismissedKey) === "true") {
+            setAmendmentDismissed(true);
+          }
+        }
+      }
+
       // Only auto-switch the FIRST time we detect (so manual overrides aren't fought)
       const autoSwitched = localStorage.getItem("plumbpro-code-auto-switched");
       if (!autoSwitched && result.code !== codeType) {
@@ -335,6 +352,68 @@ export default function PlumbingCodePage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* City-Specific Amendment Alert */}
+      {cityAmendment && !amendmentDismissed && (
+        <Card
+          className="bg-blue-50 dark:bg-blue-950/30 border-blue-500 border-2"
+          data-testid="city-amendment-card"
+        >
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-6 h-6 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <p className="font-bold text-blue-800 dark:text-blue-300 flex items-center gap-1.5">
+                    <MapPin className="w-4 h-4" />
+                    {cityAmendment.city} has local amendments
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      localStorage.setItem(`amendment-dismissed-${cityAmendment.city}`, "true");
+                      setAmendmentDismissed(true);
+                    }}
+                    className="p-1 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/50"
+                    aria-label="Dismiss"
+                    data-testid="dismiss-amendment-btn"
+                  >
+                    <X className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  </button>
+                </div>
+                <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                  Working in <strong>{cityAmendment.city}</strong>? The {cityAmendment.name} adds
+                  these requirements on top of the base {(cityAmendment.base_code || "").toUpperCase()}:
+                </p>
+                <ul className="mt-2 space-y-1">
+                  {cityAmendment.key_amendments.map((item, i) => (
+                    <li
+                      key={i}
+                      className="text-sm text-blue-800 dark:text-blue-200 flex items-start gap-2"
+                      data-testid={`amendment-item-${i}`}
+                    >
+                      <span className="text-blue-500 flex-shrink-0">•</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+                {cityAmendment.official_url && (
+                  <a
+                    href={cityAmendment.official_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-sm font-bold text-blue-700 dark:text-blue-300 underline mt-3 hover:text-blue-900"
+                    data-testid="official-amendment-link"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    Official {cityAmendment.city} Code
+                  </a>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Search */}
       <div className="relative">
