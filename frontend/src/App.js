@@ -312,43 +312,59 @@ const MainLayout = ({ children }) => {
         <h1 className="font-heading text-xl font-bold">
           PLUMB<span className="text-[#FF5F00]">PRO</span>
         </h1>
-        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="text-white" data-testid="mobile-menu-btn">
-              <Menu className="w-6 h-6" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-72 bg-slate-900 text-white p-0 border-slate-800">
-            <div className="p-4 border-b border-slate-800">
-              <h1 className="font-heading text-2xl font-bold">
-                PLUMB<span className="text-[#FF5F00]">PRO</span>
-              </h1>
-            </div>
-            <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-1">
-              {visibleNavItems.map((item) => (
-                <NavLink key={item.path} item={item} mobile />
-              ))}
-            </nav>
-            <div className="p-4 border-t border-slate-800">
-              <Link 
-                to="/subscription" 
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-2 px-4 py-2 mb-2 rounded-sm bg-[#FF5F00] text-white"
-              >
-                <Crown className="w-4 h-4" />
-                <span className="text-sm font-bold uppercase">{user?.subscription_tier || "Free"}</span>
-              </Link>
-              <Button 
-                variant="ghost" 
-                className="w-full justify-start text-slate-400 hover:text-white"
-                onClick={() => { handleLogout(); setMobileOpen(false); }}
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Logout
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-white hover:text-red-400 hover:bg-red-950/30"
+            onClick={handleLogout}
+            data-testid="mobile-logout-btn"
+            aria-label="Log out"
+          >
+            <LogOut className="w-5 h-5" />
+          </Button>
+          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="text-white" data-testid="mobile-menu-btn">
+                <Menu className="w-6 h-6" />
               </Button>
-            </div>
-          </SheetContent>
-        </Sheet>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-72 bg-slate-900 text-white p-0 border-slate-800 flex flex-col">
+              <div className="p-4 border-b border-slate-800 flex-shrink-0">
+                <h1 className="font-heading text-2xl font-bold">
+                  PLUMB<span className="text-[#FF5F00]">PRO</span>
+                </h1>
+                {user?.full_name && (
+                  <p className="text-xs text-slate-400 mt-1 truncate">{user.full_name}</p>
+                )}
+              </div>
+              <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-1">
+                {visibleNavItems.map((item) => (
+                  <NavLink key={item.path} item={item} mobile />
+                ))}
+              </nav>
+              <div className="p-4 border-t border-slate-800 flex-shrink-0 space-y-2">
+                <Link
+                  to="/subscription"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-sm bg-[#FF5F00] text-white"
+                >
+                  <Crown className="w-4 h-4" />
+                  <span className="text-sm font-bold uppercase">{user?.subscription_tier || "Free"}</span>
+                </Link>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start text-slate-300 hover:text-red-400 hover:bg-red-950/30 border border-slate-700"
+                  onClick={() => { handleLogout(); setMobileOpen(false); }}
+                  data-testid="mobile-menu-logout-btn"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Logout
+                </Button>
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
       </header>
 
       {/* Main Content */}
