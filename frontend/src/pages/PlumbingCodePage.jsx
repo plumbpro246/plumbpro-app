@@ -8,7 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BookOpen, Search, FileText, Droplets, Flame, Wind, ShieldAlert, Ruler, Bookmark, BookmarkCheck, Star, X, ExternalLink } from "lucide-react";
+import { BookOpen, Search, FileText, Droplets, Flame, Wind, ShieldAlert, Ruler, Bookmark, BookmarkCheck, Star, X, ExternalLink, MapPin } from "lucide-react";
+import { detectStateCode } from "@/services/stateCodeService";
 
 const chapterIcons = {
   2: BookOpen, 3: Ruler, 4: Droplets, 5: Flame, 6: Droplets,
@@ -39,6 +40,7 @@ export default function PlumbingCodePage() {
   const [activeChapter, setActiveChapter] = useState(null);
   const [bookmarks, setBookmarks] = useState([]);
   const [showBookmarks, setShowBookmarks] = useState(false);
+  const [detectedState, setDetectedState] = useState(null);
   const { token } = useAuth();
 
   const headers = { Authorization: `Bearer ${token}` };
@@ -74,6 +76,24 @@ export default function PlumbingCodePage() {
   useEffect(() => {
     fetchBookmarks();
   }, []);
+
+  // Detect user's state on mount and auto-switch to their adopted code (first-time only)
+  useEffect(() => {
+    let cancelled = false;
+    const run = async () => {
+      const result = await detectStateCode();
+      if (cancelled || !result) return;
+      setDetectedState(result);
+      // Only auto-switch the FIRST time we detect (so manual overrides aren't fought)
+      const autoSwitched = localStorage.getItem("plumbpro-code-auto-switched");
+      if (!autoSwitched && result.code !== codeType) {
+        setCodeType(result.code);
+        localStorage.setItem("plumbpro-code-auto-switched", "true");
+      }
+    };
+    run();
+    return () => { cancelled = true; };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const timer = setTimeout(() => fetchChapters(searchTerm), 300);
@@ -156,6 +176,18 @@ export default function PlumbingCodePage() {
           <p className="text-muted-foreground text-sm">
             {currentCode?.full} - Quick Field Reference
           </p>
+          {detectedState && (
+            <div
+              className="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 rounded-sm bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800/50 text-green-700 dark:text-green-400"
+              data-testid="detected-state-badge"
+            >
+              <MapPin className="w-3.5 h-3.5" />
+              <span className="text-xs font-medium">
+                {detectedState.name} uses{" "}
+                <strong className="uppercase">{detectedState.code}</strong>
+              </span>
+            </div>
+          )}
         </div>
         <div className="flex flex-col sm:items-end gap-2 self-start">
           {/* Official Code Book Links */}
