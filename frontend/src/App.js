@@ -38,6 +38,7 @@ import LandingPage from "@/pages/LandingPage";
 import PrivacyPolicyPage from "@/pages/PrivacyPolicyPage";
 import TermsOfServicePage from "@/pages/TermsOfServicePage";
 import ReferralPage from "@/pages/ReferralPage";
+import ConversionsPage from "@/pages/ConversionsPage";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 export const API = `${BACKEND_URL}/api`;
@@ -165,13 +166,13 @@ import {
   Home, FileText, Calculator, Shield, Clock, Package, 
   DollarSign, Calendar, AlertTriangle, FileSpreadsheet, 
   Cpu, Map, LogOut, Menu, X, User, Crown, Settings, BookOpen, Lock, LifeBuoy, Users,
-  Mic, Cloud, Store, Ruler, Table2, Droplets, ThermometerSun, Wrench, Gift
+  Mic, Cloud, Store, Ruler, Table2, Droplets, ThermometerSun, Wrench, Gift, ArrowRightLeft
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
-// Free tier gets: Dashboard, Formulas, Safety Talks, Calendar, Calculator, Settings, Subscription, Plumbing Code, Support, Referrals
-const FREE_TIER_PATHS = ["/dashboard", "/formulas", "/safety-talks", "/calendar", "/calculator", "/offset-calc", "/fitting-takeoffs", "/settings", "/subscription", "/subscription/success", "/plumbing-code", "/support", "/weather", "/suppliers", "/refer"];
+// Free tier gets: Dashboard, Formulas, Safety Talks, Calendar, Calculator, Settings, Subscription, Plumbing Code, Support, Referrals, Conversions
+const FREE_TIER_PATHS = ["/dashboard", "/formulas", "/safety-talks", "/calendar", "/calculator", "/offset-calc", "/fitting-takeoffs", "/conversions", "/settings", "/subscription", "/subscription/success", "/plumbing-code", "/support", "/weather", "/suppliers", "/refer"];
 
 // Paths that can NEVER be hidden (core navigation)
 export const ALWAYS_VISIBLE_PATHS = ["/dashboard", "/settings", "/subscription", "/support", "/refer"];
@@ -189,6 +190,7 @@ export const navItems = [
   { path: "/sds", label: "Safety Data", icon: FileSpreadsheet },
   { path: "/calculator", label: "Calculator", icon: Cpu, free: true },
   { path: "/offset-calc", label: "Offset Calc", icon: Ruler, free: true },
+  { path: "/conversions", label: "Conversions", icon: ArrowRightLeft, free: true },
   { path: "/fitting-takeoffs", label: "Fitting Data", icon: Table2, free: true },
   { path: "/water-heaters", label: "Water Heaters", icon: Droplets },
   { path: "/boilers", label: "Boilers", icon: ThermometerSun },
@@ -405,6 +407,7 @@ function App() {
           <Route path="/osha" element={<ProtectedRoute><TierGatedRoute><MainLayout><OSHAPage /></MainLayout></TierGatedRoute></ProtectedRoute>} />
           <Route path="/sds" element={<ProtectedRoute><TierGatedRoute><MainLayout><SDSPage /></MainLayout></TierGatedRoute></ProtectedRoute>} />
           <Route path="/calculator" element={<ProtectedRoute><MainLayout><CalculatorPage /></MainLayout></ProtectedRoute>} />
+          <Route path="/conversions" element={<ProtectedRoute><MainLayout><ConversionsPage /></MainLayout></ProtectedRoute>} />
           <Route path="/offset-calc" element={<ProtectedRoute><MainLayout><OffsetCalculatorPage /></MainLayout></ProtectedRoute>} />
           <Route path="/fitting-takeoffs" element={<ProtectedRoute><MainLayout><FittingTakeoffsPage /></MainLayout></ProtectedRoute>} />
           <Route path="/water-heaters" element={<ProtectedRoute><TierGatedRoute><MainLayout><WaterHeatersPage /></MainLayout></TierGatedRoute></ProtectedRoute>} />
