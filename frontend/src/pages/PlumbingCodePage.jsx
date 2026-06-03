@@ -8,7 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BookOpen, Search, FileText, Droplets, Flame, Wind, ShieldAlert, Ruler, Bookmark, BookmarkCheck, Star, X, ExternalLink, MapPin, AlertCircle } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { BookOpen, Search, FileText, Droplets, Flame, Wind, ShieldAlert, Ruler, Bookmark, BookmarkCheck, Star, X, ExternalLink, MapPin, AlertCircle, Flag } from "lucide-react";
 import { detectStateCode } from "@/services/stateCodeService";
 import { findCityAmendment } from "@/services/cityAmendments";
 
@@ -44,6 +46,9 @@ export default function PlumbingCodePage() {
   const [detectedState, setDetectedState] = useState(null);
   const [cityAmendment, setCityAmendment] = useState(null);
   const [amendmentDismissed, setAmendmentDismissed] = useState(false);
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const [reportSubmitting, setReportSubmitting] = useState(false);
+  const [reportNotes, setReportNotes] = useState("");
   const { token } = useAuth();
 
   const headers = { Authorization: `Bearer ${token}` };
@@ -69,6 +74,32 @@ export default function PlumbingCodePage() {
       setBookmarks(res.data);
     } catch (err) {
       console.error("Bookmarks load failed (non-critical)", err);
+    }
+  };
+
+  const submitCodeReport = async () => {
+    if (!detectedState) return;
+    const reported = detectedState.code === "upc" ? "ipc" : "upc";
+    setReportSubmitting(true);
+    try {
+      await axios.post(
+        `${API}/code-reports`,
+        {
+          state: detectedState.state,
+          city: detectedState.city || "",
+          current_code: detectedState.code,
+          reported_code: reported,
+          notes: reportNotes,
+        },
+        { headers }
+      );
+      toast.success("Thanks! Report sent — we'll review and update.");
+      setReportDialogOpen(false);
+      setReportNotes("");
+    } catch {
+      toast.error("Failed to send report — try again later");
+    } finally {
+      setReportSubmitting(false);
     }
   };
 
@@ -194,15 +225,26 @@ export default function PlumbingCodePage() {
             {currentCode?.full} - Quick Field Reference
           </p>
           {detectedState && (
-            <div
-              className="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 rounded-sm bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800/50 text-green-700 dark:text-green-400"
-              data-testid="detected-state-badge"
-            >
-              <MapPin className="w-3.5 h-3.5" />
-              <span className="text-xs font-medium">
-                {detectedState.name} uses{" "}
-                <strong className="uppercase">{detectedState.code}</strong>
-              </span>
+            <div className="flex items-center gap-2 mt-2 flex-wrap">
+              <div
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800/50 text-green-700 dark:text-green-400"
+                data-testid="detected-state-badge"
+              >
+                <MapPin className="w-3.5 h-3.5" />
+                <span className="text-xs font-medium">
+                  {detectedState.name} uses{" "}
+                  <strong className="uppercase">{detectedState.code}</strong>
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setReportDialogOpen(true)}
+                className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-[#FF5F00] underline underline-offset-2"
+                data-testid="report-wrong-code-btn"
+              >
+                <Flag className="w-3 h-3" />
+                Wrong code?
+              </button>
             </div>
           )}
         </div>
@@ -559,6 +601,72 @@ export default function PlumbingCodePage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Report Wrong Code Dialog */}
+      <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-heading uppercase flex items-center gap-2">
+              <Flag className="w-5 h-5 text-[#FF5F00]" />
+              Report Wrong Code
+            </DialogTitle>
+            <DialogDescription>
+              Help us keep this accurate — your local knowledge beats any database.
+            </DialogDescription>
+          </DialogHeader>
+          {detectedState && (
+            <div className="space-y-4">
+              <div className="bg-muted p-3 rounded-sm space-y-1">
+                <p className="text-xs text-muted-foreground uppercase font-bold">Current Mapping</p>
+                <p className="text-sm">
+                  <strong>{detectedState.name}</strong> →{" "}
+                  <span className="uppercase font-bold text-[#FF5F00]">{detectedState.code}</span>
+                </p>
+              </div>
+              <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 p-3 rounded-sm space-y-1">
+                <p className="text-xs text-blue-600 dark:text-blue-400 uppercase font-bold">Your Report</p>
+                <p className="text-sm text-blue-800 dark:text-blue-200">
+                  {detectedState.name} actually uses{" "}
+                  <span className="uppercase font-bold">
+                    {detectedState.code === "upc" ? "IPC" : "UPC"}
+                  </span>
+                </p>
+              </div>
+              <div>
+                <label htmlFor="report-notes" className="text-sm font-bold uppercase tracking-wide block mb-2">
+                  Notes (Optional)
+                </label>
+                <Textarea
+                  id="report-notes"
+                  value={reportNotes}
+                  onChange={(e) => setReportNotes(e.target.value)}
+                  placeholder="e.g., County-specific info, code edition adopted, etc."
+                  rows={3}
+                  data-testid="report-notes-input"
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setReportDialogOpen(false)}
+                  data-testid="cancel-report-btn"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="flex-1 bg-[#FF5F00] hover:bg-[#FF5F00]/90 font-bold uppercase"
+                  onClick={submitCodeReport}
+                  disabled={reportSubmitting}
+                  data-testid="submit-report-btn"
+                >
+                  {reportSubmitting ? "Sending..." : "Send Report"}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

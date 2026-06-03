@@ -21,6 +21,71 @@ router = APIRouter()
 # ==================== SUPPORT ====================
 SUPPORT_EMAIL = "plumbpro246@gmail.com"
 
+
+@router.post("/code-reports", summary="Report wrong state code mapping")
+async def report_wrong_code(request: Request, user: dict = Depends(get_current_user)):
+    """Allow users to report when their state is mapped to the wrong base code (UPC/IPC).
+    Stores in code_reports collection AND emails admin."""
+    body = await request.json()
+    state = (body.get("state") or "").strip().upper()
+    reported_code = (body.get("reported_code") or "").strip().lower()
+    current_code = (body.get("current_code") or "").strip().lower()
+    notes = (body.get("notes") or "").strip()
+    city = (body.get("city") or "").strip()
+
+    if not state or reported_code not in ("upc", "ipc"):
+        raise HTTPException(status_code=400, detail="state and reported_code (upc/ipc) required")
+
+    now = datetime.now(timezone.utc).isoformat()
+    report_doc = {
+        "id": str(uuid.uuid4()),
+        "user_id": user["id"],
+        "user_email": user.get("email"),
+        "user_name": user.get("full_name"),
+        "state": state,
+        "city": city or None,
+        "current_code": current_code,
+        "reported_code": reported_code,
+        "notes": notes,
+        "status": "open",
+        "created_at": now,
+    }
+    await db.code_reports.insert_one(report_doc)
+
+    # Send admin email (best-effort, non-blocking)
+    if GMAIL_ADDRESS and GMAIL_APP_PASSWORD:
+        try:
+            msg = MIMEMultipart()
+            msg["From"] = GMAIL_ADDRESS
+            msg["To"] = GMAIL_ADDRESS
+            msg["Subject"] = f"[PlumbPro] Code Mapping Report: {state} -> {reported_code.upper()}"
+            msg.attach(MIMEText(
+                f"""User report of wrong state→code mapping:
+
+State: {state}
+City: {city or 'n/a'}
+Current mapping in app: {current_code.upper() or 'unknown'}
+User reports correct code is: {reported_code.upper()}
+
+Notes: {notes or '(none)'}
+
+Reported by: {user.get('full_name')} ({user.get('email')})
+Date: {now}
+Report ID: {report_doc['id']}
+
+Reply to user: {user.get('email')}
+""",
+                "plain"
+            ))
+            with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+                server.login(GMAIL_ADDRESS, GMAIL_APP_PASSWORD)
+                server.send_message(msg)
+        except Exception as e:
+            logger.warning(f"Failed to send code report email: {e}")
+
+    return {"status": "received", "id": report_doc["id"]}
+
+
 @router.post("/support/ticket")
 async def create_support_ticket(request: Request, user: dict = Depends(get_current_user)):
     body = await request.json()
